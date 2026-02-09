@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archive - PoorLeaglGuy</title>
+    <title>Archive - ApparEdit v0.5</title>
     <style>
-        /* 1. 核心视觉定义 (控制颜色和尺寸) */
+        /* 版本: ApparEdit v0.5 
+           更新内容: 修复宽屏模式下图片撑满布局，优化响应式网格
+        */
+
+        /* 1. 核心视觉定义 */
         :root {
-            --bg-color: #ffffff;    /* 网页背景色 */
-            --text-color: #000000;  /* 文字颜色 */
-            --border-color: #efefef;/* 边框和线条颜色 */
-            --muted-color: #999999; /* 辅助文字颜色 */
-            --nav-h: 50px;          /* 手机端导航栏高度 */
+            --bg-color: #ffffff;    
+            --text-color: #000000;  
+            --border-color: #efefef;
+            --muted-color: #999999; 
+            --nav-h: 50px;          
         }
 
-        /* 自动切换深色模式 */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
@@ -57,7 +60,7 @@
         }
 
         @media (min-width: 768px) {
-            :root { --nav-h: 60px; } /* 电脑端导航栏高度 */
+            :root { --nav-h: 60px; } 
             nav { padding: 0 30px; }
         }
 
@@ -96,7 +99,6 @@
 
         .nav-links a:hover { opacity: 0.3; }
 
-        /* 3. 移动端菜单按钮样式 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -153,30 +155,32 @@
             color: inherit;
         }
 
-        /* 4. 内容展示区样式 */
+        /* 4. 内容展示区样式 - 核心修改位置 */
         main {
-            margin-top: calc(var(--nav-h) + 30px); 
-            padding: 0 15px;
+            margin-top: var(--nav-h); 
+            padding: 20px 15px;
             flex-grow: 1;
             width: 100%;
-            max-width: 1600px;
+            /* 提高最大宽度以适应超宽屏 */
+            max-width: 2400px; 
             align-self: center;
         }
 
         @media (min-width: 768px) {
-            main { margin-top: calc(var(--nav-h) + 50px); padding: 0 30px; }
+            main { padding: 30px; }
         }
 
         .archive-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px; 
+            grid-template-columns: 1fr; /* 手机端一列 */
+            gap: 15px; 
         }
 
-        @media (min-width: 1024px) {
+        @media (min-width: 768px) {
             .archive-grid {
-                grid-template-columns: repeat(2, 1fr); /* 电脑端一行两列 */
-                gap: 30px;
+                /* 电脑端改为撑满布局，使用 50% 减去间距的计算方式 */
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 20px;
             }
         }
 
@@ -184,10 +188,11 @@
             text-decoration: none;
             color: inherit;
             display: block;
+            width: 100%;
         }
 
         .img-container {
-            aspect-ratio: 3 / 4; /* 图片比例 */
+            aspect-ratio: 3 / 4; 
             background-color: var(--border-color);
             overflow: hidden;
             width: 100%;
@@ -197,18 +202,19 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
             transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
         .item-card:hover img {
-            transform: scale(1.02); /* 鼠标移上去微调放大 */
+            transform: scale(1.015);
         }
 
         .item-title {
-            padding: 12px 0 30px;
+            padding: 10px 0 20px;
             text-transform: uppercase;
             font-size: 9px;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             font-weight: 600;
         }
 
@@ -219,6 +225,9 @@
             flex-direction: column;
             gap: 20px;
             border-top: 1px solid var(--border-color);
+            max-width: 2400px;
+            width: 100%;
+            align-self: center;
         }
 
         @media (min-width: 768px) {
@@ -272,42 +281,30 @@
             font-size: 8px;
         }
 
-        ::-webkit-scrollbar { display: none; } /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; } 
     </style>
 </head>
 <body>
 
-    <!-- 导航栏 HTML -->
     <nav>
         <a href="https://neuepoor.com" class="brand">PoorLeaglGuy</a>
-        
-        <div class="nav-links" id="desktop-links">
-            <!-- 电脑端链接将由 JS 自动生成 -->
-        </div>
-
+        <div class="nav-links" id="desktop-links"></div>
         <button id="menu-toggle" aria-label="Menu">
             <span></span>
             <span></span>
         </button>
     </nav>
 
-    <!-- 手机端弹窗菜单 -->
-    <div id="mobile-menu">
-        <!-- 手机端链接将由 JS 自动生成 -->
-    </div>
+    <div id="mobile-menu"></div>
 
     <main>
-        <div id="archive-container" class="archive-grid">
-            <!-- 内容列表将由 JS 自动生成 -->
-        </div>
+        <div id="archive-container" class="archive-grid"></div>
     </main>
 
-    <!-- 页脚与分页 -->
     <footer>
         <div class="copyright">
             &copy; <span id="year"></span> PoorLeaglGuy Archive
         </div>
-        
         <div class="pagination-container">
             <button id="prev-btn" class="page-btn">Prev</button>
             <span id="page-info" class="page-info"></span>
@@ -321,8 +318,8 @@
         ========================================= */
 
         const CONFIG = {
-            itemsPerPage: 10,  // 每页显示多少个项目
-            // 导航栏链接列表
+            version: "v0.5", // 当前版本
+            itemsPerPage: 10, 
             links: [
                 { name: "Category", url: "https://neuepoor.com/library/" },
                 { name: "ApparEdit", url: "index.html" },
@@ -330,7 +327,6 @@
             ]
         };
 
-        // 数据列表：新增项目直接往这里加，注意标点符号
         const DATA = [
             { id: 16, title: "ITEM 016", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 15, title: "ITEM 015", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
@@ -345,14 +341,13 @@
         ];
 
         /* =========================================
-           🛠️ 功能逻辑区 - 不懂代码请勿修改 🛠️
+           🛠️ 功能逻辑区 🛠️
         ========================================= */
 
         let currentPage = 1;
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
 
-        // 切换手机端菜单
         function toggleMenu() {
             const isActive = mobileMenu.classList.toggle('active');
             const spans = menuToggle.querySelectorAll('span');
@@ -369,7 +364,6 @@
 
         menuToggle.addEventListener('click', toggleMenu);
 
-        // 渲染列表函数
         function renderItems() {
             const container = document.getElementById('archive-container');
             if(!container) return;
@@ -392,19 +386,16 @@
                 container.appendChild(card);
             });
 
-            // 更新翻页按钮状态
             const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage) || 1;
             document.getElementById('prev-btn').disabled = currentPage === 1;
             document.getElementById('next-btn').disabled = currentPage === totalPages;
             document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
         }
 
-        // 页面初始化
         function init() {
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
             
-            // 自动注入链接
             CONFIG.links.forEach(link => {
                 const dLink = document.createElement('a');
                 dLink.href = link.url;
@@ -418,10 +409,8 @@
                 mobile.appendChild(mLink);
             });
 
-            // 设置年份
             document.getElementById('year').innerText = new Date().getFullYear();
             
-            // 翻页逻辑
             document.getElementById('prev-btn').addEventListener('click', () => {
                 if (currentPage > 1) {
                     currentPage--;
