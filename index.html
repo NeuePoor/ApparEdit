@@ -4,109 +4,305 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive - PoorLeaglGuy</title>
-    <!-- 引入 Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'media', 
-        }
-    </script>
     <style>
+        /* 1. 核心字体与基础设置 */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            transition: background-color 0.2s ease;
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #f4f4f5;
+            --muted-color: #9ca3af;
         }
 
-        /* 【核心布局加固】防止 GitHub 预览乱码 */
-        nav {
-            position: fixed !important;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 9999 !important;
-        }
-
-        .archive-grid {
-            display: grid !important;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 15px;
-            width: 100%;
-        }
-
-        @media (min-width: 1024px) {
-            .archive-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 20px;
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --text-color: #ffffff;
+                --border-color: #18181b;
+                --muted-color: #52525b;
             }
         }
 
-        /* 移动端菜单基础样式 */
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-h-screen: 100vh;
+            display: flex;
+            flex-direction: column;
+            cursor: crosshair;
+        }
+
+        /* 2. 导航栏 (原生 CSS 固定布局) */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            background-color: rgba(var(--bg-color), 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+        }
+
+        .brand {
+            text-transform: uppercase;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.05em;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-links {
+            display: none; /* PC端默认隐藏，由媒体查询开启 */
+            gap: 40px;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+        }
+
+        @media (min-width: 768px) {
+            .nav-links { display: flex; }
+            nav { height: 90px; padding: 0 40px; }
+            .brand { font-size: 22px; }
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: inherit;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover { opacity: 0.4; }
+
+        /* 3. 汉堡包菜单按钮 */
+        #menu-toggle {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            z-index: 10001;
+        }
+
+        #menu-toggle span {
+            width: 22px;
+            height: 1px;
+            background-color: var(--text-color);
+            transition: 0.3s;
+        }
+
+        @media (min-width: 768px) {
+            #menu-toggle { display: none; }
+        }
+
+        /* 4. 移动端全屏菜单 */
         #mobile-menu {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
             transform: translateY(-100%);
-            z-index: 9000;
-        }
-        #mobile-menu.active {
-            transform: translateY(0);
+            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        /* 隐藏滚动条 */
+        #mobile-menu.active { transform: translateY(0); }
+
+        #mobile-menu a {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* 5. 存档网格系统 */
+        main {
+            margin-top: 100px;
+            padding: 0 20px;
+            flex-grow: 1;
+        }
+
+        @media (min-width: 768px) {
+            main { margin-top: 130px; padding: 0 40px; }
+        }
+
+        .archive-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 1024px) {
+            .archive-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+        }
+
+        .item-card {
+            text-decoration: none;
+            color: inherit;
+            margin-bottom: 30px;
+        }
+
+        .img-container {
+            aspect-ratio: 3 / 4;
+            background-color: var(--border-color);
+            overflow: hidden;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%);
+            transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            opacity: 0.9;
+        }
+
+        .item-card:hover img {
+            filter: grayscale(0%);
+            transform: scale(1.02);
+            opacity: 1;
+        }
+
+        .item-title {
+            padding: 15px 0;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+        }
+
+        /* 6. 页脚与分页 */
+        footer {
+            padding: 60px 20px 40px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        @media (min-width: 768px) {
+            footer { padding: 80px 40px 60px; }
+        }
+
+        .copyright {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--muted-color);
+        }
+
+        .pagination-container {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+        }
+
+        .page-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 5px;
+            transition: opacity 0.3s;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .page-btn:hover { opacity: 0.4; }
+        .page-btn:disabled { opacity: 0.05; cursor: not-allowed; }
+
+        .page-info {
+            opacity: 0.4;
+            font-size: 10px;
+        }
+
         ::-webkit-scrollbar { display: none; }
-
-        .page-btn:disabled {
-            opacity: 0.1;
-            cursor: not-allowed;
-        }
     </style>
 </head>
-<body class="bg-white text-black dark:bg-black dark:text-white min-h-screen flex flex-col">
+<body>
 
-    <!-- 
-      【小白更新指南】
-      1. 修改网站标题：修改 NAVBAR_CONFIG 里的 leftText。
-      2. 修改导航链接：修改 NAVBAR_CONFIG 里的 links 数组。
-      3. 添加图片：在 ARCHIVE_DATA 数组中按格式添加新行。
-    -->
+    <!-- 导航栏 -->
+    <nav>
+        <a href="https://neuepoor.com" class="brand" id="brand-name">PoorLeaglGuy</a>
+        
+        <div class="nav-links" id="desktop-links">
+            <!-- JS 填充 -->
+        </div>
+
+        <button id="menu-toggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu">
+        <!-- JS 填充 -->
+    </div>
+
+    <!-- 主体 -->
+    <main>
+        <div id="archive-container" class="archive-grid">
+            <!-- JS 渲染 -->
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="copyright">
+            &copy; <span id="year"></span> PoorLeaglGuy Archive
+        </div>
+        
+        <div class="pagination-container">
+            <button onclick="prevPage()" id="prev-btn" class="page-btn">Prev</button>
+            <span id="page-info" class="page-info"></span>
+            <button onclick="nextPage()" id="next-btn" class="page-btn">Next</button>
+        </div>
+    </footer>
 
     <script>
-        // --------------------------------------------------
-        // 1. 样式与视觉配置
-        // --------------------------------------------------
-        const STYLE_CONFIG = {
-            logoSize: "text-lg md:text-xl", 
-            logoWeight: "font-bold",
-            navTextSize: "text-[11px] md:text-xs",
-            navLetterSpacing: "tracking-widest",
-            itemTitleSize: "text-[11px] md:text-xs",
-            itemTitleWeight: "font-medium",
-            itemsPerPage: 12 // 每页显示数量
-        };
-
-        // --------------------------------------------------
-        // 2. 导航栏配置 (在这里改链接)
-        // --------------------------------------------------
-        const NAVBAR_CONFIG = {
-            leftText: "PoorLeaglGuy",
-            leftLink: "https://neuepoor.com", 
+        // --- 数据配置区 ---
+        const CONFIG = {
+            itemsPerPage: 10,
             links: [
-                { name: "Category",   url: "https://neuepoor.com/library/" },
-                { name: "ApparEdit",  url: "index.html" },
-                { name: "INFO",       url: "https://neuepoor.com/contacts/" }
+                { name: "Category", url: "https://neuepoor.com/library/" },
+                { name: "ApparEdit", url: "index.html" },
+                { name: "INFO", url: "https://neuepoor.com/contacts/" }
             ]
         };
 
-        // --------------------------------------------------
-        // 3. 图片数据维护
-        // --------------------------------------------------
-        const ARCHIVE_DATA = [
+        const DATA = [
             { id: 16, title: "ITEM 016", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 15, title: "ITEM 015", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 14, title: "ITEM 014", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=14" },
@@ -122,154 +318,88 @@
         ];
 
         let currentPage = 1;
-    </script>
 
-    <!-- 导航栏 -->
-    <nav class="bg-white/90 dark:bg-black/90 backdrop-blur-sm px-4 py-3 md:px-6 md:py-6">
-        <div class="flex justify-between items-center">
-            <a id="nav-brand-link" href="#" class="no-underline text-current">
-                <div id="nav-brand" class="uppercase tracking-tighter"></div>
-            </a>
-            <div class="flex items-center">
-                <div id="desktop-links" class="hidden md:flex gap-10 uppercase"></div>
-                <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 focus:outline-none p-2 ml-4">
-                    <span class="w-5 h-px bg-current transition-all"></span>
-                    <span class="w-5 h-px bg-current transition-all"></span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- 移动端菜单 -->
-    <div id="mobile-menu" class="bg-white dark:bg-black pt-24 pb-12 px-4 border-b border-zinc-100 dark:border-zinc-900 md:hidden">
-        <div id="mobile-links" class="flex flex-col gap-6 uppercase"></div>
-    </div>
-
-    <!-- 存档网格主体 -->
-    <main class="mt-24 md:mt-32 px-4 md:px-6 flex-grow">
-        <div id="archive-container" class="archive-grid">
-            <!-- JS 动态渲染 -->
-        </div>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="mt-20 mb-12 flex justify-between items-baseline px-4 md:px-6">
-        <div class="text-[9px] uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-600">
-            &copy; <span id="year"></span> PoorLeaglGuy Archive
-        </div>
-        
-        <div id="pagination" class="flex gap-8 items-baseline uppercase">
-            <button onclick="prevPage()" id="prev-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
-            <span id="page-info" class="text-[9px] tracking-widest opacity-40"></span>
-            <button onclick="nextPage()" id="next-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
-        </div>
-    </footer>
-
-    <script>
-        const menuBtn = document.getElementById('menu-toggle');
-        const menuContent = document.getElementById('mobile-menu');
-
+        // --- 功能逻辑 ---
         function toggleMenu() {
-            menuContent.classList.toggle('active');
-            const spans = menuBtn.querySelectorAll('span');
-            spans[0].classList.toggle('rotate-45');
-            spans[0].classList.toggle('translate-y-1');
-            spans[1].classList.toggle('-rotate-45');
-            spans[1].classList.toggle('-translate-y-px');
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.getElementById('menu-toggle');
+            menu.classList.toggle('active');
+            
+            const spans = btn.querySelectorAll('span');
+            if(menu.classList.contains('active')) {
+                spans[0].style.transform = "rotate(45deg) translateY(5px)";
+                spans[1].style.transform = "rotate(-45deg) translateY(-5px)";
+            } else {
+                spans[0].style.transform = "none";
+                spans[1].style.transform = "none";
+            }
         }
 
-        function renderGallery() {
+        function render() {
             const container = document.getElementById('archive-container');
-            container.innerHTML = ""; 
+            container.innerHTML = "";
 
-            const start = (currentPage - 1) * STYLE_CONFIG.itemsPerPage;
-            const end = start + STYLE_CONFIG.itemsPerPage;
-            const pageData = ARCHIVE_DATA.slice(start, end);
+            const start = (currentPage - 1) * CONFIG.itemsPerPage;
+            const end = start + CONFIG.itemsPerPage;
+            const pageData = DATA.slice(start, end);
 
             pageData.forEach(item => {
-                const card = `
-                    <a href="${item.link}" class="group block no-underline text-current">
-                        <div class="aspect-[3/4] overflow-hidden bg-zinc-50 dark:bg-zinc-900">
-                            <img src="${item.img}" alt="${item.title}" loading="lazy"
-                                 class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out opacity-90 group-hover:opacity-100 scale-100 group-hover:scale-[1.01]">
+                const html = `
+                    <a href="${item.link}" class="item-card">
+                        <div class="img-container">
+                            <img src="${item.img}" alt="${item.title}" loading="lazy">
                         </div>
-                        <div class="py-4 uppercase ${STYLE_CONFIG.itemTitleSize} ${STYLE_CONFIG.itemTitleWeight} ${STYLE_CONFIG.navLetterSpacing}">
-                            <span>${item.title}</span>
-                        </div>
+                        <div class="item-title">${item.title}</div>
                     </a>
                 `;
-                container.insertAdjacentHTML('beforeend', card);
+                container.insertAdjacentHTML('beforeend', html);
             });
-            updatePagination();
-        }
 
-        function updatePagination() {
-            const totalPages = Math.ceil(ARCHIVE_DATA.length / STYLE_CONFIG.itemsPerPage);
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
-            const pageInfo = document.getElementById('page-info');
-
-            prevBtn.innerText = "Prev";
-            nextBtn.innerText = "Next";
-            
-            const btnClass = `page-btn hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
-            prevBtn.className = btnClass;
-            nextBtn.className = btnClass;
-
-            prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
-            pageInfo.innerText = totalPages > 0 ? `${currentPage} / ${totalPages}` : "0 / 0";
+            const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage);
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages || totalPages === 0;
+            document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
         }
 
         function prevPage() {
             if (currentPage > 1) {
                 currentPage--;
-                renderGallery();
+                render();
                 window.scrollTo({top: 0, behavior: 'instant'});
             }
         }
 
         function nextPage() {
-            const totalPages = Math.ceil(ARCHIVE_DATA.length / STYLE_CONFIG.itemsPerPage);
+            const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage);
             if (currentPage < totalPages) {
                 currentPage++;
-                renderGallery();
+                render();
                 window.scrollTo({top: 0, behavior: 'instant'});
             }
         }
 
-        function initApp() {
-            const brand = document.getElementById('nav-brand');
-            const brandLink = document.getElementById('nav-brand-link');
-            const desktopLinks = document.getElementById('desktop-links');
-            const mobileLinks = document.getElementById('mobile-links');
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 填充链接
+            const desktop = document.getElementById('desktop-links');
+            const mobile = document.getElementById('mobile-menu');
+            
+            CONFIG.links.forEach(link => {
+                const a1 = document.createElement('a');
+                a1.href = link.url;
+                a1.innerText = link.name;
+                desktop.appendChild(a1);
 
-            brand.className = `${STYLE_CONFIG.logoSize} ${STYLE_CONFIG.logoWeight}`;
-            brand.innerText = NAVBAR_CONFIG.leftText;
-            brandLink.href = NAVBAR_CONFIG.leftLink;
-
-            NAVBAR_CONFIG.links.forEach(link => {
-                const dLink = document.createElement('a');
-                dLink.href = link.url;
-                dLink.innerText = link.name;
-                dLink.className = `hover:opacity-40 transition-opacity no-underline text-current ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
-                desktopLinks.appendChild(dLink);
-
-                const mLink = document.createElement('a');
-                mLink.href = link.url;
-                mLink.innerText = link.name;
-                mLink.className = `no-underline text-current ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing} py-1`;
-                mLink.onclick = toggleMenu;
-                mobileLinks.appendChild(mLink);
+                const a2 = document.createElement('a');
+                a2.href = link.url;
+                a2.innerText = link.name;
+                a2.onclick = toggleMenu;
+                mobile.appendChild(a2);
             });
 
-            renderGallery();
+            render();
             document.getElementById('year').innerText = new Date().getFullYear();
-        }
-
-        menuBtn.addEventListener('click', toggleMenu);
-        // 使用更稳妥的 DOMContent 加载监听
-        window.addEventListener('DOMContentLoaded', initApp);
+        });
     </script>
 </body>
 </html>
