@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Product Detail - ApparEdit v0.8.9</title>
+    <title>Product Detail - ApparEdit v0.9.0</title>
     
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEditPDP v0.8.9 
+        /* 版本: ApparEditPDP v0.9.0 
            更新内容: 
-           1. 左侧增加至 7 张滚动图片
-           2. 右侧增加多样化的占位图 (正方形/横向/纵向)
-           3. 增加填充文本，测试长页面滚动效果
+           1. 宽屏垂直滚动，窄屏水平滚动
+           2. 新增图片 Captions 说明文字
+           3. 新增底部缩略图导航 (Thumbs)
+           4. 全响应式布局填充优化
         */
 
         :root {
@@ -131,34 +132,91 @@
             }
         }
 
-        /* 左侧：图片画廊 */
-        .product-gallery {
+        /* 左侧：图片画廊容器 */
+        .gallery-wrapper {
             position: relative;
-            flex: 1.6; 
+            flex: 1.6;
             display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none; 
+            flex-direction: column;
             background-color: var(--bg-color);
+            overflow: hidden;
+        }
+
+        .product-gallery {
+            flex-grow: 1;
+            display: flex;
+            overflow-x: auto; /* 窄屏默认左右 */
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         .product-gallery::-webkit-scrollbar { display: none; }
+
+        @media (min-width: 768px) {
+            .product-gallery {
+                flex-direction: column;
+                overflow-x: hidden;
+                overflow-y: auto; /* 宽屏上下滑动 */
+                scroll-snap-type: y mandatory;
+            }
+        }
 
         .gallery-item {
             min-width: 100%;
             height: 60vh; 
-            scroll-snap-align: center;
+            scroll-snap-align: start;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
         @media (min-width: 768px) {
-            .gallery-item { height: 100%; }
+            .gallery-item { min-height: 100%; height: 100%; }
         }
         .gallery-item img {
-            width: 100%;
-            height: 100%;
+            max-width: 100%;
+            max-height: 85%; /* 留出空间给 caption */
             object-fit: contain;
         }
+
+        /* Caption 文字 */
+        .img-caption {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-color);
+        }
+
+        /* 底部缩略图导航 (Thumbs) */
+        .gallery-nav {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 var(--grid-gap);
+            border-top: 1px solid var(--border-color);
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .gallery-nav::-webkit-scrollbar { display: none; }
+        .thumb {
+            width: 30px;
+            height: 40px;
+            background-color: #f0f0f0;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            opacity: 0.5;
+        }
+        .thumb.active { border-color: var(--text-color); opacity: 1; }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
         /* 右侧：详细信息/文字说明 */
         .info-sidebar {
@@ -182,7 +240,7 @@
             margin: 0 auto;
         }
 
-        /* 模拟多样化占位图片 */
+        /* 响应式占位图片 */
         .img-placeholder {
             width: 100%;
             background-color: #f6f6f6;
@@ -191,10 +249,12 @@
             align-items: center;
             justify-content: center;
             border: 1px solid var(--border-color);
+            overflow: hidden;
         }
+        .img-placeholder img { width: 100%; height: 100%; object-fit: cover; }
         .img-square { aspect-ratio: 1 / 1; }
         .img-landscape { aspect-ratio: 16 / 9; }
-        .img-portrait { aspect-ratio: 3 / 4; width: 80%; margin-left: auto; margin-right: auto; }
+        .img-portrait { aspect-ratio: 3 / 4; width: 85%; margin: 0 auto 40px auto; }
 
         @media (prefers-color-scheme: dark) {
             .img-placeholder { background-color: #0a0a0a; }
@@ -241,45 +301,45 @@
     <div id="mobile-menu"></div>
 
     <main>
-        <!-- 左侧：图片滚动 (共7张) -->
-        <div class="product-gallery" id="image-gallery">
-            <!-- 由 JS 渲染 -->
+        <!-- 左侧：图片区域 + 缩略图 -->
+        <div class="gallery-wrapper">
+            <div class="product-gallery" id="image-gallery">
+                <!-- 由 JS 渲染图片和 Captions -->
+            </div>
+            <!-- 底部缩略图导航 -->
+            <div class="gallery-nav" id="gallery-thumbs">
+                <!-- 由 JS 渲染 -->
+            </div>
         </div>
 
         <!-- 右侧：丰富的信息区块 -->
         <aside class="info-sidebar">
             <div class="sidebar-content">
                 
-                <span class="section-label">Archive No. 089</span>
-                <!-- 正方形主图占位 -->
+                <span class="section-label">Contextual Research</span>
                 <div class="img-placeholder img-square">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <img src="https://placehold.co/800x800/eee/999?text=Context+Image+A" alt="Research">
                 </div>
 
                 <div class="text-block">
                     <p>The Federation of German-American Clubs (Verband Deutsch-Amerikanischer Clubs) was founded in 1948 and currently consists of 31 local clubs from all over Germany. The Federation is committed to fostering cultural exchange and cooperation between the U.S. and Germany. Student- and youth exchange programs belong to their projects.</p>
                 </div>
 
-                <!-- 横向图片占位 -->
+                <span class="section-label">Graphic Archive</span>
                 <div class="img-placeholder img-landscape">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <img src="https://placehold.co/1200x675/eee/999?text=Historical+Archive" alt="Research">
                 </div>
 
                 <div class="text-block">
-                    <p>The German-American Friendship Garden in Washington, DC stands as a symbol of the positive and cooperative relations between the United States of America and the Federal Republic of Germany. It serves as a living monument to the millions of German immigrants who helped shape the American landscape.</p>
-                    
-                    <p>Cultural resonance is achieved through the intersection of brutalist aesthetics and delicate legal typography. Each garment functions as a wearable archive, documenting the friction between state authority and individual expression.</p>
+                    <p>The German-American Friendship Garden in Washington, DC stands as a symbol of the positive and cooperative relations between the United States of America and the Federal Republic of Germany.</p>
                 </div>
 
-                <!-- 纵向图片占位 -->
                 <div class="img-placeholder img-portrait">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <img src="https://placehold.co/600x800/eee/999?text=Typeface+Study" alt="Research">
                 </div>
 
                 <div class="text-block">
-                    <p>German Americans (German: Deutschamerikaner) are citizens of the United States of German ancestry and form the largest ancestry group in the United States, accounting for 17 percent of US population. Over 50 million people in the United States identify German as their ancestry.</p>
-                    
-                    <p>Final considerations: The ApparEdit system remains in constant beta. Version 0.8.9 introduces deeper grid integration and refined lateral navigation. The archive is never complete.</p>
+                    <p>German Americans (German: Deutschamerikaner) are citizens of the United States of German ancestry and form the largest ancestry group in the United States, accounting for 17 percent of US population.</p>
                 </div>
 
             </div>
@@ -289,18 +349,17 @@
     <script>
         const PRODUCT_DATA = {
             images: [
-                "https://placehold.co/1200x1600/000/fff?text=PRIMARY+VIEW",
-                "https://placehold.co/1200x1600/111/fff?text=DETAIL+01",
-                "https://placehold.co/1200x1600/222/fff?text=DETAIL+02",
-                "https://placehold.co/1200x1600/333/fff?text=DETAIL+03",
-                "https://placehold.co/1200x1600/444/fff?text=DETAIL+04",
-                "https://placehold.co/1200x1600/555/fff?text=DETAIL+05",
-                "https://placehold.co/1200x1600/666/fff?text=BACK+VIEW"
+                { src: "https://placehold.co/1200x1600/000/fff?text=PRIMARY+VIEW", caption: "Figure 1: Front Elevation" },
+                { src: "https://placehold.co/1200x1600/111/fff?text=DETAIL+01", caption: "Figure 2: Shoulder Construction" },
+                { src: "https://placehold.co/1200x1600/222/fff?text=DETAIL+02", caption: "Figure 3: Typography Detail" },
+                { src: "https://placehold.co/1200x1600/333/fff?text=DETAIL+03", caption: "Figure 4: Fabric Texture" },
+                { src: "https://placehold.co/1200x1600/444/fff?text=DETAIL+04", caption: "Figure 5: Interior Labeling" },
+                { src: "https://placehold.co/1200x1600/555/fff?text=BACK+VIEW", caption: "Figure 6: Rear Elevation" }
             ]
         };
 
         const CONFIG = {
-            version: "v0.8.9", 
+            version: "v0.9.0", 
             currentPageUrl: "https://apparedit.neuepoor.com/pdp", 
             links: [
                 { name: "CATEGORY", url: "https://neuepoor.com/library/" },
@@ -308,6 +367,47 @@
                 { name: "INFO", url: "https://neuepoor.com/contacts/" }
             ]
         };
+
+        const gallery = document.getElementById('image-gallery');
+        const thumbsContainer = document.getElementById('gallery-thumbs');
+
+        function renderGallery() {
+            // 渲染主图和 Caption
+            gallery.innerHTML = PRODUCT_DATA.images.map((img, idx) => `
+                <div class="gallery-item" id="gallery-item-${idx}">
+                    <img src="${img.src}" alt="${img.caption}" loading="lazy">
+                    <div class="img-caption">${img.caption}</div>
+                </div>
+            `).join('');
+
+            // 渲染缩略图
+            thumbsContainer.innerHTML = PRODUCT_DATA.images.map((img, idx) => `
+                <div class="thumb ${idx === 0 ? 'active' : ''}" data-index="${idx}">
+                    <img src="${img.src}" alt="thumb">
+                </div>
+            `).join('');
+
+            // 缩略图点击事件
+            document.querySelectorAll('.thumb').forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    const index = thumb.getAttribute('data-index');
+                    const target = document.getElementById(`gallery-item-${index}`);
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' });
+                });
+            });
+        }
+
+        // 监听滚动以更新缩略图状态
+        gallery.addEventListener('scroll', () => {
+            const index = Math.round(
+                window.innerWidth < 768 
+                ? gallery.scrollLeft / gallery.offsetWidth 
+                : gallery.scrollTop / gallery.offsetHeight
+            );
+            document.querySelectorAll('.thumb').forEach((t, i) => {
+                t.classList.toggle('active', i === index);
+            });
+        });
 
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -326,18 +426,8 @@
             }
         }
 
-        menuToggle.addEventListener('click', toggleMenu);
-
-        function renderGallery() {
-            const gallery = document.getElementById('image-gallery');
-            gallery.innerHTML = PRODUCT_DATA.images.map(imgSrc => `
-                <div class="gallery-item">
-                    <img src="${imgSrc}" alt="Product Image" loading="lazy">
-                </div>
-            `).join('');
-        }
-
         function init() {
+            menuToggle.addEventListener('click', toggleMenu);
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
             
