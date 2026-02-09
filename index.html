@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archive - ApparEdit v0.8.2</title>
+    <title>Archive - ApparEdit v0.8.3</title>
     
-    <!-- Favicon 配置 -->
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEdit v0.8.2 
+        /* 版本: ApparEdit v0.8.3 
            更新内容: 
-           1. 增加导航栏 "Active" (当前页面) 样式识别逻辑
-           2. 当链接指向当前页面时，应用低透明度并禁用点击效果
+           1. 优化移动端页脚层级，翻页按钮移至版权信息上方
+           2. 移除移动端 active 状态的删除线，统一使用透明度标识
+           3. 修正 CSS 语法结构
         */
 
         :root {
@@ -84,49 +84,38 @@
             letter-spacing: -0.02em;
             text-decoration: none;
             color: inherit;
-            white-space: nowrap;
-        }
-
-        @media (min-width: 768px) {
-            .brand { font-size: 20px; }
         }
 
         .nav-links {
             display: none; 
             gap: 25px;
-            text-transform: capitalize; 
-            font-size: 11px;
+            text-transform: uppercase; 
+            font-size: 10px;
             letter-spacing: 0.05em; 
-            font-weight: 400; 
         }
 
         @media (min-width: 768px) {
             .nav-links { display: flex; align-items: center; }
+            .brand { font-size: 20px; }
         }
 
         .nav-links a {
             text-decoration: none;
             color: inherit;
             transition: opacity 0.3s;
-            position: relative;
         }
 
         .nav-links a:hover { opacity: 0.4; }
 
-        /* --- 当前页面链接样式 --- */
-        .nav-links a.active {
-            opacity: 0.25;      /* 颜色变淡，表示不可选 */
-            cursor: default;     /* 鼠标形状保持普通 */
-            pointer-events: none; /* 彻底禁用点击 */
-        }
-        
-        /* 移动端菜单激活样式 */
+        /* 当前页面高亮样式 */
+        .nav-links a.active, 
         #mobile-menu a.active {
-            opacity: 0.3;
-            text-decoration: line-through; /* 或者你可以改为加粗，这里用了删除线这种个性的表达方式 */
+            opacity: 0.25;
+            cursor: default;
             pointer-events: none;
         }
 
+        /* 移动端菜单按钮 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -179,8 +168,7 @@
 
         #mobile-menu a {
             font-size: 14px;
-            text-transform: capitalize;
-            font-weight: 400;
+            text-transform: uppercase;
             text-decoration: none;
             color: inherit;
         }
@@ -190,8 +178,6 @@
             margin-top: var(--nav-h); 
             padding: var(--grid-gap); 
             flex-grow: 1;
-            width: 100%;
-            max-width: none; 
         }
 
         .archive-grid {
@@ -210,14 +196,12 @@
             text-decoration: none;
             color: inherit;
             display: block;
-            width: 100%;
         }
 
         .img-container {
             aspect-ratio: 3 / 4; 
             background-color: var(--border-color);
             overflow: hidden;
-            width: 100%;
         }
 
         .img-container img {
@@ -229,29 +213,27 @@
         }
 
         .item-card:hover img {
-            transform: scale(1.01);
+            transform: scale(1.02);
         }
 
         .item-title {
             padding: 12px 0 30px;
             font-size: 11px;
             letter-spacing: 0.02em;
-            font-weight: 400; 
         }
 
-        /* 页脚 */
+        /* 页脚布局优化 */
         footer {
             padding: 40px var(--grid-gap);
             display: flex;
-            flex-direction: column-reverse; 
-            gap: 30px;
+            flex-direction: column; /* 移动端：翻页在上，版权在下 */
+            gap: 20px;
             border-top: 1px solid var(--border-color);
-            width: 100%;
         }
 
         @media (min-width: 768px) {
             footer {
-                flex-direction: row; 
+                flex-direction: row-reverse; /* 桌面端：翻页在右，版权在左 */
                 justify-content: space-between;
                 align-items: center;
             }
@@ -259,7 +241,6 @@
 
         .copyright {
             font-size: 10px;
-            font-weight: 400;
             color: var(--muted-color);
             letter-spacing: 0.02em;
         }
@@ -269,7 +250,6 @@
             gap: 20px;
             align-items: center;
             font-size: 11px;
-            font-weight: 400;
         }
 
         .page-btn {
@@ -280,7 +260,6 @@
             padding: 5px 0;
             transition: 0.3s;
             font-size: 11px;
-            font-weight: 400;
             border-bottom: 1px solid transparent;
         }
 
@@ -319,10 +298,11 @@
     </main>
 
     <footer>
+        <!-- 翻页容器：在移动端由于 flex-direction: column，它会显示在上面 -->
         <div class="pagination-container">
-            <button id="prev-btn" class="page-btn">Previous</button>
+            <button id="prev-btn" class="page-btn">PREV</button>
             <span id="page-info" class="page-info"></span>
-            <button id="next-btn" class="page-btn">Next</button>
+            <button id="next-btn" class="page-btn">NEXT</button>
         </div>
 
         <div class="copyright">
@@ -331,54 +311,23 @@
     </footer>
 
     <script>
-        /* =========================================
-           🚀 小白修改区 - ApparEdit v0.8.2 🚀
-        ========================================= */
-
         const CONFIG = {
-            version: "v0.8.2", 
+            version: "v0.8.3", 
             itemsPerPage: 12, 
-            // 当前页面的链接关键字（用于高亮识别）
             currentPageUrl: "https://apparedit.neuepoor.com/", 
             links: [
-                { name: "Category", url: "https://neuepoor.com/library/" },
-                { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
-                { name: "Info", url: "https://neuepoor.com/contacts/" }
+                { name: "CATEGORY", url: "https://neuepoor.com/library/" },
+                { name: "APPAREDIT", url: "https://apparedit.neuepoor.com/" },
+                { name: "INFO", url: "https://neuepoor.com/contacts/" }
             ]
         };
 
-        const DATA = [
-            { id: 30, title: "ITEM 030", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
-            { id: 29, title: "ITEM 029", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+29" },
-            { id: 28, title: "ITEM 028", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+28" },
-            { id: 27, title: "ITEM 027", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+27" },
-            { id: 26, title: "ITEM 026", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+26" },
-            { id: 25, title: "ITEM 025", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+25" },
-            { id: 24, title: "ITEM 024", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+24" },
-            { id: 23, title: "ITEM 023", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+23" },
-            { id: 22, title: "ITEM 022", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+22" },
-            { id: 21, title: "ITEM 021", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+21" },
-            { id: 20, title: "ITEM 020", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+20" },
-            { id: 19, title: "ITEM 019", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+19" },
-            { id: 18, title: "ITEM 018", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+18" },
-            { id: 17, title: "ITEM 017", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+17" },
-            { id: 16, title: "ITEM 016", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
-            { id: 15, title: "ITEM 015", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
-            { id: 14, title: "ITEM 014", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+14" },
-            { id: 13, title: "ITEM 013", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+13" },
-            { id: 12, title: "ITEM 012", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+12" },
-            { id: 11, title: "ITEM 011", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+11" },
-            { id: 10, title: "ITEM 010", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+10" },
-            { id: 9, title: "ITEM 009", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+09" },
-            { id: 8, title: "ITEM 008", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+08" },
-            { id: 7, title: "ITEM 007", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+07" },
-            { id: 6, title: "ITEM 006", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+06" },
-            { id: 5, title: "ITEM 005", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+05" },
-            { id: 4, title: "ITEM 004", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+04" },
-            { id: 3, title: "ITEM 003", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+03" },
-            { id: 2, title: "ITEM 002", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+02" },
-            { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+01" }
-        ];
+        const DATA = Array.from({length: 30}, (_, i) => ({
+            id: 30 - i,
+            title: `ITEM ${(30 - i).toString().padStart(3, '0')}`,
+            link: "#",
+            img: i === 0 ? "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" : `https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+${30-i}`
+        }));
 
         let currentPage = 1;
         const menuToggle = document.getElementById('menu-toggle');
@@ -415,7 +364,7 @@
                 card.className = "item-card";
                 card.innerHTML = `
                     <div class="img-container">
-                        <img src="${item.img}" alt="${item.title}" loading="lazy" onerror="this.src='https://placehold.co/600x800?text=No+Image'">
+                        <img src="${item.img}" alt="${item.title}" loading="lazy">
                     </div>
                     <div class="item-title">${item.title}</div>
                 `;
@@ -432,23 +381,19 @@
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
             
-            // 改进的导航渲染逻辑
             CONFIG.links.forEach(link => {
-                // 判断当前循环到的链接是否是当前页面
-                const isCurrentPage = link.url === CONFIG.currentPageUrl;
+                const isCurrent = link.url === CONFIG.currentPageUrl;
 
-                // 渲染桌面端
                 const dLink = document.createElement('a');
                 dLink.href = link.url;
                 dLink.innerText = link.name;
-                if(isCurrentPage) dLink.classList.add('active'); // 加入高亮类
+                if(isCurrent) dLink.classList.add('active');
                 desktop.appendChild(dLink);
 
-                // 渲染移动端
                 const mLink = document.createElement('a');
                 mLink.href = link.url;
                 mLink.innerText = link.name;
-                if(isCurrentPage) mLink.classList.add('active'); // 加入高亮类
+                if(isCurrent) mLink.classList.add('active');
                 mLink.onclick = toggleMenu;
                 mobile.appendChild(mLink);
             });
@@ -464,8 +409,7 @@
             });
 
             document.getElementById('next-btn').addEventListener('click', () => {
-                const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage);
-                if (currentPage < totalPages) {
+                if (currentPage < Math.ceil(DATA.length / CONFIG.itemsPerPage)) {
                     currentPage++;
                     renderItems();
                     window.scrollTo({top: 0, behavior: 'auto'});
