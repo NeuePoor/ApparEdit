@@ -4,107 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive - PoorLeaglGuy</title>
+    <!-- 核心样式：防止 CDN 失效 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'media', 
-        }
-    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         
+        /* 强制覆盖：防止脚本加载前样式崩坏 */
         body {
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.2s ease;
-            cursor: crosshair;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
 
+        /* 导航栏固定位置修复 */
+        nav {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999 !important;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        @media (prefers-color-scheme: dark) {
+            nav { background-color: rgba(0, 0, 0, 0.9); }
+        }
+
+        /* 网格布局强制修复 */
         .archive-grid {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
+            display: grid !important;
+            grid-template-columns: 1fr;
             gap: 15px;
+            padding: 0 1rem;
         }
-
         @media (min-width: 1024px) {
             .archive-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(2, 1fr) !important;
                 gap: 20px;
+                padding: 0 1.5rem;
             }
         }
 
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
+        /* 移动端菜单初始化隐藏 */
         #mobile-menu {
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
             transform: translateY(-100%);
+            transition: transform 0.4s ease;
+            z-index: 9998;
         }
         #mobile-menu.active {
             transform: translateY(0);
         }
 
+        /* 分页按钮禁用状态 */
         .page-btn:disabled {
-            opacity: 0.1;
-            cursor: not-allowed;
+            opacity: 0.05 !important;
+            cursor: not-allowed !important;
         }
+
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-4 md:p-6 bg-white text-black dark:bg-black dark:text-white min-h-screen flex flex-col">
+<body class="bg-white text-black dark:bg-black dark:text-white min-h-screen flex flex-col">
 
     <!-- 
       【小白更新指南】
       1. 修改网站标题：修改 NAVBAR_CONFIG 里的 leftText。
-      2. 修改导航链接：修改 NAVBAR_CONFIG 里的 links 数组，改名字(name)和链接(url)。
-      3. 添加图片：在 ARCHIVE_DATA 数组中按格式添加新行。
+      2. 修改导航链接：修改 NAVBAR_CONFIG 里的 links 数组。
+      3. 添加图片：在 ARCHIVE_DATA 数组中添加新项。
     -->
 
     <script>
         // --------------------------------------------------
-        // 1. 样式与视觉配置 (修改双引号内的内容即可)
+        // 1. 样式配置
         // --------------------------------------------------
         const STYLE_CONFIG = {
-            fontFamily: "'Inter', sans-serif",
             logoSize: "text-lg md:text-xl", 
             logoWeight: "font-bold",
             navTextSize: "text-[11px] md:text-xs",
             navLetterSpacing: "tracking-widest",
             itemTitleSize: "text-[11px] md:text-xs",
-            itemTitleWeight: "font-medium",
-            itemsPerPage: 12 // 每一页显示的图片数量
+            itemsPerPage: 10 // 每页显示数量
         };
 
         // --------------------------------------------------
-        // 2. 导航栏链接配置 (小白请看这里)
+        // 2. 导航链接
         // --------------------------------------------------
         const NAVBAR_CONFIG = {
-            // [左侧Logo文字]
             leftText: "PoorLeaglGuy",
-            // [左侧Logo点击跳转的链接] (通常设为 "index.html" 或 "/")
-            leftLink: "neuepoor.com", 
-            
-            // [右侧菜单项列表]
-            // 注意：每一项后面都要有逗号，最后一项除外
+            leftLink: "https://neuepoor.com", 
             links: [
-                { name: "Category",   url: "https://neuepoor.com/library/" }, // 修改 name 为显示文字，url 为链接地址
+                { name: "Category",   url: "https://neuepoor.com/library/" },
                 { name: "ApparEdit",  url: "index.html" },
                 { name: "INFO",       url: "https://neuepoor.com/contacts/" }
             ]
         };
 
         // --------------------------------------------------
-        // 3. 数据维护区 (图片与作品)
+        // 3. 数据池 (系统会自动分页，放心往里加)
         // --------------------------------------------------
         const ARCHIVE_DATA = [
-            // 格式示例：{ id: 序号, title: "标题", link: "点击跳转链接", img: "图片地址" },
             { id: 16, title: "ITEM 016", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 15, title: "ITEM 015", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 14, title: "ITEM 014", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=14" },
             { id: 13, title: "ITEM 013", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=13" },
-            { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=1" },
-            { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=1" },
-            { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=1" },
-            { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=1" },
             { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=1" },
             { id: 2, title: "ITEM 002", link: "#", img: "https://placehold.co/1200x1600/dddddd/888888?text=2" },
             { id: 3, title: "ITEM 003", link: "#", img: "https://placehold.co/1200x1600/cccccc/777777?text=3" },
@@ -112,21 +120,26 @@
             { id: 5, title: "ITEM 005", link: "#", img: "https://placehold.co/1200x1600/aaaaaa/555555?text=5" },
             { id: 6, title: "ITEM 006", link: "#", img: "https://placehold.co/1200x1600/999999/444444?text=6" },
             { id: 7, title: "ITEM 007", link: "#", img: "https://placehold.co/1200x1600/888888/333333?text=7" },
-            { id: 8, title: "ITEM 008", link: "#", img: "https://placehold.co/1200x1600/777777/222222?text=8" }
+            { id: 8, title: "ITEM 008", link: "#", img: "https://placehold.co/1200x1600/777777/222222?text=8" },
+            { id: 9, title: "ITEM 009", link: "#", img: "https://placehold.co/1200x1600/777777/222222?text=9" }
         ];
 
         let currentPage = 1;
     </script>
 
     <!-- 导航栏 -->
-    <nav class="fixed top-0 left-0 w-full bg-white/90 dark:bg-black/90 backdrop-blur-sm z-[100] px-4 py-3 md:px-6 md:py-4">
-        <div class="flex justify-between items-center">
-            <a id="nav-brand-link" href="#">
-                <div id="nav-brand" class="uppercase tracking-tighter"></div>
+    <nav class="px-4 py-4 md:px-6 md:py-6">
+        <div class="flex justify-between items-center max-w-full">
+            <a id="nav-brand-link" href="#" class="no-underline text-current">
+                <div id="nav-brand" class="uppercase tracking-tighter whitespace-nowrap"></div>
             </a>
+            
             <div class="flex items-center">
-                <div id="desktop-links" class="hidden md:flex gap-8 uppercase"></div>
-                <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 focus:outline-none p-2">
+                <!-- PC端链接 -->
+                <div id="desktop-links" class="hidden md:flex gap-10 uppercase items-center"></div>
+                
+                <!-- 移动端汉堡包 -->
+                <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 focus:outline-none p-2 relative z-[10000]">
                     <span class="w-5 h-px bg-current transition-all"></span>
                     <span class="w-5 h-px bg-current transition-all"></span>
                 </button>
@@ -134,26 +147,26 @@
         </div>
     </nav>
 
-    <!-- 移动端菜单 -->
-    <div id="mobile-menu" class="fixed top-0 left-0 w-full bg-white dark:bg-black z-[90] pt-20 pb-8 px-4 border-b border-zinc-100 dark:border-zinc-900 md:hidden">
-        <div id="mobile-links" class="flex flex-col gap-5 uppercase"></div>
+    <!-- 移动端菜单内容 -->
+    <div id="mobile-menu" class="bg-white dark:bg-black pt-24 pb-12 px-4 border-b border-zinc-100 dark:border-zinc-900 md:hidden">
+        <div id="mobile-links" class="flex flex-col gap-6 uppercase"></div>
     </div>
 
-    <!-- 存档网格 -->
-    <main id="archive-container" class="archive-grid mt-16 md:mt-20 flex-grow">
-        <!-- JS 动态渲染图片 -->
+    <!-- 存档网格主体 -->
+    <main id="archive-container" class="archive-grid mt-24 md:mt-32 flex-grow">
+        <!-- JS 渲染内容 -->
     </main>
 
-    <!-- 页脚 -->
-    <footer class="mt-20 mb-10 flex justify-between items-baseline px-2">
+    <!-- 页脚：版权 + 分页 -->
+    <footer class="mt-20 mb-12 flex justify-between items-center px-4 md:px-6 border-t border-zinc-100 dark:border-zinc-900 pt-8">
         <div class="text-[9px] uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-600">
             &copy; <span id="year"></span> PoorLeaglGuy Archive
         </div>
         
-        <div id="pagination" class="flex gap-6 items-baseline uppercase">
-            <button onclick="prevPage()" id="prev-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
-            <span id="page-info" class="text-[9px] tracking-widest opacity-40"></span>
-            <button onclick="nextPage()" id="next-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
+        <div id="pagination-ui" class="flex items-center gap-6">
+            <button onclick="prevPage()" id="prev-btn" class="page-btn p-2 hover:opacity-40 transition-opacity"></button>
+            <span id="page-info" class="text-[10px] tracking-widest opacity-40 uppercase"></span>
+            <button onclick="nextPage()" id="next-btn" class="page-btn p-2 hover:opacity-40 transition-opacity"></button>
         </div>
     </footer>
 
@@ -180,12 +193,12 @@
 
             pageData.forEach(item => {
                 const card = `
-                    <a href="${item.link}" class="group block no-underline text-current">
-                        <div class="aspect-[3/4] overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+                    <a href="${item.link}" class="group block no-underline text-current mb-8">
+                        <div class="aspect-[3/4] overflow-hidden bg-zinc-50 dark:bg-zinc-900">
                             <img src="${item.img}" alt="${item.title}" loading="lazy"
                                  class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out opacity-90 group-hover:opacity-100 scale-100 group-hover:scale-[1.01]">
                         </div>
-                        <div class="py-3 uppercase ${STYLE_CONFIG.itemTitleSize} ${STYLE_CONFIG.itemTitleWeight} ${STYLE_CONFIG.navLetterSpacing}">
+                        <div class="py-4 uppercase ${STYLE_CONFIG.itemTitleSize} tracking-widest font-medium">
                             <span>${item.title}</span>
                         </div>
                     </a>
@@ -202,9 +215,11 @@
             const pageInfo = document.getElementById('page-info');
 
             prevBtn.innerText = "<";
-            prevBtn.className = `page-btn hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
             nextBtn.innerText = ">";
-            nextBtn.className = `page-btn hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
+            
+            const btnClass = `page-btn hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
+            prevBtn.className = btnClass;
+            nextBtn.className = btnClass;
 
             prevBtn.disabled = currentPage === 1;
             nextBtn.disabled = currentPage === totalPages || totalPages === 0;
@@ -215,7 +230,7 @@
             if (currentPage > 1) {
                 currentPage--;
                 renderGallery();
-                window.scrollTo({top: 0, behavior: 'smooth'});
+                window.scrollTo({top: 0, behavior: 'instant'});
             }
         }
 
@@ -224,7 +239,7 @@
             if (currentPage < totalPages) {
                 currentPage++;
                 renderGallery();
-                window.scrollTo({top: 0, behavior: 'smooth'});
+                window.scrollTo({top: 0, behavior: 'instant'});
             }
         }
 
@@ -234,22 +249,23 @@
             const desktopLinks = document.getElementById('desktop-links');
             const mobileLinks = document.getElementById('mobile-links');
 
-            document.body.style.fontFamily = STYLE_CONFIG.fontFamily;
             brand.className = `${STYLE_CONFIG.logoSize} ${STYLE_CONFIG.logoWeight}`;
             brand.innerText = NAVBAR_CONFIG.leftText;
             brandLink.href = NAVBAR_CONFIG.leftLink;
 
             NAVBAR_CONFIG.links.forEach(link => {
+                // PC
                 const dLink = document.createElement('a');
                 dLink.href = link.url;
                 dLink.innerText = link.name;
-                dLink.className = `hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
+                dLink.className = `hover:opacity-40 transition-opacity no-underline text-current ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
                 desktopLinks.appendChild(dLink);
 
+                // Mobile
                 const mLink = document.createElement('a');
                 mLink.href = link.url;
                 mLink.innerText = link.name;
-                mLink.className = `${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing} py-1`;
+                mLink.className = `no-underline text-current ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing} py-2`;
                 mLink.onclick = toggleMenu;
                 mobileLinks.appendChild(mLink);
             });
@@ -259,7 +275,7 @@
         }
 
         menuBtn.addEventListener('click', toggleMenu);
-        window.onload = initApp;
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
