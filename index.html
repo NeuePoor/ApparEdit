@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archive - ApparEdit v0.8.1</title>
+    <title>Archive - ApparEdit v0.8.2</title>
+    
+    <!-- Favicon 配置 -->
+    <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
+    <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
+
     <style>
-        /* 版本: ApparEdit v0.8.1 
+        /* 版本: ApparEdit v0.8.2 
            更新内容: 
-           1. 调整两侧边距，使其与图片间隙 (Gap) 大小一致
-           2. 移除 max-width 限制，实现全屏紧凑布局
+           1. 增加导航栏 "Active" (当前页面) 样式识别逻辑
+           2. 当链接指向当前页面时，应用低透明度并禁用点击效果
         */
 
         :root {
@@ -18,7 +23,7 @@
             --muted-color: #999999; 
             --nav-h: 50px;
             --nav-bg: rgba(255, 255, 255, 0.8); 
-            --grid-gap: 15px; /* 移动端间隙 */
+            --grid-gap: 15px; 
         }
 
         @media (prefers-color-scheme: dark) {
@@ -34,7 +39,7 @@
         @media (min-width: 768px) {
             :root { 
                 --nav-h: 60px; 
-                --grid-gap: 20px; /* 宽屏间隙 */
+                --grid-gap: 20px; 
             } 
         }
 
@@ -64,7 +69,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            /* 导航栏内边距也同步调整 */
             padding: 0 var(--grid-gap);
             background-color: var(--nav-bg);
             backdrop-filter: blur(10px);
@@ -104,9 +108,24 @@
             text-decoration: none;
             color: inherit;
             transition: opacity 0.3s;
+            position: relative;
         }
 
         .nav-links a:hover { opacity: 0.4; }
+
+        /* --- 当前页面链接样式 --- */
+        .nav-links a.active {
+            opacity: 0.25;      /* 颜色变淡，表示不可选 */
+            cursor: default;     /* 鼠标形状保持普通 */
+            pointer-events: none; /* 彻底禁用点击 */
+        }
+        
+        /* 移动端菜单激活样式 */
+        #mobile-menu a.active {
+            opacity: 0.3;
+            text-decoration: line-through; /* 或者你可以改为加粗，这里用了删除线这种个性的表达方式 */
+            pointer-events: none;
+        }
 
         #menu-toggle {
             display: flex;
@@ -166,14 +185,12 @@
             color: inherit;
         }
 
-        /* 内容区调整 */
+        /* 内容区 */
         main {
             margin-top: var(--nav-h); 
-            /* 设置左右 Padding 等于中间的 Gap */
             padding: var(--grid-gap); 
             flex-grow: 1;
             width: 100%;
-            /* 移除 max-width 以实现真正的左右边距一致 */
             max-width: none; 
         }
 
@@ -222,9 +239,8 @@
             font-weight: 400; 
         }
 
-        /* 页脚调整 */
+        /* 页脚 */
         footer {
-            /* 页脚内边距也同步调整 */
             padding: 40px var(--grid-gap);
             display: flex;
             flex-direction: column-reverse; 
@@ -316,15 +332,17 @@
 
     <script>
         /* =========================================
-           🚀 小白修改区 - ApparEdit v0.8.1 🚀
+           🚀 小白修改区 - ApparEdit v0.8.2 🚀
         ========================================= */
 
         const CONFIG = {
-            version: "v0.8.1", 
+            version: "v0.8.2", 
             itemsPerPage: 12, 
+            // 当前页面的链接关键字（用于高亮识别）
+            currentPageUrl: "https://apparedit.neuepoor.com/", 
             links: [
                 { name: "Category", url: "https://neuepoor.com/library/" },
-                { name: "ApparEdit", url: "index.html" },
+                { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
                 { name: "Info", url: "https://neuepoor.com/contacts/" }
             ]
         };
@@ -414,15 +432,23 @@
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
             
+            // 改进的导航渲染逻辑
             CONFIG.links.forEach(link => {
+                // 判断当前循环到的链接是否是当前页面
+                const isCurrentPage = link.url === CONFIG.currentPageUrl;
+
+                // 渲染桌面端
                 const dLink = document.createElement('a');
                 dLink.href = link.url;
                 dLink.innerText = link.name;
+                if(isCurrentPage) dLink.classList.add('active'); // 加入高亮类
                 desktop.appendChild(dLink);
 
+                // 渲染移动端
                 const mLink = document.createElement('a');
                 mLink.href = link.url;
                 mLink.innerText = link.name;
+                if(isCurrentPage) mLink.classList.add('active'); // 加入高亮类
                 mLink.onclick = toggleMenu;
                 mobile.appendChild(mLink);
             });
