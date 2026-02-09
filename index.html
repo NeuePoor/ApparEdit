@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive - PoorLeaglGuy</title>
-    <!-- 核心依赖：Tailwind CSS (确保网络正常) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,18 +11,14 @@
         }
     </script>
     <style>
-        /* 引入字体 */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
             transition: background-color 0.2s ease;
             cursor: crosshair;
-            margin: 0;
-            padding: 0;
         }
 
-        /* 基础布局固定，防止脚本失效时样式完全崩溃 */
         .archive-grid {
             display: grid;
             grid-template-columns: repeat(1, 1fr);
@@ -41,11 +36,9 @@
             display: none;
         }
 
-        /* 移动端菜单基础动画 */
         #mobile-menu {
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateY(-100%);
-            display: block !important; /* 确保脚本控制生效 */
         }
         #mobile-menu.active {
             transform: translateY(0);
@@ -54,12 +47,6 @@
         .page-btn:disabled {
             opacity: 0.1;
             cursor: not-allowed;
-        }
-
-        /* 确保导航栏始终可见 */
-        nav {
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
         }
     </style>
 </head>
@@ -93,12 +80,13 @@
         const NAVBAR_CONFIG = {
             // [左侧Logo文字]
             leftText: "PoorLeaglGuy",
-            // [左侧Logo点击跳转的链接] (注意：外部链接必须带 https://)
-            leftLink: "https://neuepoor.com", 
+            // [左侧Logo点击跳转的链接] (通常设为 "index.html" 或 "/")
+            leftLink: "neuepoor.com", 
             
             // [右侧菜单项列表]
+            // 注意：每一项后面都要有逗号，最后一项除外
             links: [
-                { name: "Category",   url: "https://neuepoor.com/library/" }, 
+                { name: "Category",   url: "https://neuepoor.com/library/" }, // 修改 name 为显示文字，url 为链接地址
                 { name: "ApparEdit",  url: "index.html" },
                 { name: "INFO",       url: "https://neuepoor.com/contacts/" }
             ]
@@ -108,6 +96,7 @@
         // 3. 数据维护区 (图片与作品)
         // --------------------------------------------------
         const ARCHIVE_DATA = [
+            // 格式示例：{ id: 序号, title: "标题", link: "点击跳转链接", img: "图片地址" },
             { id: 16, title: "ITEM 016", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 15, title: "ITEM 015", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 14, title: "ITEM 014", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=14" },
@@ -126,53 +115,49 @@
     </script>
 
     <!-- 导航栏 -->
-    <nav class="fixed top-0 left-0 w-full bg-white/90 dark:bg-black/90 z-[100] px-4 py-3 md:px-6 md:py-4">
-        <div class="flex justify-between items-center max-w-full overflow-hidden">
+    <nav class="fixed top-0 left-0 w-full bg-white/90 dark:bg-black/90 backdrop-blur-sm z-[100] px-4 py-3 md:px-6 md:py-4">
+        <div class="flex justify-between items-center">
             <a id="nav-brand-link" href="#">
-                <div id="nav-brand" class="uppercase tracking-tighter whitespace-nowrap"></div>
+                <div id="nav-brand" class="uppercase tracking-tighter"></div>
             </a>
             <div class="flex items-center">
-                <!-- 电脑端链接 -->
                 <div id="desktop-links" class="hidden md:flex gap-8 uppercase"></div>
-                <!-- 手机端汉堡包 -->
-                <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 focus:outline-none p-2 ml-4">
-                    <span class="w-5 h-px bg-current transition-all block"></span>
-                    <span class="w-5 h-px bg-current transition-all block"></span>
+                <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 focus:outline-none p-2">
+                    <span class="w-5 h-px bg-current transition-all"></span>
+                    <span class="w-5 h-px bg-current transition-all"></span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- 移动端菜单 -->
-    <div id="mobile-menu" class="fixed top-0 left-0 w-full h-auto bg-white dark:bg-black z-[90] pt-20 pb-8 px-4 border-b border-zinc-100 dark:border-zinc-900 md:hidden">
+    <div id="mobile-menu" class="fixed top-0 left-0 w-full bg-white dark:bg-black z-[90] pt-20 pb-8 px-4 border-b border-zinc-100 dark:border-zinc-900 md:hidden">
         <div id="mobile-links" class="flex flex-col gap-5 uppercase"></div>
     </div>
 
     <!-- 存档网格 -->
-    <main id="archive-container" class="archive-grid mt-20 md:mt-24 flex-grow">
+    <main id="archive-container" class="archive-grid mt-16 md:mt-20 flex-grow">
         <!-- JS 动态渲染图片 -->
     </main>
 
     <!-- 页脚 -->
-    <footer class="mt-20 mb-10 flex justify-between items-baseline px-2 border-t border-zinc-100 dark:border-zinc-900 pt-8">
+    <footer class="mt-20 mb-10 flex justify-between items-baseline px-2">
         <div class="text-[9px] uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-600">
             &copy; <span id="year"></span> PoorLeaglGuy Archive
         </div>
         
         <div id="pagination" class="flex gap-6 items-baseline uppercase">
-            <button onclick="prevPage()" id="prev-btn" class="page-btn hover:opacity-40 transition-opacity p-2"></button>
+            <button onclick="prevPage()" id="prev-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
             <span id="page-info" class="text-[9px] tracking-widest opacity-40"></span>
-            <button onclick="nextPage()" id="next-btn" class="page-btn hover:opacity-40 transition-opacity p-2"></button>
+            <button onclick="nextPage()" id="next-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
         </div>
     </footer>
 
     <script>
-        // 确保 DOM 加载后执行
         const menuBtn = document.getElementById('menu-toggle');
         const menuContent = document.getElementById('mobile-menu');
 
         function toggleMenu() {
-            if (!menuContent) return;
             menuContent.classList.toggle('active');
             const spans = menuBtn.querySelectorAll('span');
             spans[0].classList.toggle('rotate-45');
@@ -183,7 +168,6 @@
 
         function renderGallery() {
             const container = document.getElementById('archive-container');
-            if (!container) return;
             container.innerHTML = ""; 
 
             const start = (currentPage - 1) * STYLE_CONFIG.itemsPerPage;
@@ -193,7 +177,7 @@
             pageData.forEach(item => {
                 const card = `
                     <a href="${item.link}" class="group block no-underline text-current">
-                        <div class="aspect-[3/4] overflow-hidden bg-zinc-50 dark:bg-zinc-900">
+                        <div class="aspect-[3/4] overflow-hidden bg-zinc-50 dark:bg-zinc-950">
                             <img src="${item.img}" alt="${item.title}" loading="lazy"
                                  class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out opacity-90 group-hover:opacity-100 scale-100 group-hover:scale-[1.01]">
                         </div>
@@ -212,8 +196,6 @@
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             const pageInfo = document.getElementById('page-info');
-
-            if (!prevBtn || !nextBtn) return;
 
             prevBtn.innerText = "<";
             prevBtn.className = `page-btn hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
@@ -248,43 +230,32 @@
             const desktopLinks = document.getElementById('desktop-links');
             const mobileLinks = document.getElementById('mobile-links');
 
-            if (brand) {
-                document.body.style.fontFamily = STYLE_CONFIG.fontFamily;
-                brand.className = `${STYLE_CONFIG.logoSize} ${STYLE_CONFIG.logoWeight} uppercase tracking-tighter`;
-                brand.innerText = NAVBAR_CONFIG.leftText;
-                brandLink.href = NAVBAR_CONFIG.leftLink;
-            }
+            document.body.style.fontFamily = STYLE_CONFIG.fontFamily;
+            brand.className = `${STYLE_CONFIG.logoSize} ${STYLE_CONFIG.logoWeight}`;
+            brand.innerText = NAVBAR_CONFIG.leftText;
+            brandLink.href = NAVBAR_CONFIG.leftLink;
 
-            if (desktopLinks && mobileLinks) {
-                NAVBAR_CONFIG.links.forEach(link => {
-                    const dLink = document.createElement('a');
-                    dLink.href = link.url;
-                    dLink.innerText = link.name;
-                    dLink.className = `hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
-                    desktopLinks.appendChild(dLink);
+            NAVBAR_CONFIG.links.forEach(link => {
+                const dLink = document.createElement('a');
+                dLink.href = link.url;
+                dLink.innerText = link.name;
+                dLink.className = `hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
+                desktopLinks.appendChild(dLink);
 
-                    const mLink = document.createElement('a');
-                    mLink.href = link.url;
-                    mLink.innerText = link.name;
-                    mLink.className = `${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing} py-1`;
-                    mLink.onclick = toggleMenu;
-                    mobileLinks.appendChild(mLink);
-                });
-            }
+                const mLink = document.createElement('a');
+                mLink.href = link.url;
+                mLink.innerText = link.name;
+                mLink.className = `${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing} py-1`;
+                mLink.onclick = toggleMenu;
+                mobileLinks.appendChild(mLink);
+            });
 
             renderGallery();
-            const yearSpan = document.getElementById('year');
-            if (yearSpan) yearSpan.innerText = new Date().getFullYear();
+            document.getElementById('year').innerText = new Date().getFullYear();
         }
 
-        if (menuBtn) menuBtn.addEventListener('click', toggleMenu);
-        
-        // 使用多种加载方式确保脚本执行
-        if (document.readyState === "complete" || document.readyState === "interactive") {
-            initApp();
-        } else {
-            window.addEventListener('DOMContentLoaded', initApp);
-        }
+        menuBtn.addEventListener('click', toggleMenu);
+        window.onload = initApp;
     </script>
 </body>
 </html>
