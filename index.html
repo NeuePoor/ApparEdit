@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive - PoorLeaglGuy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'media', 
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s ease;
+            cursor: crosshair;
+        }
+
+        .archive-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 15px;
+        }
+
+        @media (min-width: 1024px) {
+            .archive-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        #mobile-menu {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-100%);
+        }
+        #mobile-menu.active {
+            transform: translateY(0);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.1;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-6 bg-white text-black dark:bg-black dark:text-white min-h-screen flex flex-col">
+
+    <!-- 
+      【小白更新指南】
+      1. 修改网站标题：修改 NAVBAR_CONFIG 里的 leftText。
+      2. 修改导航链接：修改 NAVBAR_CONFIG 里的 links 数组，改名字(name)和链接(url)。
+      3. 添加图片：在 ARCHIVE_DATA 数组中按格式添加新行。
+    -->
+
+    <script>
+        // --------------------------------------------------
+        // 1. 样式与视觉配置 (修改双引号内的内容即可)
+        // --------------------------------------------------
+        const STYLE_CONFIG = {
+            fontFamily: "'Inter', sans-serif",
+            logoSize: "text-lg md:text-xl", 
+            logoWeight: "font-bold",
+            navTextSize: "text-[11px] md:text-xs",
+            navLetterSpacing: "tracking-widest",
+            itemTitleSize: "text-[11px] md:text-xs",
+            itemTitleWeight: "font-medium",
+            itemsPerPage: 12 // 每一页显示的图片数量
+        };
+
+        // --------------------------------------------------
+        // 2. 导航栏链接配置 (小白请看这里)
+        // --------------------------------------------------
+        const NAVBAR_CONFIG = {
+            // [左侧Logo文字]
+            leftText: "PoorLeaglGuy",
+            // [左侧Logo点击跳转的链接] (通常设为 "index.html" 或 "/")
+            leftLink: "neuepoor.com", 
+            
+            // [右侧菜单项列表]
+            // 注意：每一项后面都要有逗号，最后一项除外
+            links: [
+                { name: "Category",   url: "https://neuepoor.com/library/" }, // 修改 name 为显示文字，url 为链接地址
+                { name: "ApparEdit",  url: "index.html" },
+                { name: "INFO",       url: "https://neuepoor.com/contacts/" }
+            ]
+        };
+
+        // --------------------------------------------------
+        // 3. 数据维护区 (图片与作品)
+        // --------------------------------------------------
+        const ARCHIVE_DATA = [
+            // 格式示例：{ id: 序号, title: "标题", link: "点击跳转链接", img: "图片地址" },
+            { id: 16, title: "ITEM 016", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
+            { id: 15, title: "ITEM 015", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
+            { id: 14, title: "ITEM 014", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
+            { id: 13, title: "ITEM 013", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=13" },
+            { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=1" },
+            { id: 2, title: "ITEM 002", link: "#", img: "https://placehold.co/1200x1600/dddddd/888888?text=2" },
+            { id: 3, title: "ITEM 003", link: "#", img: "https://placehold.co/1200x1600/cccccc/777777?text=3" },
+            { id: 4, title: "ITEM 004", link: "#", img: "https://placehold.co/1200x1600/bbbbbb/666666?text=4" },
+            { id: 5, title: "ITEM 005", link: "#", img: "https://placehold.co/1200x1600/aaaaaa/555555?text=5" },
+            { id: 6, title: "ITEM 006", link: "#", img: "https://placehold.co/1200x1600/999999/444444?text=6" },
+            { id: 7, title: "ITEM 007", link: "#", img: "https://placehold.co/1200x1600/888888/333333?text=7" },
+            { id: 8, title: "ITEM 008", link: "#", img: "https://placehold.co/1200x1600/777777/222222?text=8" }
+        ];
+
+        let currentPage = 1;
+    </script>
+
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 w-full bg-white/90 dark:bg-black/90 backdrop-blur-sm z-[100] px-4 py-3 md:px-6 md:py-4">
+        <div class="flex justify-between items-center">
+            <a id="nav-brand-link" href="#">
+                <div id="nav-brand" class="uppercase tracking-tighter"></div>
+            </a>
+            <div class="flex items-center">
+                <div id="desktop-links" class="hidden md:flex gap-8 uppercase"></div>
+                <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 focus:outline-none p-2">
+                    <span class="w-5 h-px bg-current transition-all"></span>
+                    <span class="w-5 h-px bg-current transition-all"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="fixed top-0 left-0 w-full bg-white dark:bg-black z-[90] pt-20 pb-8 px-4 border-b border-zinc-100 dark:border-zinc-900 md:hidden">
+        <div id="mobile-links" class="flex flex-col gap-5 uppercase"></div>
+    </div>
+
+    <!-- 存档网格 -->
+    <main id="archive-container" class="archive-grid mt-16 md:mt-20 flex-grow">
+        <!-- JS 动态渲染图片 -->
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="mt-20 mb-10 flex justify-between items-baseline px-2">
+        <div class="text-[9px] uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-600">
+            &copy; <span id="year"></span> PoorLeaglGuy Archive
+        </div>
+        
+        <div id="pagination" class="flex gap-6 items-baseline uppercase">
+            <button onclick="prevPage()" id="prev-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
+            <span id="page-info" class="text-[9px] tracking-widest opacity-40"></span>
+            <button onclick="nextPage()" id="next-btn" class="page-btn hover:opacity-40 transition-opacity"></button>
+        </div>
+    </footer>
+
+    <script>
+        const menuBtn = document.getElementById('menu-toggle');
+        const menuContent = document.getElementById('mobile-menu');
+
+        function toggleMenu() {
+            menuContent.classList.toggle('active');
+            const spans = menuBtn.querySelectorAll('span');
+            spans[0].classList.toggle('rotate-45');
+            spans[0].classList.toggle('translate-y-1');
+            spans[1].classList.toggle('-rotate-45');
+            spans[1].classList.toggle('-translate-y-px');
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('archive-container');
+            container.innerHTML = ""; 
+
+            const start = (currentPage - 1) * STYLE_CONFIG.itemsPerPage;
+            const end = start + STYLE_CONFIG.itemsPerPage;
+            const pageData = ARCHIVE_DATA.slice(start, end);
+
+            pageData.forEach(item => {
+                const card = `
+                    <a href="${item.link}" class="group block no-underline text-current">
+                        <div class="aspect-[3/4] overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+                            <img src="${item.img}" alt="${item.title}" loading="lazy"
+                                 class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out opacity-90 group-hover:opacity-100 scale-100 group-hover:scale-[1.01]">
+                        </div>
+                        <div class="py-3 uppercase ${STYLE_CONFIG.itemTitleSize} ${STYLE_CONFIG.itemTitleWeight} ${STYLE_CONFIG.navLetterSpacing}">
+                            <span>${item.title}</span>
+                        </div>
+                    </a>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(ARCHIVE_DATA.length / STYLE_CONFIG.itemsPerPage);
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const pageInfo = document.getElementById('page-info');
+
+            prevBtn.innerText = "<";
+            prevBtn.className = `page-btn hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
+            nextBtn.innerText = ">";
+            nextBtn.className = `page-btn hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            pageInfo.innerText = totalPages > 0 ? `${currentPage} / ${totalPages}` : "0 / 0";
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderGallery();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(ARCHIVE_DATA.length / STYLE_CONFIG.itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderGallery();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function initApp() {
+            const brand = document.getElementById('nav-brand');
+            const brandLink = document.getElementById('nav-brand-link');
+            const desktopLinks = document.getElementById('desktop-links');
+            const mobileLinks = document.getElementById('mobile-links');
+
+            document.body.style.fontFamily = STYLE_CONFIG.fontFamily;
+            brand.className = `${STYLE_CONFIG.logoSize} ${STYLE_CONFIG.logoWeight}`;
+            brand.innerText = NAVBAR_CONFIG.leftText;
+            brandLink.href = NAVBAR_CONFIG.leftLink;
+
+            NAVBAR_CONFIG.links.forEach(link => {
+                const dLink = document.createElement('a');
+                dLink.href = link.url;
+                dLink.innerText = link.name;
+                dLink.className = `hover:opacity-40 transition-opacity ${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing}`;
+                desktopLinks.appendChild(dLink);
+
+                const mLink = document.createElement('a');
+                mLink.href = link.url;
+                mLink.innerText = link.name;
+                mLink.className = `${STYLE_CONFIG.navTextSize} ${STYLE_CONFIG.navLetterSpacing} py-1`;
+                mLink.onclick = toggleMenu;
+                mobileLinks.appendChild(mLink);
+            });
+
+            renderGallery();
+            document.getElementById('year').innerText = new Date().getFullYear();
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        window.onload = initApp;
+    </script>
+</body>
+</html>
