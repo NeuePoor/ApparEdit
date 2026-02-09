@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archive - ApparEdit v0.8</title>
+    <title>Archive - ApparEdit v0.8.1</title>
     <style>
-        /* 版本: ApparEdit v0.8 
+        /* 版本: ApparEdit v0.8.1 
            更新内容: 
-           1. 增加大量模拟数据用于翻页功能压力测试
-           2. 维持 v0.7 的磨砂玻璃导航与视觉比例
+           1. 调整两侧边距，使其与图片间隙 (Gap) 大小一致
+           2. 移除 max-width 限制，实现全屏紧凑布局
         */
 
         :root {
@@ -18,6 +18,7 @@
             --muted-color: #999999; 
             --nav-h: 50px;
             --nav-bg: rgba(255, 255, 255, 0.8); 
+            --grid-gap: 15px; /* 移动端间隙 */
         }
 
         @media (prefers-color-scheme: dark) {
@@ -28,6 +29,13 @@
                 --muted-color: #666666;
                 --nav-bg: rgba(0, 0, 0, 0.8); 
             }
+        }
+
+        @media (min-width: 768px) {
+            :root { 
+                --nav-h: 60px; 
+                --grid-gap: 20px; /* 宽屏间隙 */
+            } 
         }
 
         * {
@@ -56,17 +64,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 15px;
+            /* 导航栏内边距也同步调整 */
+            padding: 0 var(--grid-gap);
             background-color: var(--nav-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px); 
             border-bottom: 1px solid var(--border-color);
             z-index: 10000;
-        }
-
-        @media (min-width: 768px) {
-            :root { --nav-h: 60px; } 
-            nav { padding: 0 20px; }
         }
 
         .brand {
@@ -162,30 +166,26 @@
             color: inherit;
         }
 
-        /* 内容区 */
+        /* 内容区调整 */
         main {
             margin-top: var(--nav-h); 
-            padding: 15px; 
+            /* 设置左右 Padding 等于中间的 Gap */
+            padding: var(--grid-gap); 
             flex-grow: 1;
             width: 100%;
-            max-width: 2400px; 
-            align-self: center;
-        }
-
-        @media (min-width: 768px) {
-            main { padding: 20px; } 
+            /* 移除 max-width 以实现真正的左右边距一致 */
+            max-width: none; 
         }
 
         .archive-grid {
             display: grid;
             grid-template-columns: 1fr; 
-            gap: 15px; 
+            gap: var(--grid-gap); 
         }
 
         @media (min-width: 768px) {
             .archive-grid {
                 grid-template-columns: repeat(2, 1fr); 
-                gap: 20px;
             }
         }
 
@@ -222,21 +222,19 @@
             font-weight: 400; 
         }
 
-        /* 页脚 */
+        /* 页脚调整 */
         footer {
-            padding: 30px 15px;
+            /* 页脚内边距也同步调整 */
+            padding: 40px var(--grid-gap);
             display: flex;
             flex-direction: column-reverse; 
             gap: 30px;
             border-top: 1px solid var(--border-color);
-            max-width: 2400px;
             width: 100%;
-            align-self: center;
         }
 
         @media (min-width: 768px) {
             footer {
-                padding: 40px 20px;
                 flex-direction: row; 
                 justify-content: space-between;
                 align-items: center;
@@ -318,12 +316,12 @@
 
     <script>
         /* =========================================
-           🚀 小白修改区 - ApparEdit v0.8 🚀
+           🚀 小白修改区 - ApparEdit v0.8.1 🚀
         ========================================= */
 
         const CONFIG = {
-            version: "v0.8", 
-            itemsPerPage: 12, // 你可以在这里改为 16，看一页显示 16 个的效果
+            version: "v0.8.1", 
+            itemsPerPage: 12, 
             links: [
                 { name: "Category", url: "https://neuepoor.com/library/" },
                 { name: "ApparEdit", url: "index.html" },
@@ -331,7 +329,6 @@
             ]
         };
 
-        // 数据列表：我已经为你复制了 30 个项目用于翻页测试
         const DATA = [
             { id: 30, title: "ITEM 030", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 29, title: "ITEM 029", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+29" },
@@ -364,10 +361,6 @@
             { id: 2, title: "ITEM 002", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+02" },
             { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+01" }
         ];
-
-        /* =========================================
-           🛠️ 功能逻辑区 🛠️
-        ========================================= */
 
         let currentPage = 1;
         const menuToggle = document.getElementById('menu-toggle');
