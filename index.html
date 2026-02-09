@@ -2,82 +2,89 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Archive - PoorLeaglGuy</title>
     <style>
-        /* 1. 核心字体与基础设置 */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-        
+        /* 1. 核心变量与极简重置 */
         :root {
             --bg-color: #ffffff;
             --text-color: #000000;
-            --border-color: #f4f4f5;
-            --muted-color: #9ca3af;
+            --border-color: #efefef;
+            --muted-color: #999999;
+            --nav-h: 50px; 
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
                 --text-color: #ffffff;
-                --border-color: #18181b;
-                --muted-color: #52525b;
+                --border-color: #111111;
+                --muted-color: #666666;
             }
         }
 
         * {
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            min-h-screen: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            cursor: crosshair;
         }
 
-        /* 2. 导航栏 (原生 CSS 固定布局) */
+        /* 2. 导航栏 */
         nav {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 70px;
+            height: var(--nav-h);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 25px;
-            background-color: rgba(var(--bg-color), 0.9);
-            backdrop-filter: blur(10px);
+            padding: 0 15px;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
             z-index: 10000;
+        }
+
+        @media (min-width: 768px) {
+            :root { --nav-h: 60px; }
+            nav { padding: 0 30px; }
         }
 
         .brand {
             text-transform: uppercase;
             font-weight: 800;
-            font-size: 18px;
-            letter-spacing: -0.05em;
+            font-size: 16px;
+            letter-spacing: -0.02em;
             text-decoration: none;
             color: inherit;
-        }
-
-        .nav-links {
-            display: none; /* PC端默认隐藏，由媒体查询开启 */
-            gap: 40px;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.2em;
+            white-space: nowrap;
         }
 
         @media (min-width: 768px) {
-            .nav-links { display: flex; }
-            nav { height: 90px; padding: 0 40px; }
-            .brand { font-size: 22px; }
+            .brand { font-size: 20px; }
+        }
+
+        .nav-links {
+            display: none; 
+            gap: 20px;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 0.25em; 
+            font-weight: 500;
+        }
+
+        @media (min-width: 768px) {
+            .nav-links { display: flex; align-items: center; }
         }
 
         .nav-links a {
@@ -86,22 +93,25 @@
             transition: opacity 0.3s;
         }
 
-        .nav-links a:hover { opacity: 0.4; }
+        .nav-links a:hover { opacity: 0.3; }
 
-        /* 3. 汉堡包菜单按钮 */
+        /* 3. 交互组件 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 5px;
             background: none;
             border: none;
             cursor: pointer;
-            padding: 10px;
+            width: 40px;
+            height: 40px;
             z-index: 10001;
         }
 
         #menu-toggle span {
-            width: 22px;
+            width: 18px;
             height: 1px;
             background-color: var(--text-color);
             transition: 0.3s;
@@ -111,13 +121,12 @@
             #menu-toggle { display: none; }
         }
 
-        /* 4. 移动端全屏菜单 */
         #mobile-menu {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             background-color: var(--bg-color);
             z-index: 9999;
             display: flex;
@@ -125,35 +134,42 @@
             justify-content: center;
             align-items: center;
             gap: 30px;
-            transform: translateY(-100%);
-            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s ease;
         }
 
-        #mobile-menu.active { transform: translateY(0); }
+        #mobile-menu.active {
+            visibility: visible;
+            opacity: 1;
+        }
 
         #mobile-menu a {
-            font-size: 14px;
+            font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.3em;
+            letter-spacing: 0.4em;
             text-decoration: none;
             color: inherit;
         }
 
-        /* 5. 存档网格系统 */
+        /* 4. 内容网格 (移除黑白滤镜) */
         main {
-            margin-top: 100px;
-            padding: 0 20px;
+            margin-top: calc(var(--nav-h) + 30px); 
+            padding: 0 15px;
             flex-grow: 1;
+            width: 100%;
+            max-width: 1600px;
+            align-self: center;
         }
 
         @media (min-width: 768px) {
-            main { margin-top: 130px; padding: 0 40px; }
+            main { margin-top: calc(var(--nav-h) + 50px); padding: 0 30px; }
         }
 
         .archive-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
+            gap: 20px; 
         }
 
         @media (min-width: 1024px) {
@@ -166,65 +182,69 @@
         .item-card {
             text-decoration: none;
             color: inherit;
-            margin-bottom: 30px;
+            display: block;
         }
 
         .img-container {
             aspect-ratio: 3 / 4;
             background-color: var(--border-color);
             overflow: hidden;
+            width: 100%;
         }
 
         .img-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: grayscale(100%);
+            /* 移除了 filter: grayscale(100%) */
             transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-            opacity: 0.9;
         }
 
         .item-card:hover img {
-            filter: grayscale(0%);
             transform: scale(1.02);
-            opacity: 1;
+            /* 鼠标悬停时不再需要处理滤镜恢复，仅做缩放 */
         }
 
         .item-title {
-            padding: 15px 0;
+            padding: 12px 0 30px;
             text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.15em;
-            font-weight: 500;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            font-weight: 600;
         }
 
-        /* 6. 页脚与分页 */
+        /* 5. 分页页脚 */
         footer {
-            padding: 60px 20px 40px;
-            border-top: 1px solid var(--border-color);
+            padding: 40px 15px 30px;
             display: flex;
-            justify-content: space-between;
-            align-items: baseline;
+            flex-direction: column;
+            gap: 20px;
+            border-top: 1px solid var(--border-color);
         }
 
         @media (min-width: 768px) {
-            footer { padding: 80px 40px 60px; }
+            footer {
+                padding: 60px 30px 40px;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
         }
 
         .copyright {
             font-size: 9px;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             color: var(--muted-color);
         }
 
         .pagination-container {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             align-items: center;
             text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.1em;
+            font-size: 9px;
+            letter-spacing: 0.2em;
         }
 
         .page-btn {
@@ -232,19 +252,25 @@
             border: none;
             color: inherit;
             cursor: pointer;
-            padding: 5px;
-            transition: opacity 0.3s;
-            font-size: 11px;
-            letter-spacing: 0.1em;
+            padding: 2px 0;
+            transition: 0.3s;
             text-transform: uppercase;
+            font-size: 9px;
+            border-bottom: 1px solid transparent;
         }
 
-        .page-btn:hover { opacity: 0.4; }
-        .page-btn:disabled { opacity: 0.05; cursor: not-allowed; }
+        .page-btn:hover:not(:disabled) {
+            border-bottom: 1px solid var(--text-color);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
 
         .page-info {
             opacity: 0.4;
-            font-size: 10px;
+            font-size: 8px;
         }
 
         ::-webkit-scrollbar { display: none; }
@@ -252,49 +278,44 @@
 </head>
 <body>
 
-    <!-- 导航栏 -->
     <nav>
-        <a href="https://neuepoor.com" class="brand" id="brand-name">PoorLeaglGuy</a>
+        <a href="https://neuepoor.com" class="brand">PoorLeaglGuy</a>
         
         <div class="nav-links" id="desktop-links">
-            <!-- JS 填充 -->
+            <!-- 脚本注入 -->
         </div>
 
-        <button id="menu-toggle" onclick="toggleMenu()">
+        <button id="menu-toggle" aria-label="Menu">
             <span></span>
             <span></span>
         </button>
     </nav>
 
-    <!-- 移动端菜单 -->
     <div id="mobile-menu">
-        <!-- JS 填充 -->
+        <!-- 脚本注入 -->
     </div>
 
-    <!-- 主体 -->
     <main>
         <div id="archive-container" class="archive-grid">
-            <!-- JS 渲染 -->
+            <!-- 列表渲染 -->
         </div>
     </main>
 
-    <!-- 页脚 -->
     <footer>
         <div class="copyright">
             &copy; <span id="year"></span> PoorLeaglGuy Archive
         </div>
         
         <div class="pagination-container">
-            <button onclick="prevPage()" id="prev-btn" class="page-btn">Prev</button>
+            <button id="prev-btn" class="page-btn">Prev</button>
             <span id="page-info" class="page-info"></span>
-            <button onclick="nextPage()" id="next-btn" class="page-btn">Next</button>
+            <button id="next-btn" class="page-btn">Next</button>
         </div>
     </footer>
 
     <script>
-        // --- 数据配置区 ---
         const CONFIG = {
-            itemsPerPage: 10,
+            itemsPerPage: 10, 
             links: [
                 { name: "Category", url: "https://neuepoor.com/library/" },
                 { name: "ApparEdit", url: "index.html" },
@@ -305,38 +326,40 @@
         const DATA = [
             { id: 16, title: "ITEM 016", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
             { id: 15, title: "ITEM 015", link: "#", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" },
-            { id: 14, title: "ITEM 014", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=14" },
-            { id: 13, title: "ITEM 013", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=13" },
-            { id: 1, title: "ITEM 001", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=1" },
-            { id: 2, title: "ITEM 002", link: "#", img: "https://placehold.co/1200x1600/dddddd/888888?text=2" },
-            { id: 3, title: "ITEM 003", link: "#", img: "https://placehold.co/1200x1600/cccccc/777777?text=3" },
-            { id: 4, title: "ITEM 004", link: "#", img: "https://placehold.co/1200x1600/bbbbbb/666666?text=4" },
-            { id: 5, title: "ITEM 005", link: "#", img: "https://placehold.co/1200x1600/aaaaaa/555555?text=5" },
-            { id: 6, title: "ITEM 006", link: "#", img: "https://placehold.co/1200x1600/999999/444444?text=6" },
-            { id: 7, title: "ITEM 007", link: "#", img: "https://placehold.co/1200x1600/888888/333333?text=7" },
-            { id: 8, title: "ITEM 008", link: "#", img: "https://placehold.co/1200x1600/777777/222222?text=8" }
+            { id: 14, title: "ITEM 014", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+14" },
+            { id: 13, title: "ITEM 013", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+13" },
+            { id: 12, title: "ITEM 012", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+12" },
+            { id: 11, title: "ITEM 011", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+11" },
+            { id: 10, title: "ITEM 010", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+10" },
+            { id: 9, title: "ITEM 009", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+09" },
+            { id: 8, title: "ITEM 008", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+08" },
+            { id: 7, title: "ITEM 007", link: "#", img: "https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+07" }
         ];
 
         let currentPage = 1;
 
-        // --- 功能逻辑 ---
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+
         function toggleMenu() {
-            const menu = document.getElementById('mobile-menu');
-            const btn = document.getElementById('menu-toggle');
-            menu.classList.toggle('active');
-            
-            const spans = btn.querySelectorAll('span');
-            if(menu.classList.contains('active')) {
-                spans[0].style.transform = "rotate(45deg) translateY(5px)";
-                spans[1].style.transform = "rotate(-45deg) translateY(-5px)";
+            const isActive = mobileMenu.classList.toggle('active');
+            const spans = menuToggle.querySelectorAll('span');
+            if(isActive) {
+                spans[0].style.transform = "rotate(45deg) translateY(4px)";
+                spans[1].style.transform = "rotate(-45deg) translateY(-4px)";
+                document.body.style.overflow = 'hidden';
             } else {
                 spans[0].style.transform = "none";
                 spans[1].style.transform = "none";
+                document.body.style.overflow = '';
             }
         }
 
-        function render() {
+        menuToggle.addEventListener('click', toggleMenu);
+
+        function renderItems() {
             const container = document.getElementById('archive-container');
+            if(!container) return;
             container.innerHTML = "";
 
             const start = (currentPage - 1) * CONFIG.itemsPerPage;
@@ -344,62 +367,64 @@
             const pageData = DATA.slice(start, end);
 
             pageData.forEach(item => {
-                const html = `
-                    <a href="${item.link}" class="item-card">
-                        <div class="img-container">
-                            <img src="${item.img}" alt="${item.title}" loading="lazy">
-                        </div>
-                        <div class="item-title">${item.title}</div>
-                    </a>
+                const card = document.createElement('a');
+                card.href = item.link;
+                card.className = "item-card";
+                card.innerHTML = `
+                    <div class="img-container">
+                        <img src="${item.img}" alt="${item.title}" loading="lazy" onerror="this.src='https://placehold.co/600x800?text=No+Image'">
+                    </div>
+                    <div class="item-title">${item.title}</div>
                 `;
-                container.insertAdjacentHTML('beforeend', html);
+                container.appendChild(card);
             });
 
-            const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage);
+            const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage) || 1;
             document.getElementById('prev-btn').disabled = currentPage === 1;
-            document.getElementById('next-btn').disabled = currentPage === totalPages || totalPages === 0;
+            document.getElementById('next-btn').disabled = currentPage === totalPages;
             document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
         }
 
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                render();
-                window.scrollTo({top: 0, behavior: 'instant'});
-            }
-        }
-
-        function nextPage() {
-            const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                render();
-                window.scrollTo({top: 0, behavior: 'instant'});
-            }
-        }
-
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            // 填充链接
+        function init() {
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
             
             CONFIG.links.forEach(link => {
-                const a1 = document.createElement('a');
-                a1.href = link.url;
-                a1.innerText = link.name;
-                desktop.appendChild(a1);
+                const dLink = document.createElement('a');
+                dLink.href = link.url;
+                dLink.innerText = link.name;
+                desktop.appendChild(dLink);
 
-                const a2 = document.createElement('a');
-                a2.href = link.url;
-                a2.innerText = link.name;
-                a2.onclick = toggleMenu;
-                mobile.appendChild(a2);
+                const mLink = document.createElement('a');
+                mLink.href = link.url;
+                mLink.innerText = link.name;
+                mLink.onclick = toggleMenu;
+                mobile.appendChild(mLink);
             });
 
-            render();
             document.getElementById('year').innerText = new Date().getFullYear();
-        });
+            
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderItems();
+                    window.scrollTo({top: 0, behavior: 'auto'});
+                }
+            });
+
+            document.getElementById('next-btn').addEventListener('click', () => {
+                const totalPages = Math.ceil(DATA.length / CONFIG.itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderItems();
+                    window.scrollTo({top: 0, behavior: 'auto'});
+                }
+            });
+
+            renderItems();
+        }
+
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
