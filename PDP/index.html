@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Product Detail - ApparEdit v0.9.7</title>
+    <title>Product Detail - ApparEdit v0.9.8</title>
     
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEditPDP v0.9.7
-           更新: 
-           - 优化右侧图片逻辑：不再需要手动设置比例类名，图片自动按原图比例撑满。
-           - 简化 DATA_CONFIG 数据结构。
+        /* 版本: ApparEditPDP v0.9.8
+           更新重点: 
+           1. 严控 Navbar 修改，还原至 v0.9.5 稳定版本状态。
+           2. 保持右侧图文“数据驱动”与“自动缩放高度”逻辑。
         */
 
         :root {
@@ -50,7 +50,7 @@
             flex-direction: column;
         }
 
-        /* 导航栏 */
+        /* 导航栏 - 严格还原 */
         nav {
             position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-h);
             display: flex; justify-content: space-between; align-items: center;
@@ -59,21 +59,28 @@
             border-bottom: 1px solid var(--border-color); z-index: 10000;
         }
 
-        .brand { display: flex; align-items: center; text-decoration: none; color: inherit; font-weight: 800; font-size: 16px; text-transform: uppercase; }
-        .brand img { height: 1.2em; width: auto; }
+        .brand {
+            display: flex; align-items: center; text-transform: uppercase;
+            font-weight: 800; font-size: 16px; letter-spacing: -0.02em;
+            text-decoration: none; color: inherit;
+        }
+        .brand img { height: 1.2em; width: auto; display: block; }
 
         .nav-links { display: none; gap: 25px; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
-        @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } .brand { font-size: 20px; } }
+        @media (min-width: 768px) {
+            .nav-links { display: flex; align-items: center; }
+            .brand { font-size: 20px; }
+        }
         .nav-links a { text-decoration: none; color: inherit; transition: opacity 0.3s; }
         .nav-links a:hover { opacity: 0.4; }
         .nav-links a.active { opacity: 0.25; pointer-events: none; }
 
-        /* 移动端菜单按钮 */
         #menu-toggle {
             display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 5px;
-            background: none; border: none; cursor: pointer; width: 40px; height: 40px;
+            background: none; border: none; cursor: pointer; width: 40px; height: 40px; z-index: 10001;
         }
         #menu-toggle span { width: 18px; height: 1px; background-color: var(--text-color); transition: 0.3s; }
+        @media (min-width: 768px) { #menu-toggle { display: none; } }
 
         #mobile-menu {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
@@ -101,22 +108,21 @@
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
         @media (min-width: 768px) { .gallery-item img { height: auto; object-fit: initial; } }
 
-        /* 底部导航缩略图 */
-        .gallery-nav { height: 60px; display: flex; align-items: center; padding: 0 var(--grid-gap); border-top: 1px solid var(--border-color); gap: 10px; overflow-x: auto; scrollbar-width: none; }
+        /* 缩略图 */
+        .gallery-nav { height: 60px; display: flex; align-items: center; padding: 0 var(--grid-gap); border-top: 1px solid var(--border-color); gap: 10px; overflow-x: auto; scrollbar-width: none; background-color: var(--bg-color); }
         @media (min-width: 768px) { .gallery-nav { display: none; } }
         .thumb { width: 30px; height: 40px; background-color: #f0f0f0; flex-shrink: 0; cursor: pointer; opacity: 0.5; transition: 0.2s; border: 1px solid transparent; }
         .thumb.active { border-color: var(--text-color); opacity: 1; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 右侧信息侧边栏 */
+        /* 右侧侧边栏 */
         .info-sidebar { flex: 1; overflow-y: auto; padding: var(--grid-gap); border-top: 1px solid var(--border-color); }
         @media (min-width: 768px) { .info-sidebar { border-top: none; border-left: 1px solid var(--border-color); padding: 40px; } }
 
         .sidebar-content { width: 100%; display: flex; flex-direction: column; gap: 40px; }
+        .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted-color); margin-bottom: -30px; display: block; }
         
-        .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted-color); margin-bottom: -30px; }
-        
-        /* 改进的图片占位逻辑：自动比例 */
+        /* 右侧图片容器 - 自动高度 */
         .img-wrap { width: 100%; background-color: #f6f6f6; border: 1px solid var(--border-color); overflow: hidden; line-height: 0; }
         .img-wrap img { width: 100%; height: auto; display: block; }
 
@@ -130,11 +136,16 @@
 <body>
 
     <nav>
-        <a href="#" class="brand" id="brand-logo">
-            <img src="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" alt="Logo">
+        <a href="https://apparedit.neuepoor.com" class="brand" id="brand-logo">
+            <img src="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" 
+                 alt="PoorLegalGuy" 
+                 onerror="this.parentElement.innerText='PoorLegalGuy'">
         </a>
         <div class="nav-links" id="desktop-links"></div>
-        <button id="menu-toggle"><span></span><span></span></button>
+        <button id="menu-toggle" aria-label="Menu">
+            <span></span>
+            <span></span>
+        </button>
     </nav>
 
     <div id="mobile-menu"></div>
@@ -147,7 +158,7 @@
 
         <aside class="info-sidebar">
             <div class="sidebar-content" id="sidebar-render-area">
-                <!-- 内容由 DATA_CONFIG 自动生成 -->
+                <!-- 由 DATA_CONFIG 渲染 -->
             </div>
         </aside>
     </main>
@@ -155,25 +166,28 @@
     <script>
         /**
          * ==========================================
-         * 💡 小白维护手册 (内容配置区)
+         * 💡 维护区域 (仅修改此处即可)
          * ==========================================
          */
         const DATA_CONFIG = {
-            // 1. 导航栏链接
+            // 当前页面 URL (用于导航链接的高亮识别)
+            currentPageUrl: "https://apparedit.neuepoor.com/pdp",
+
+            // 1. 导航链接
             navLinks: [
                 { name: "CATEGORY", url: "https://neuepoor.com/library/" },
                 { name: "APPAREDIT", url: "https://apparedit.neuepoor.com/" },
                 { name: "INFO", url: "https://neuepoor.com/contacts/" }
             ],
 
-            // 2. 左侧主图画廊
+            // 2. 左侧主图 (添加或删除 URL 即可)
             galleryImages: [
                 "https://placehold.co/1200x1600/000/fff?text=IMAGE+01",
                 "https://placehold.co/1200x1600/222/fff?text=IMAGE+03"
             ],
 
-            // 3. 右侧信息区块 (在这里随意增删)
-            // 不需要再写比例(ratio)，图片会自动撑满并缩放高度
+            // 3. 右侧区块 (添加、删除、调整顺序)
+            // type 可选: 'label' (小标题), 'image' (图片), 'text' (文字)
             sidebarBlocks: [
                 { type: "label", content: "Contextual Research" },
                 { type: "image", src: "https://placehold.co/1000x1000/333/fff?text=Square+Image" },
@@ -190,7 +204,7 @@
 
         /**
          * ==========================================
-         * ⚙️ 核心渲染逻辑
+         * ⚙️ 核心逻辑 (建议不改动)
          * ==========================================
          */
 
@@ -199,11 +213,20 @@
             const desktopLinks = document.getElementById('desktop-links');
             const mobileMenu = document.getElementById('mobile-menu');
             DATA_CONFIG.navLinks.forEach(link => {
-                const a = document.createElement('a');
-                a.href = link.url;
-                a.innerText = link.name;
-                desktopLinks.appendChild(a.cloneNode(true));
-                mobileMenu.appendChild(a);
+                const isCurrent = link.url === DATA_CONFIG.currentPageUrl;
+                
+                const dLink = document.createElement('a');
+                dLink.href = link.url;
+                dLink.innerText = link.name;
+                if(isCurrent) dLink.classList.add('active');
+                desktopLinks.appendChild(dLink);
+
+                const mLink = document.createElement('a');
+                mLink.href = link.url;
+                mLink.innerText = link.name;
+                if(isCurrent) mLink.classList.add('active');
+                mLink.onclick = toggleMenu;
+                mobileMenu.appendChild(mLink);
             });
 
             // 渲染左侧画廊
@@ -225,7 +248,7 @@
                 return '';
             }).join('');
 
-            // 交互
+            // 交互事件
             document.querySelectorAll('.thumb').forEach(t => {
                 t.onclick = () => {
                     const idx = t.dataset.idx;
@@ -241,17 +264,26 @@
             };
         }
 
-        const menuBtn = document.getElementById('menu-toggle');
-        const mMenu = document.getElementById('mobile-menu');
-        menuBtn.onclick = () => {
-            const active = mMenu.classList.toggle('active');
-            const spans = menuBtn.querySelectorAll('span');
-            spans[0].style.transform = active ? "rotate(45deg) translateY(4px)" : "none";
-            spans[1].style.transform = active ? "rotate(-45deg) translateY(-4px)" : "none";
-            document.body.style.overflow = active ? 'hidden' : '';
-        };
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        function toggleMenu() {
+            const isActive = mobileMenu.classList.toggle('active');
+            const spans = menuToggle.querySelectorAll('span');
+            if(isActive) {
+                spans[0].style.transform = "rotate(45deg) translateY(4px)";
+                spans[1].style.transform = "rotate(-45deg) translateY(-4px)";
+                document.body.style.overflow = 'hidden';
+            } else {
+                spans[0].style.transform = "none";
+                spans[1].style.transform = "none";
+                document.body.style.overflow = '';
+            }
+        }
 
-        window.onload = renderAll;
+        window.onload = () => {
+            menuToggle.onclick = toggleMenu;
+            renderAll();
+        };
     </script>
 </body>
 </html>
