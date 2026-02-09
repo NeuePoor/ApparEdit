@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Product Detail - ApparEdit v0.9.4</title>
+    <title>Product Detail - ApparEdit v0.9.7</title>
     
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEditPDP v0.9.4 
-           更新内容: 
-           1. 右侧区块参考 v0.9.2 逻辑：图片和文字完全撑满父级区块。
-           2. 统一左右侧间距规范（继承 v0.8.4 风格的 Padding）。
-           3. 窄屏保留 v0.9.0 的交互体验（横滑 + Thumbs）。
+        /* 版本: ApparEditPDP v0.9.7
+           更新: 
+           - 优化右侧图片逻辑：不再需要手动设置比例类名，图片自动按原图比例撑满。
+           - 简化 DATA_CONFIG 数据结构。
         */
 
         :root {
@@ -37,18 +36,10 @@
         }
 
         @media (min-width: 768px) {
-            :root { 
-                --nav-h: 60px; 
-                --grid-gap: 30px; 
-            } 
+            :root { --nav-h: 60px; --grid-gap: 30px; } 
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
@@ -61,39 +52,18 @@
 
         /* 导航栏 */
         nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--nav-h);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 var(--grid-gap);
-            background-color: var(--nav-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px); 
-            border-bottom: 1px solid var(--border-color);
-            z-index: 10000;
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-h);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 var(--grid-gap); background-color: var(--nav-bg);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
+            border-bottom: 1px solid var(--border-color); z-index: 10000;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            text-transform: uppercase;
-            font-weight: 800; 
-            font-size: 16px;
-            letter-spacing: -0.02em;
-            text-decoration: none;
-            color: inherit;
-        }
-        .brand img { height: 1.2em; width: auto; display: block; }
+        .brand { display: flex; align-items: center; text-decoration: none; color: inherit; font-weight: 800; font-size: 16px; text-transform: uppercase; }
+        .brand img { height: 1.2em; width: auto; }
 
         .nav-links { display: none; gap: 25px; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
-        @media (min-width: 768px) {
-            .nav-links { display: flex; align-items: center; }
-            .brand { font-size: 20px; }
-        }
+        @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } .brand { font-size: 20px; } }
         .nav-links a { text-decoration: none; color: inherit; transition: opacity 0.3s; }
         .nav-links a:hover { opacity: 0.4; }
         .nav-links a.active { opacity: 0.25; pointer-events: none; }
@@ -101,10 +71,9 @@
         /* 移动端菜单按钮 */
         #menu-toggle {
             display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 5px;
-            background: none; border: none; cursor: pointer; width: 40px; height: 40px; z-index: 10001;
+            background: none; border: none; cursor: pointer; width: 40px; height: 40px;
         }
         #menu-toggle span { width: 18px; height: 1px; background-color: var(--text-color); transition: 0.3s; }
-        @media (min-width: 768px) { #menu-toggle { display: none; } }
 
         #mobile-menu {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
@@ -115,358 +84,174 @@
         #mobile-menu.active { visibility: visible; opacity: 1; }
 
         /* 主体布局 */
-        main {
-            margin-top: var(--nav-h); 
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        main { margin-top: var(--nav-h); flex-grow: 1; display: flex; flex-direction: column; }
+        @media (min-width: 768px) { main { flex-direction: row; height: calc(100vh - var(--nav-h)); overflow: hidden; } }
 
-        @media (min-width: 768px) {
-            main {
-                flex-direction: row;
-                height: calc(100vh - var(--nav-h));
-                overflow: hidden;
-            }
-        }
-
-        /* 左侧：图片画廊包装容器 */
-        .gallery-wrapper {
-            position: relative;
-            flex: 1.6;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-color);
-            overflow: hidden;
-        }
-
-        /* 核心逻辑：窄屏横滑 vs 宽屏纵滚 */
-        .product-gallery {
-            flex-grow: 1;
-            display: flex;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
+        /* 左侧画廊 */
+        .gallery-wrapper { position: relative; flex: 1.6; display: flex; flex-direction: column; background-color: var(--bg-color); overflow: hidden; }
+        .product-gallery { flex-grow: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
         .product-gallery::-webkit-scrollbar { display: none; }
 
         @media (min-width: 768px) {
-            .product-gallery {
-                flex-direction: column;
-                overflow-x: hidden;
-                overflow-y: auto; 
-                scroll-snap-type: none;
-                padding: 40px; /* v0.9.2 Padding */
-                gap: 40px;
-            }
+            .product-gallery { flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-snap-type: none; padding: 40px; gap: 40px; }
         }
 
-        .gallery-item {
-            min-width: 100%;
-            height: 60vh; 
-            scroll-snap-align: start;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
+        .gallery-item { min-width: 100%; height: 65vh; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; }
+        @media (min-width: 768px) { .gallery-item { height: auto; } }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        @media (min-width: 768px) { .gallery-item img { height: auto; object-fit: initial; } }
 
-        @media (min-width: 768px) {
-            .gallery-item {
-                height: auto;
-                min-height: auto;
-            }
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: auto;
-            max-height: 85%;
-            object-fit: contain;
-        }
-
-        @media (min-width: 768px) {
-            .gallery-item img {
-                max-height: none;
-                object-fit: initial;
-            }
-        }
-
-        /* Caption 说明文字：仅窄屏显示 */
-        .img-caption {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--muted-color);
-        }
-        @media (min-width: 768px) {
-            .img-caption { display: none; }
-        }
-
-        /* Thumbs 导航：仅窄屏显示 */
-        .gallery-nav {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            padding: 0 var(--grid-gap);
-            border-top: 1px solid var(--border-color);
-            gap: 10px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .gallery-nav::-webkit-scrollbar { display: none; }
-        
-        @media (min-width: 768px) {
-            .gallery-nav { display: none; }
-        }
-
-        .thumb {
-            width: 30px;
-            height: 40px;
-            background-color: #f0f0f0;
-            flex-shrink: 0;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: 0.2s;
-            opacity: 0.5;
-        }
+        /* 底部导航缩略图 */
+        .gallery-nav { height: 60px; display: flex; align-items: center; padding: 0 var(--grid-gap); border-top: 1px solid var(--border-color); gap: 10px; overflow-x: auto; scrollbar-width: none; }
+        @media (min-width: 768px) { .gallery-nav { display: none; } }
+        .thumb { width: 30px; height: 40px; background-color: #f0f0f0; flex-shrink: 0; cursor: pointer; opacity: 0.5; transition: 0.2s; border: 1px solid transparent; }
         .thumb.active { border-color: var(--text-color); opacity: 1; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 右侧：信息区块 (按照 v0.9.2 逻辑修改) */
-        .info-sidebar {
-            flex: 1;
-            overflow-y: auto;
-            background-color: var(--bg-color);
-            padding: var(--grid-gap); /* 窄屏默认间距 */
-            border-top: 1px solid var(--border-color);
-        }
+        /* 右侧信息侧边栏 */
+        .info-sidebar { flex: 1; overflow-y: auto; padding: var(--grid-gap); border-top: 1px solid var(--border-color); }
+        @media (min-width: 768px) { .info-sidebar { border-top: none; border-left: 1px solid var(--border-color); padding: 40px; } }
 
-        @media (min-width: 768px) {
-            .info-sidebar {
-                border-top: none;
-                border-left: 1px solid var(--border-color);
-                padding: 40px; /* 宽屏下与左侧画廊对称的 40px Padding */
-            }
-        }
+        .sidebar-content { width: 100%; display: flex; flex-direction: column; gap: 40px; }
+        
+        .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted-color); margin-bottom: -30px; }
+        
+        /* 改进的图片占位逻辑：自动比例 */
+        .img-wrap { width: 100%; background-color: #f6f6f6; border: 1px solid var(--border-color); overflow: hidden; line-height: 0; }
+        .img-wrap img { width: 100%; height: auto; display: block; }
 
-        .sidebar-content {
-            width: 100%; /* 完全撑满容器宽度 */
-            display: flex;
-            flex-direction: column;
-            gap: 40px; /* 元素间的统一大间距 */
-        }
-
-        /* 响应式占位图：撑满父级 */
-        .img-placeholder {
-            width: 100%;
-            background-color: #f6f6f6;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: block;
-        }
-        .img-placeholder img { width: 100%; height: 100%; object-fit: cover; }
-        .img-square { aspect-ratio: 1 / 1; }
-        .img-landscape { aspect-ratio: 16 / 9; }
-        .img-portrait { aspect-ratio: 3 / 4; } /* 移除了 85% 宽度限制，完全撑满 */
-
-        @media (prefers-color-scheme: dark) {
-            .img-placeholder { background-color: #0a0a0a; }
-        }
-
-        .text-block {
-            font-size: 13px;
-            line-height: 1.7;
-            text-align: left;
-            color: var(--text-color);
-        }
-
-        .text-block p {
-            margin-bottom: 1.5em;
-        }
+        .text-block { font-size: 13px; line-height: 1.7; color: var(--text-color); }
+        .text-block p { margin-bottom: 1.5em; }
         .text-block p:last-child { margin-bottom: 0; }
 
-        .section-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--muted-color);
-            margin-bottom: -30px; /* 紧贴下方元素，减少间距感 */
-            display: block;
-        }
-
+        @media (prefers-color-scheme: dark) { .img-wrap { background-color: #0a0a0a; } }
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="https://neuepoor.com" class="brand" id="brand-logo">
-            <img src="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" 
-                 alt="PoorLegalGuy" 
-                 onerror="this.parentElement.innerText='PoorLegalGuy'">
+        <a href="#" class="brand" id="brand-logo">
+            <img src="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" alt="Logo">
         </a>
         <div class="nav-links" id="desktop-links"></div>
-        <button id="menu-toggle" aria-label="Menu">
-            <span></span>
-            <span></span>
-        </button>
+        <button id="menu-toggle"><span></span><span></span></button>
     </nav>
 
     <div id="mobile-menu"></div>
 
     <main>
-        <!-- 左侧：图片区域 -->
         <div class="gallery-wrapper">
-            <div class="product-gallery" id="image-gallery">
-                <!-- 由 JS 渲染 -->
-            </div>
-            <div class="gallery-nav" id="gallery-thumbs">
-                <!-- 由 JS 渲染 -->
-            </div>
+            <div class="product-gallery" id="image-gallery"></div>
+            <div class="gallery-nav" id="gallery-thumbs"></div>
         </div>
 
-        <!-- 右侧：信息区块 (完全填充父级) -->
         <aside class="info-sidebar">
-            <div class="sidebar-content">
-                
-                <span class="section-label">Contextual Research</span>
-                <div class="img-placeholder img-square">
-                    <img src="https://placehold.co/1000x1000/eee/999?text=Research+1" alt="Research">
-                </div>
-
-                <div class="text-block">
-                    <p>The Federation of German-American Clubs (Verband Deutsch-Amerikanischer Clubs) was founded in 1948 and currently consists of 31 local clubs from all over Germany. The Federation is committed to fostering cultural exchange and cooperation between the U.S. and Germany.</p>
-                </div>
-
-                <span class="section-label">Graphic Archive</span>
-                <div class="img-placeholder img-landscape">
-                    <img src="https://placehold.co/1600x900/eee/999?text=Archive+Landscape" alt="Research">
-                </div>
-
-                <div class="text-block">
-                    <p>The German-American Friendship Garden in Washington, DC stands as a symbol of the positive and cooperative relations between the United States and Germany.</p>
-                </div>
-
-                <span class="section-label">Typeface Detail</span>
-                <div class="img-placeholder img-portrait">
-                    <img src="https://placehold.co/900x1200/eee/999?text=Portrait+Full+Width" alt="Research">
-                </div>
-
-                <div class="text-block">
-                    <p>German Americans form the largest ancestry group in the United States, accounting for 17 percent of US population.</p>
-                </div>
-
+            <div class="sidebar-content" id="sidebar-render-area">
+                <!-- 内容由 DATA_CONFIG 自动生成 -->
             </div>
         </aside>
     </main>
 
     <script>
-        const PRODUCT_DATA = {
-            images: [
-                { src: "https://placehold.co/1200x1600/000/fff?text=IMAGE+01", caption: "Figure 1: Archive Front" },
-                { src: "https://placehold.co/1200x1600/111/fff?text=IMAGE+02", caption: "Figure 2: Detail A" },
-                { src: "https://placehold.co/1200x1600/222/fff?text=IMAGE+03", caption: "Figure 3: Detail B" },
-                { src: "https://placehold.co/1200x1600/333/fff?text=IMAGE+04", caption: "Figure 4: Fabric Study" },
-                { src: "https://placehold.co/1200x1600/444/fff?text=IMAGE+05", caption: "Figure 5: Interior" },
-                { src: "https://placehold.co/1200x1600/555/fff?text=IMAGE+06", caption: "Figure 6: Archive Rear" }
-            ]
-        };
-
-        const CONFIG = {
-            version: "v0.9.4", 
-            currentPageUrl: "https://apparedit.neuepoor.com/pdp", 
-            links: [
+        /**
+         * ==========================================
+         * 💡 小白维护手册 (内容配置区)
+         * ==========================================
+         */
+        const DATA_CONFIG = {
+            // 1. 导航栏链接
+            navLinks: [
                 { name: "CATEGORY", url: "https://neuepoor.com/library/" },
                 { name: "APPAREDIT", url: "https://apparedit.neuepoor.com/" },
                 { name: "INFO", url: "https://neuepoor.com/contacts/" }
+            ],
+
+            // 2. 左侧主图画廊
+            galleryImages: [
+                "https://placehold.co/1200x1600/000/fff?text=IMAGE+01",
+                "https://placehold.co/1200x1600/222/fff?text=IMAGE+03"
+            ],
+
+            // 3. 右侧信息区块 (在这里随意增删)
+            // 不需要再写比例(ratio)，图片会自动撑满并缩放高度
+            sidebarBlocks: [
+                { type: "label", content: "Contextual Research" },
+                { type: "image", src: "https://placehold.co/1000x1000/333/fff?text=Square+Image" },
+                { type: "text", content: "This is a simple text block. You can change this text easily." },
+                
+                { type: "label", content: "Graphic Archive" },
+                { type: "image", src: "https://placehold.co/1600x900/444/fff?text=Landscape+Image" },
+                { type: "text", content: "Another paragraph here." },
+                
+                { type: "label", content: "Material Detail" },
+                { type: "image", src: "https://placehold.co/900x1400/555/fff?text=Portrait+Image" }
             ]
         };
 
-        const gallery = document.getElementById('image-gallery');
-        const thumbsContainer = document.getElementById('gallery-thumbs');
+        /**
+         * ==========================================
+         * ⚙️ 核心渲染逻辑
+         * ==========================================
+         */
 
-        function renderGallery() {
-            gallery.innerHTML = PRODUCT_DATA.images.map((img, idx) => `
-                <div class="gallery-item" id="gallery-item-${idx}">
-                    <img src="${img.src}" alt="${img.caption}" loading="lazy">
-                    <div class="img-caption">${img.caption}</div>
-                </div>
+        function renderAll() {
+            // 渲染导航
+            const desktopLinks = document.getElementById('desktop-links');
+            const mobileMenu = document.getElementById('mobile-menu');
+            DATA_CONFIG.navLinks.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link.url;
+                a.innerText = link.name;
+                desktopLinks.appendChild(a.cloneNode(true));
+                mobileMenu.appendChild(a);
+            });
+
+            // 渲染左侧画廊
+            const gallery = document.getElementById('image-gallery');
+            const thumbs = document.getElementById('gallery-thumbs');
+            gallery.innerHTML = DATA_CONFIG.galleryImages.map((src, i) => `
+                <div class="gallery-item" id="item-${i}"><img src="${src}" alt="img"></div>
+            `).join('');
+            thumbs.innerHTML = DATA_CONFIG.galleryImages.map((src, i) => `
+                <div class="thumb ${i===0?'active':''}" data-idx="${i}"><img src="${src}" alt="thumb"></div>
             `).join('');
 
-            thumbsContainer.innerHTML = PRODUCT_DATA.images.map((img, idx) => `
-                <div class="thumb ${idx === 0 ? 'active' : ''}" data-index="${idx}">
-                    <img src="${img.src}" alt="thumb">
-                </div>
-            `).join('');
+            // 渲染右侧内容
+            const sidebar = document.getElementById('sidebar-render-area');
+            sidebar.innerHTML = DATA_CONFIG.sidebarBlocks.map(block => {
+                if(block.type === 'label') return `<span class="section-label">${block.content}</span>`;
+                if(block.type === 'image') return `<div class="img-wrap"><img src="${block.src}"></div>`;
+                if(block.type === 'text') return `<div class="text-block"><p>${block.content}</p></div>`;
+                return '';
+            }).join('');
 
-            document.querySelectorAll('.thumb').forEach(thumb => {
-                thumb.addEventListener('click', () => {
-                    const index = thumb.getAttribute('data-index');
-                    const target = document.getElementById(`gallery-item-${index}`);
-                    if(window.innerWidth < 768) {
-                        gallery.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
-                    }
-                });
+            // 交互
+            document.querySelectorAll('.thumb').forEach(t => {
+                t.onclick = () => {
+                    const idx = t.dataset.idx;
+                    const target = document.getElementById(`item-${idx}`);
+                    if(window.innerWidth < 768) gallery.scrollTo({left: target.offsetLeft, behavior: 'smooth'});
+                };
             });
+
+            gallery.onscroll = () => {
+                if(window.innerWidth >= 768) return;
+                const idx = Math.round(gallery.scrollLeft / gallery.offsetWidth);
+                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === idx));
+            };
         }
 
-        gallery.addEventListener('scroll', () => {
-            if(window.innerWidth >= 768) return;
-            const index = Math.round(gallery.scrollLeft / gallery.offsetWidth);
-            document.querySelectorAll('.thumb').forEach((t, i) => {
-                t.classList.toggle('active', i === index);
-            });
-        });
+        const menuBtn = document.getElementById('menu-toggle');
+        const mMenu = document.getElementById('mobile-menu');
+        menuBtn.onclick = () => {
+            const active = mMenu.classList.toggle('active');
+            const spans = menuBtn.querySelectorAll('span');
+            spans[0].style.transform = active ? "rotate(45deg) translateY(4px)" : "none";
+            spans[1].style.transform = active ? "rotate(-45deg) translateY(-4px)" : "none";
+            document.body.style.overflow = active ? 'hidden' : '';
+        };
 
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        function toggleMenu() {
-            const isActive = mobileMenu.classList.toggle('active');
-            const spans = menuToggle.querySelectorAll('span');
-            if(isActive) {
-                spans[0].style.transform = "rotate(45deg) translateY(4px)";
-                spans[1].style.transform = "rotate(-45deg) translateY(-4px)";
-                document.body.style.overflow = 'hidden';
-            } else {
-                spans[0].style.transform = "none";
-                spans[1].style.transform = "none";
-                document.body.style.overflow = '';
-            }
-        }
-
-        function init() {
-            menuToggle.addEventListener('click', toggleMenu);
-            const desktop = document.getElementById('desktop-links');
-            const mobile = document.getElementById('mobile-menu');
-            
-            CONFIG.links.forEach(link => {
-                const isCurrent = link.url === CONFIG.currentPageUrl;
-                const dLink = document.createElement('a');
-                dLink.href = link.url;
-                dLink.innerText = link.name;
-                if(isCurrent) dLink.classList.add('active');
-                desktop.appendChild(dLink);
-
-                const mLink = document.createElement('a');
-                mLink.href = link.url;
-                mLink.innerText = link.name;
-                if(isCurrent) mLink.classList.add('active');
-                mLink.onclick = toggleMenu;
-                mobile.appendChild(mLink);
-            });
-            
-            renderGallery();
-        }
-
-        window.addEventListener('load', init);
+        window.onload = renderAll;
     </script>
 </body>
 </html>
