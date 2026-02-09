@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Product Detail - ApparEdit v0.9.2</title>
+    <title>Product Detail - ApparEdit v0.9.4</title>
     
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEditPDP v0.9.2 
+        /* 版本: ApparEditPDP v0.9.4 
            更新内容: 
-           1. 参考 v0.8.4 为左侧图片区域添加 Padding
-           2. 保持单列长滚动布局
-           3. 优化宽屏下的响应式间距
+           1. 右侧区块参考 v0.9.2 逻辑：图片和文字完全撑满父级区块。
+           2. 统一左右侧间距规范（继承 v0.8.4 风格的 Padding）。
+           3. 窄屏保留 v0.9.0 的交互体验（横滑 + Thumbs）。
         */
 
         :root {
@@ -98,7 +98,7 @@
         .nav-links a:hover { opacity: 0.4; }
         .nav-links a.active { opacity: 0.25; pointer-events: none; }
 
-        /* 移动端菜单 */
+        /* 移动端菜单按钮 */
         #menu-toggle {
             display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 5px;
             background: none; border: none; cursor: pointer; width: 40px; height: 40px; z-index: 10001;
@@ -113,7 +113,6 @@
             gap: 30px; visibility: hidden; opacity: 0; transition: 0.3s ease;
         }
         #mobile-menu.active { visibility: visible; opacity: 1; }
-        #mobile-menu a { font-size: 14px; text-transform: uppercase; text-decoration: none; color: inherit; }
 
         /* 主体布局 */
         main {
@@ -131,74 +130,152 @@
             }
         }
 
-        /* 左侧：参考 v0.8.4 的 Padding 设置 */
-        .product-gallery {
+        /* 左侧：图片画廊包装容器 */
+        .gallery-wrapper {
+            position: relative;
             flex: 1.6;
-            overflow-y: auto; 
-            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
-            padding: var(--grid-gap); /* 核心调整：添加内边距 */
-            gap: var(--grid-gap);    /* 图片之间的间距 */
+            background-color: var(--bg-color);
+            overflow: hidden;
         }
-        
+
+        /* 核心逻辑：窄屏横滑 vs 宽屏纵滚 */
+        .product-gallery {
+            flex-grow: 1;
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .product-gallery::-webkit-scrollbar { display: none; }
+
         @media (min-width: 768px) {
             .product-gallery {
-                padding: 40px; /* 宽屏下更宽裕的边距 */
+                flex-direction: column;
+                overflow-x: hidden;
+                overflow-y: auto; 
+                scroll-snap-type: none;
+                padding: 40px; /* v0.9.2 Padding */
                 gap: 40px;
             }
         }
 
-        /* 隐藏滚动条 */
-        .product-gallery::-webkit-scrollbar { width: 0px; display: none; }
-        .product-gallery { -ms-overflow-style: none; scrollbar-width: none; }
-
         .gallery-item {
-            width: 100%;
-            display: block;
+            min-width: 100%;
+            height: 60vh; 
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .gallery-item {
+                height: auto;
+                min-height: auto;
+            }
         }
 
         .gallery-item img {
             width: 100%;
             height: auto;
-            display: block;
+            max-height: 85%;
             object-fit: contain;
         }
 
-        /* 右侧：详细信息区块 */
+        @media (min-width: 768px) {
+            .gallery-item img {
+                max-height: none;
+                object-fit: initial;
+            }
+        }
+
+        /* Caption 说明文字：仅窄屏显示 */
+        .img-caption {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-color);
+        }
+        @media (min-width: 768px) {
+            .img-caption { display: none; }
+        }
+
+        /* Thumbs 导航：仅窄屏显示 */
+        .gallery-nav {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 var(--grid-gap);
+            border-top: 1px solid var(--border-color);
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .gallery-nav::-webkit-scrollbar { display: none; }
+        
+        @media (min-width: 768px) {
+            .gallery-nav { display: none; }
+        }
+
+        .thumb {
+            width: 30px;
+            height: 40px;
+            background-color: #f0f0f0;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            opacity: 0.5;
+        }
+        .thumb.active { border-color: var(--text-color); opacity: 1; }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 右侧：信息区块 (按照 v0.9.2 逻辑修改) */
         .info-sidebar {
             flex: 1;
-            padding: var(--grid-gap);
             overflow-y: auto;
-            border-top: 1px solid var(--border-color);
             background-color: var(--bg-color);
+            padding: var(--grid-gap); /* 窄屏默认间距 */
+            border-top: 1px solid var(--border-color);
         }
 
         @media (min-width: 768px) {
             .info-sidebar {
                 border-top: none;
                 border-left: 1px solid var(--border-color);
-                padding: 60px 40px;
+                padding: 40px; /* 宽屏下与左侧画廊对称的 40px Padding */
             }
         }
 
         .sidebar-content {
-            max-width: 480px;
-            margin: 0 auto;
+            width: 100%; /* 完全撑满容器宽度 */
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* 元素间的统一大间距 */
         }
 
-        /* 响应式占位图 */
+        /* 响应式占位图：撑满父级 */
         .img-placeholder {
             width: 100%;
             background-color: #f6f6f6;
-            margin-bottom: 40px;
             border: 1px solid var(--border-color);
             overflow: hidden;
+            display: block;
         }
         .img-placeholder img { width: 100%; height: 100%; object-fit: cover; }
         .img-square { aspect-ratio: 1 / 1; }
         .img-landscape { aspect-ratio: 16 / 9; }
-        .img-portrait { aspect-ratio: 3 / 4; width: 85%; margin: 0 auto 40px auto; }
+        .img-portrait { aspect-ratio: 3 / 4; } /* 移除了 85% 宽度限制，完全撑满 */
 
         @media (prefers-color-scheme: dark) {
             .img-placeholder { background-color: #0a0a0a; }
@@ -209,19 +286,19 @@
             line-height: 1.7;
             text-align: left;
             color: var(--text-color);
-            margin-bottom: 40px;
         }
 
         .text-block p {
-            margin-bottom: 1.8em;
+            margin-bottom: 1.5em;
         }
+        .text-block p:last-child { margin-bottom: 0; }
 
         .section-label {
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
             color: var(--muted-color);
-            margin-bottom: 10px;
+            margin-bottom: -30px; /* 紧贴下方元素，减少间距感 */
             display: block;
         }
 
@@ -245,39 +322,45 @@
     <div id="mobile-menu"></div>
 
     <main>
-        <!-- 左侧：带 Padding 的单列图片流 -->
-        <div class="product-gallery" id="image-gallery">
-            <!-- 由 JS 渲染 -->
+        <!-- 左侧：图片区域 -->
+        <div class="gallery-wrapper">
+            <div class="product-gallery" id="image-gallery">
+                <!-- 由 JS 渲染 -->
+            </div>
+            <div class="gallery-nav" id="gallery-thumbs">
+                <!-- 由 JS 渲染 -->
+            </div>
         </div>
 
-        <!-- 右侧：信息区块 -->
+        <!-- 右侧：信息区块 (完全填充父级) -->
         <aside class="info-sidebar">
             <div class="sidebar-content">
                 
                 <span class="section-label">Contextual Research</span>
                 <div class="img-placeholder img-square">
-                    <img src="https://placehold.co/800x800/eee/999?text=Context+Image+A" alt="Research">
+                    <img src="https://placehold.co/1000x1000/eee/999?text=Research+1" alt="Research">
                 </div>
 
                 <div class="text-block">
-                    <p>The Federation of German-American Clubs (Verband Deutsch-Amerikanischer Clubs) was founded in 1948 and currently consists of 31 local clubs from all over Germany. The Federation is committed to fostering cultural exchange and cooperation between the U.S. and Germany. Student- and youth exchange programs belong to their projects.</p>
+                    <p>The Federation of German-American Clubs (Verband Deutsch-Amerikanischer Clubs) was founded in 1948 and currently consists of 31 local clubs from all over Germany. The Federation is committed to fostering cultural exchange and cooperation between the U.S. and Germany.</p>
                 </div>
 
                 <span class="section-label">Graphic Archive</span>
                 <div class="img-placeholder img-landscape">
-                    <img src="https://placehold.co/1200x675/eee/999?text=Historical+Archive" alt="Research">
+                    <img src="https://placehold.co/1600x900/eee/999?text=Archive+Landscape" alt="Research">
                 </div>
 
                 <div class="text-block">
-                    <p>The German-American Friendship Garden in Washington, DC stands as a symbol of the positive and cooperative relations between the United States of America and the Federal Republic of Germany.</p>
+                    <p>The German-American Friendship Garden in Washington, DC stands as a symbol of the positive and cooperative relations between the United States and Germany.</p>
                 </div>
 
+                <span class="section-label">Typeface Detail</span>
                 <div class="img-placeholder img-portrait">
-                    <img src="https://placehold.co/600x800/eee/999?text=Typeface+Study" alt="Research">
+                    <img src="https://placehold.co/900x1200/eee/999?text=Portrait+Full+Width" alt="Research">
                 </div>
 
                 <div class="text-block">
-                    <p>German Americans (German: Deutschamerikaner) are citizens of the United States of German ancestry and form the largest ancestry group in the United States, accounting for 17 percent of US population.</p>
+                    <p>German Americans form the largest ancestry group in the United States, accounting for 17 percent of US population.</p>
                 </div>
 
             </div>
@@ -287,17 +370,17 @@
     <script>
         const PRODUCT_DATA = {
             images: [
-                "https://placehold.co/1200x1600/000/fff?text=IMAGE+01",
-                "https://placehold.co/1200x1600/111/fff?text=IMAGE+02",
-                "https://placehold.co/1200x1600/222/fff?text=IMAGE+03",
-                "https://placehold.co/1200x1600/333/fff?text=IMAGE+04",
-                "https://placehold.co/1200x1600/444/fff?text=IMAGE+05",
-                "https://placehold.co/1200x1600/555/fff?text=IMAGE+06"
+                { src: "https://placehold.co/1200x1600/000/fff?text=IMAGE+01", caption: "Figure 1: Archive Front" },
+                { src: "https://placehold.co/1200x1600/111/fff?text=IMAGE+02", caption: "Figure 2: Detail A" },
+                { src: "https://placehold.co/1200x1600/222/fff?text=IMAGE+03", caption: "Figure 3: Detail B" },
+                { src: "https://placehold.co/1200x1600/333/fff?text=IMAGE+04", caption: "Figure 4: Fabric Study" },
+                { src: "https://placehold.co/1200x1600/444/fff?text=IMAGE+05", caption: "Figure 5: Interior" },
+                { src: "https://placehold.co/1200x1600/555/fff?text=IMAGE+06", caption: "Figure 6: Archive Rear" }
             ]
         };
 
         const CONFIG = {
-            version: "v0.9.2", 
+            version: "v0.9.4", 
             currentPageUrl: "https://apparedit.neuepoor.com/pdp", 
             links: [
                 { name: "CATEGORY", url: "https://neuepoor.com/library/" },
@@ -306,14 +389,41 @@
             ]
         };
 
+        const gallery = document.getElementById('image-gallery');
+        const thumbsContainer = document.getElementById('gallery-thumbs');
+
         function renderGallery() {
-            const gallery = document.getElementById('image-gallery');
-            gallery.innerHTML = PRODUCT_DATA.images.map(imgSrc => `
-                <div class="gallery-item">
-                    <img src="${imgSrc}" alt="Product Image" loading="lazy">
+            gallery.innerHTML = PRODUCT_DATA.images.map((img, idx) => `
+                <div class="gallery-item" id="gallery-item-${idx}">
+                    <img src="${img.src}" alt="${img.caption}" loading="lazy">
+                    <div class="img-caption">${img.caption}</div>
                 </div>
             `).join('');
+
+            thumbsContainer.innerHTML = PRODUCT_DATA.images.map((img, idx) => `
+                <div class="thumb ${idx === 0 ? 'active' : ''}" data-index="${idx}">
+                    <img src="${img.src}" alt="thumb">
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.thumb').forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    const index = thumb.getAttribute('data-index');
+                    const target = document.getElementById(`gallery-item-${index}`);
+                    if(window.innerWidth < 768) {
+                        gallery.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+                    }
+                });
+            });
         }
+
+        gallery.addEventListener('scroll', () => {
+            if(window.innerWidth >= 768) return;
+            const index = Math.round(gallery.scrollLeft / gallery.offsetWidth);
+            document.querySelectorAll('.thumb').forEach((t, i) => {
+                t.classList.toggle('active', i === index);
+            });
+        });
 
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
