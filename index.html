@@ -9,10 +9,11 @@
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEdit v1.0.0 (锁定版)
+        /* 版本: ApparEdit v1.0.0 (抗锯齿优化版)
            维护说明:
-           - 所有的文本格式（大小写）现在由 JS 数据源控制。
-           - 核心反色逻辑：滚动后 nav 激活 .scrolled，文字设为白色并开启 difference 混合模式。
+           - 针对 mix-blend-mode 导致的文字加粗进行了抗锯齿处理。
+           - 已将 Arial 设为首选字体。
+           - 增加了全局文字大小控制变量。
         */
 
         :root {
@@ -24,6 +25,11 @@
             --grid-gap: 2px; 
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
+
+            /* 文字大小变量 - 由 JS 动态注入 */
+            --logo-size: 16px;
+            --nav-link-size: 11px;
+            --item-title-size: 9px;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -37,13 +43,16 @@
 
         * {
             box-sizing: border-box;
+            /* 强制开启抗锯齿 */
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             margin: 0;
             padding: 0;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            /* 优先级从左往右：首先尝试 Arial，失败后再尝试系统原生字体栈 */
+            font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             min-height: 100vh;
@@ -65,15 +74,18 @@
             background-color: transparent;
             z-index: 10000;
             pointer-events: none;
+            /* 预设转换，防止文字跳动 */
+            transform: translateZ(0); 
+            will-change: mix-blend-mode;
         }
 
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
             color: var(--text-color);
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, font-weight 0.3s ease;
         }
 
-        /* 智能反色逻辑 */
+        /* 智能反色逻辑优化 */
         nav.scrolled {
             mix-blend-mode: difference;
         }
@@ -81,15 +93,17 @@
         nav.scrolled .brand, 
         nav.scrolled .nav-links, 
         nav.scrolled #menu-toggle {
-            color: #ffffff !important; 
+            color: #ffffff !important;
+            /* 补偿白色在 difference 模式下的视觉溢出，略微调细 */
+            font-weight: 500; 
         }
 
         /* Logo 样式 */
         .brand {
             display: flex;
             align-items: center;
-            font-weight: 800; 
-            font-size: 16px;
+            font-weight: 600; 
+            font-size: var(--logo-size);
             letter-spacing: -0.02em;
             text-decoration: none;
             text-transform: none; 
@@ -98,7 +112,7 @@
         .nav-links {
             display: none; 
             gap: 12px;
-            font-size: 11px;
+            font-size: var(--nav-link-size);
             letter-spacing: 0.05em; 
             text-transform: none; 
         }
@@ -111,6 +125,7 @@
             text-decoration: none;
             color: inherit;
             transition: opacity 0.3s;
+            font-weight: 400;
         }
 
         .nav-links a:hover { opacity: 0.5; }
@@ -210,7 +225,7 @@
 
         .item-title {
             padding: 6px 0 15px; 
-            font-size: 9px;
+            font-size: var(--item-title-size);
             letter-spacing: 0.02em;
             opacity: 0.9;
             text-transform: none;
@@ -276,10 +291,7 @@
 <body>
 
     <nav id="main-nav">
-        <!-- Logo 文字及链接由 JS 动态注入 -->
         <a href="#" class="brand" id="site-logo"></a>
-        
-        <!-- 导航链接由 JS 动态生成 -->
         <div class="nav-links" id="desktop-links"></div>
         <button id="menu-toggle" aria-label="Menu">
             <span></span>
@@ -307,17 +319,22 @@
     <script>
         /**
          * ==========================================
-         * 小白维护区 - 修改这里即可更改页面内容
+         * 小白维护区
          * ==========================================
          */
+        
+        // [新增] 文字大小调整功能
+        const UI_FONT_SIZE = {
+            logo: "21px",        // Logo 大小 (对应 CONFIG)
+            navLinks: "12px",    // 导航栏链接大小 (对应 CONFIG)
+            itemTitle: "10px"     // 作品标题大小 (对应 GALLERY_DATA)
+        };
+
         const CONFIG = {
-            logoText: "PoorLegalGuy", // 网站显示的文字 Logo
-            logoUrl: "https://neuepoor.com", // 点击 Logo 跳转的链接地址
-            
-            itemsPerPage: 12,        // 每页显示的图片数量
-            currentPageUrl: "https://apparedit.neuepoor.com/", // 当前页面链接（用于识别高亮状态）
-            
-            // 导航栏链接：可以随意增加、删除或修改顺序
+            logoText: "PoorLegalGuy", 
+            logoUrl: "https://neuepoor.com", 
+            itemsPerPage: 12,        
+            currentPageUrl: "https://apparedit.neuepoor.com/", 
             links: [ 
                 { name: "Category", url: "https://neuepoor.com/library/" },
                 { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
@@ -325,7 +342,7 @@
             ]
         };
 
-        const GALLERY_DATA = [ // 图片数据列表：[图片名, 图片链接, 跳转链接]
+        const GALLERY_DATA = [
             { title: "Item 030", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
             { title: "Item 029", img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp", link: "https://apparedit.neuepoor.com/PDP/" },
             { title: "Item 028", img: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp", link: "https://apparedit.neuepoor.com/PDP/" },
@@ -340,18 +357,11 @@
             { title: "Item 019", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" }
         ];
 
-        /**
-         * ==========================================
-         * 系统核心逻辑 - 如无必要请勿修改
-         * ==========================================
-         */
-
         let currentPage = 1;
         const mainNav = document.getElementById('main-nav');
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
 
-        // 滚动监听
         window.addEventListener('scroll', () => {
             if (window.scrollY > 10) {
                 mainNav.classList.add('scrolled');
@@ -360,7 +370,6 @@
             }
         });
 
-        // 移动端菜单切换
         function toggleMenu() {
             const isActive = mobileMenu.classList.toggle('active');
             const spans = menuToggle.querySelectorAll('span');
@@ -377,12 +386,10 @@
 
         menuToggle.addEventListener('click', toggleMenu);
 
-        // 渲染列表项
         function renderItems() {
             const container = document.getElementById('archive-container');
             if(!container) return;
             container.innerHTML = "";
-
             const start = (currentPage - 1) * CONFIG.itemsPerPage;
             const end = start + CONFIG.itemsPerPage;
             const pageData = GALLERY_DATA.slice(start, end);
@@ -391,12 +398,7 @@
                 const card = document.createElement('a');
                 card.href = item.link;
                 card.className = "item-card";
-                card.innerHTML = `
-                    <div class="img-container">
-                        <img src="${item.img}" alt="${item.title}" loading="lazy">
-                    </div>
-                    <div class="item-title">${item.title}</div>
-                `;
+                card.innerHTML = `<div class="img-container"><img src="${item.img}" alt="${item.title}" loading="lazy"></div><div class="item-title">${item.title}</div>`;
                 container.appendChild(card);
             });
 
@@ -406,54 +408,45 @@
             document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
         }
 
-        // 初始化
+        function applyFontSize() {
+            const root = document.documentElement;
+            root.style.setProperty('--logo-size', UI_FONT_SIZE.logo);
+            root.style.setProperty('--nav-link-size', UI_FONT_SIZE.navLinks);
+            root.style.setProperty('--item-title-size', UI_FONT_SIZE.itemTitle);
+        }
+
         function init() {
-            // 注入 Logo 文字和链接
+            applyFontSize(); // 应用文字大小
+
             const logoEl = document.getElementById('site-logo');
             logoEl.innerText = CONFIG.logoText;
             logoEl.href = CONFIG.logoUrl;
-
-            // 页脚 Logo 文字和链接
             document.getElementById('footer-copy-text').innerText = CONFIG.logoText + " Archive";
             document.getElementById('footer-logo-link').href = CONFIG.logoUrl;
 
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
-            
-            // 清空并重新生成导航链接
             desktop.innerHTML = "";
             mobile.innerHTML = "";
 
             CONFIG.links.forEach(link => {
                 const isCurrent = link.url === CONFIG.currentPageUrl;
-                
-                // 桌面端链接
                 const dLink = document.createElement('a');
-                dLink.href = link.url;
-                dLink.innerText = link.name;
+                dLink.href = link.url; dLink.innerText = link.name;
                 if(isCurrent) dLink.style.opacity = "0.3";
                 desktop.appendChild(dLink);
 
-                // 移动端链接
                 const mLink = document.createElement('a');
-                mLink.href = link.url;
-                mLink.innerText = link.name;
+                mLink.href = link.url; mLink.innerText = link.name;
                 mLink.onclick = toggleMenu;
                 mobile.appendChild(mLink);
             });
 
             document.getElementById('year').innerText = new Date().getFullYear();
-            
-            document.getElementById('prev-btn').onclick = () => {
-                if (currentPage > 1) { currentPage--; renderItems(); window.scrollTo(0,0); }
-            };
-            document.getElementById('next-btn').onclick = () => {
-                if (currentPage < Math.ceil(GALLERY_DATA.length / CONFIG.itemsPerPage)) { currentPage++; renderItems(); window.scrollTo(0,0); }
-            };
-
+            document.getElementById('prev-btn').onclick = () => { if (currentPage > 1) { currentPage--; renderItems(); window.scrollTo(0,0); } };
+            document.getElementById('next-btn').onclick = () => { if (currentPage < Math.ceil(GALLERY_DATA.length / CONFIG.itemsPerPage)) { currentPage++; renderItems(); window.scrollTo(0,0); } };
             renderItems();
         }
-
         window.addEventListener('load', init);
     </script>
 </body>
