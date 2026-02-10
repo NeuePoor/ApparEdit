@@ -11,8 +11,9 @@
     <style>
         /* 版本: ApparEdit v0.8.8 
            更新内容: 
-           1. 压缩导航栏高度，整行往上提
-           2. 修正差值模式基准色为黑色，保持初始视觉一致
+           1. 窄屏模式图片单列显示
+           2. 压缩导航栏高度，整行往上提
+           3. 修正差值模式基准色为黑色
         */
 
         :root {
@@ -20,7 +21,7 @@
             --text-color: #000000;  
             --border-color: #efefef;
             --muted-color: #999999; 
-            --nav-h: 36px; /* 进一步压缩导航栏高度 */
+            --nav-h: 28px; 
             --grid-gap: 2px; 
             --side-padding: 2px; 
         }
@@ -36,7 +37,7 @@
 
         @media (min-width: 768px) {
             :root { 
-                --nav-h: 44px; /* PC端也相应减小高度 */
+                --nav-h: 28px; 
             } 
         }
 
@@ -56,7 +57,7 @@
             flex-direction: column;
         }
 
-        /* 导航栏 - 移除背景，应用差值模式 */
+        /* 导航栏 */
         nav {
             position: fixed;
             top: 0;
@@ -68,15 +69,14 @@
             align-items: center;
             padding: 0 var(--side-padding);
             background-color: transparent;
-            border-bottom: none;
             z-index: 10000;
             pointer-events: none;
         }
 
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
-            mix-blend-mode: difference; /* 开启差值模式 */
-            color: var(--text-color); /* 修正基准色为黑色，确保白底黑字 */
+            mix-blend-mode: difference;
+            color: var(--text-color);
         }
 
         .brand {
@@ -93,7 +93,6 @@
             height: 1.1em;
             width: auto;
             display: block;
-            /* 移除 invert 滤镜，让 Logo 初始显示为黑色 */
         }
 
         .nav-links {
@@ -124,7 +123,6 @@
             pointer-events: none;
         }
 
-        /* 移动端菜单按钮 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -180,7 +178,7 @@
             color: var(--text-color);
         }
 
-        /* 内容区 - 紧贴顶部 2px */
+        /* 内容区 */
         main {
             margin-top: 2px; 
             padding: 0 var(--side-padding); 
@@ -189,8 +187,14 @@
 
         .archive-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); 
+            grid-template-columns: 1fr; /* 窄屏默认为单列 */
             gap: var(--grid-gap); 
+        }
+
+        @media (min-width: 768px) {
+            .archive-grid {
+                grid-template-columns: repeat(2, 1fr); /* 宽屏保持双列 */
+            }
         }
 
         .item-card {
@@ -321,6 +325,14 @@
     </footer>
 
     <script>
+        /**
+         * v0.8.4 小白维护区
+         * --------------------------------------------------
+         * itemsPerPage: 每页显示的图片数量
+         * currentPageUrl: 当前页面的完整 URL，用于高亮菜单项
+         * links: 导航栏链接配置，name 为显示文字，url 为跳转地址
+         * --------------------------------------------------
+         */
         const CONFIG = {
             version: "v0.8.8", 
             itemsPerPage: 12,
@@ -332,6 +344,7 @@
             ]
         };
 
+        // 数据源模拟
         const DATA = Array.from({length: 30}, (_, i) => ({
             id: 30 - i,
             title: `ITEM ${(30 - i).toString().padStart(3, '0')}`,
