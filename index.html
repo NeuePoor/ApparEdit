@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archive - ApparEdit v0.8.4</title>
+    <title>Archive - ApparEdit v0.8.8</title>
     
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEdit v0.8.4 
+        /* 版本: ApparEdit v0.8.8 
            更新内容: 
-           1. 导航栏 Logo 替换为图片，并增加加载失败回退文字逻辑
-           2. 找回并加固 JavaScript 部分的“小白维护区”注释
-           3. 优化图片 Logo 大小，使其与文字高度一致
+           1. 压缩导航栏高度，整行往上提
+           2. 修正差值模式基准色为黑色，保持初始视觉一致
         */
 
         :root {
@@ -21,9 +20,9 @@
             --text-color: #000000;  
             --border-color: #efefef;
             --muted-color: #999999; 
-            --nav-h: 50px;
-            --nav-bg: rgba(255, 255, 255, 0.8); 
-            --grid-gap: 15px; 
+            --nav-h: 36px; /* 进一步压缩导航栏高度 */
+            --grid-gap: 2px; 
+            --side-padding: 2px; 
         }
 
         @media (prefers-color-scheme: dark) {
@@ -32,14 +31,12 @@
                 --text-color: #ffffff;
                 --border-color: #111111;
                 --muted-color: #666666;
-                --nav-bg: rgba(0, 0, 0, 0.8); 
             }
         }
 
         @media (min-width: 768px) {
             :root { 
-                --nav-h: 60px; 
-                --grid-gap: 20px; 
+                --nav-h: 44px; /* PC端也相应减小高度 */
             } 
         }
 
@@ -59,7 +56,7 @@
             flex-direction: column;
         }
 
-        /* 导航栏 */
+        /* 导航栏 - 移除背景，应用差值模式 */
         nav {
             position: fixed;
             top: 0;
@@ -69,12 +66,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 var(--grid-gap);
-            background-color: var(--nav-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px); 
-            border-bottom: 1px solid var(--border-color);
+            padding: 0 var(--side-padding);
+            background-color: transparent;
+            border-bottom: none;
             z-index: 10000;
+            pointer-events: none;
+        }
+
+        .brand, .nav-links, #menu-toggle {
+            pointer-events: auto;
+            mix-blend-mode: difference; /* 开启差值模式 */
+            color: var(--text-color); /* 修正基准色为黑色，确保白底黑字 */
         }
 
         .brand {
@@ -82,22 +84,21 @@
             align-items: center;
             text-transform: uppercase;
             font-weight: 800; 
-            font-size: 16px;
+            font-size: 14px;
             letter-spacing: -0.02em;
             text-decoration: none;
-            color: inherit;
         }
 
-        /* Logo 图片样式：高度设为 1em，确保和字体高度对齐 */
         .brand img {
-            height: 1.2em;
+            height: 1.1em;
             width: auto;
             display: block;
+            /* 移除 invert 滤镜，让 Logo 初始显示为黑色 */
         }
 
         .nav-links {
             display: none; 
-            gap: 25px;
+            gap: 12px;
             text-transform: uppercase; 
             font-size: 10px;
             letter-spacing: 0.05em; 
@@ -105,7 +106,7 @@
 
         @media (min-width: 768px) {
             .nav-links { display: flex; align-items: center; }
-            .brand { font-size: 20px; }
+            .brand { font-size: 15px; }
         }
 
         .nav-links a {
@@ -114,12 +115,11 @@
             transition: opacity 0.3s;
         }
 
-        .nav-links a:hover { opacity: 0.4; }
+        .nav-links a:hover { opacity: 0.5; }
 
-        /* 当前页面高亮样式 */
         .nav-links a.active, 
         #mobile-menu a.active {
-            opacity: 0.25;
+            opacity: 0.3;
             cursor: default;
             pointer-events: none;
         }
@@ -130,17 +130,17 @@
             flex-direction: column;
             justify-content: center;
             align-items: flex-end;
-            gap: 5px;
+            gap: 4px;
             background: none;
             border: none;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             z-index: 10001;
         }
 
         #menu-toggle span {
-            width: 18px;
+            width: 16px;
             height: 1px;
             background-color: var(--text-color);
             transition: 0.3s;
@@ -156,15 +156,13 @@
             left: 0;
             width: 100%;
             height: 100vh;
-            background-color: var(--nav-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background-color: var(--bg-color);
             z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 30px;
+            gap: 25px;
             visibility: hidden;
             opacity: 0;
             transition: 0.3s ease;
@@ -179,26 +177,20 @@
             font-size: 14px;
             text-transform: uppercase;
             text-decoration: none;
-            color: inherit;
+            color: var(--text-color);
         }
 
-        /* 内容区 */
+        /* 内容区 - 紧贴顶部 2px */
         main {
-            margin-top: var(--nav-h); 
-            padding: var(--grid-gap); 
+            margin-top: 2px; 
+            padding: 0 var(--side-padding); 
             flex-grow: 1;
         }
 
         .archive-grid {
             display: grid;
-            grid-template-columns: 1fr; 
+            grid-template-columns: repeat(2, 1fr); 
             gap: var(--grid-gap); 
-        }
-
-        @media (min-width: 768px) {
-            .archive-grid {
-                grid-template-columns: repeat(2, 1fr); 
-            }
         }
 
         .item-card {
@@ -226,18 +218,21 @@
         }
 
         .item-title {
-            padding: 12px 0 30px;
-            font-size: 11px;
+            padding: 6px 0 15px; 
+            font-size: 9px;
+            text-transform: uppercase;
             letter-spacing: 0.02em;
+            opacity: 0.9;
         }
 
-        /* 页脚布局优化 */
+        /* 页脚 */
         footer {
-            padding: 40px var(--grid-gap);
+            padding: 30px var(--side-padding);
             display: flex;
             flex-direction: column; 
-            gap: 20px;
+            gap: 15px;
             border-top: 1px solid var(--border-color);
+            background-color: var(--bg-color);
         }
 
         @media (min-width: 768px) {
@@ -245,20 +240,23 @@
                 flex-direction: row-reverse; 
                 justify-content: space-between;
                 align-items: center;
+                padding: 40px var(--side-padding);
             }
         }
 
         .copyright {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--muted-color);
             letter-spacing: 0.02em;
+            text-transform: uppercase;
         }
 
         .pagination-container {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
-            font-size: 11px;
+            font-size: 10px;
+            text-transform: uppercase;
         }
 
         .page-btn {
@@ -266,14 +264,14 @@
             border: none;
             color: inherit;
             cursor: pointer;
-            padding: 5px 0;
+            padding: 3px 0;
             transition: 0.3s;
-            font-size: 11px;
+            font-size: 10px;
             border-bottom: 1px solid transparent;
         }
 
         .page-btn:hover:not(:disabled) {
-            border-bottom: 1px solid var(--text-color);
+            opacity: 0.5;
         }
 
         .page-btn:disabled {
@@ -282,8 +280,8 @@
         }
 
         .page-info {
-            opacity: 0.5;
-            font-size: 10px;
+            opacity: 0.4;
+            font-size: 9px;
         }
 
         ::-webkit-scrollbar { display: none; } 
@@ -323,15 +321,10 @@
     </footer>
 
     <script>
-        /* =========================================
-           🚀 小白修改区 - ApparEdit v0.8.4 🚀
-           这里的内容可以根据需要随时修改
-        ========================================= */
-
         const CONFIG = {
-            version: "v0.8.4", 
-            itemsPerPage: 12, // 每页显示的图片数量
-            currentPageUrl: "https://apparedit.neuepoor.com/", // 当前页面的 URL，用于导航栏高亮
+            version: "v0.8.8", 
+            itemsPerPage: 12,
+            currentPageUrl: "https://apparedit.neuepoor.com/",
             links: [
                 { name: "CATEGORY", url: "https://neuepoor.com/library/" },
                 { name: "APPAREDIT", url: "https://apparedit.neuepoor.com/" },
@@ -339,17 +332,12 @@
             ]
         };
 
-        // 数据源：可以在此添加或删除项目
         const DATA = Array.from({length: 30}, (_, i) => ({
             id: 30 - i,
             title: `ITEM ${(30 - i).toString().padStart(3, '0')}`,
             link: "#",
             img: i === 0 ? "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" : `https://placehold.co/1200x1600/eeeeee/999999?text=ITEM+${30-i}`
         }));
-
-        /* =========================================
-           ⚠️ 以下为核心逻辑区，如非必要请勿修改
-        ========================================= */
 
         let currentPage = 1;
         const menuToggle = document.getElementById('menu-toggle');
@@ -359,8 +347,8 @@
             const isActive = mobileMenu.classList.toggle('active');
             const spans = menuToggle.querySelectorAll('span');
             if(isActive) {
-                spans[0].style.transform = "rotate(45deg) translateY(4px)";
-                spans[1].style.transform = "rotate(-45deg) translateY(-4px)";
+                spans[0].style.transform = "rotate(45deg) translateY(3.5px)";
+                spans[1].style.transform = "rotate(-45deg) translateY(-3.5px)";
                 document.body.style.overflow = 'hidden';
             } else {
                 spans[0].style.transform = "none";
