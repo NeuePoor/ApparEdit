@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archive - ApparEdit v0.8.9</title>
+    <title>Archive - ApparEdit v1.0.0</title>
     
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEdit v0.8.9 
-           核心优化: 
-           1. 弃用图片 Logo，改用纯文字 Logo 以解决反色偏色问题。
-           2. 保持 navigation 元素在同一层级，确保 mix-blend-mode 直接作用于 body 背景。
-           3. 滚动后强制文字为 #ffffff 配合 difference 模式实现“智能变色”。
+        /* 版本: ApparEdit v1.0.0 (锁定版)
+           维护说明:
+           - 所有的文本格式（大小写）现在由 JS 数据源控制。
+           - 核心反色逻辑：滚动后 nav 激活 .scrolled，文字设为白色并开启 difference 混合模式。
         */
 
         :root {
@@ -52,7 +51,7 @@
             flex-direction: column;
         }
 
-        /* 导航栏容器 - 必须保持透明且无层级干扰 */
+        /* 导航栏容器 */
         nav {
             position: fixed;
             top: 0;
@@ -68,14 +67,13 @@
             pointer-events: none;
         }
 
-        /* 导航内的所有可交互元素 */
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
             color: var(--text-color);
             transition: color 0.3s ease;
         }
 
-        /* 滚动后的核心逻辑：开启差值模式并将基础色转为白色 */
+        /* 智能反色逻辑 */
         nav.scrolled {
             mix-blend-mode: difference;
         }
@@ -86,23 +84,23 @@
             color: #ffffff !important; 
         }
 
-        /* 文字 Logo 样式 */
+        /* Logo 样式 */
         .brand {
             display: flex;
             align-items: center;
-            text-transform: uppercase;
             font-weight: 800; 
             font-size: 16px;
             letter-spacing: -0.02em;
             text-decoration: none;
+            text-transform: none; 
         }
 
         .nav-links {
             display: none; 
             gap: 12px;
-            text-transform: uppercase; 
             font-size: 11px;
             letter-spacing: 0.05em; 
+            text-transform: none; 
         }
 
         @media (min-width: 768px) {
@@ -117,7 +115,7 @@
 
         .nav-links a:hover { opacity: 0.5; }
 
-        /* 移动端菜单开关 */
+        /* 菜单按钮 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -142,7 +140,7 @@
             #menu-toggle { display: none; }
         }
 
-        /* 全屏菜单（不受滚动混合模式影响） */
+        /* 全屏菜单 */
         #mobile-menu {
             position: fixed;
             top: 0;
@@ -168,14 +166,13 @@
 
         #mobile-menu a {
             font-size: 14px;
-            text-transform: uppercase;
             text-decoration: none;
             color: var(--text-color);
+            text-transform: none;
         }
 
-        /* 内容区 */
+        /* 主体内容 */
         main {
-            margin-top: 0; 
             padding: 0 var(--side-padding); 
             flex-grow: 1;
         }
@@ -214,9 +211,9 @@
         .item-title {
             padding: 6px 0 15px; 
             font-size: 9px;
-            text-transform: uppercase;
             letter-spacing: 0.02em;
             opacity: 0.9;
+            text-transform: none;
         }
 
         /* 页脚 */
@@ -242,7 +239,12 @@
             font-size: 11px;
             color: var(--muted-color);
             letter-spacing: 0.02em;
-            text-transform: uppercase;
+            text-transform: none;
+        }
+
+        .copyright a {
+            text-decoration: none;
+            color: inherit;
         }
 
         .pagination-container {
@@ -250,7 +252,7 @@
             gap: 15px;
             align-items: center;
             font-size: 11px;
-            text-transform: uppercase;
+            text-transform: none;
         }
 
         .page-btn {
@@ -274,9 +276,10 @@
 <body>
 
     <nav id="main-nav">
-        <!-- 替换为文字 Logo -->
-        <a href="https://neuepoor.com" class="brand">poorlegalguy</a>
+        <!-- Logo 文字及链接由 JS 动态注入 -->
+        <a href="#" class="brand" id="site-logo"></a>
         
+        <!-- 导航链接由 JS 动态生成 -->
         <div class="nav-links" id="desktop-links"></div>
         <button id="menu-toggle" aria-label="Menu">
             <span></span>
@@ -297,52 +300,58 @@
             <button id="next-btn" class="page-btn">NEXT</button>
         </div>
         <div class="copyright">
-            &copy; <span id="year"></span> PoorLegalGuy Archive
+            &copy; <span id="year"></span> <a href="#" id="footer-logo-link"><span id="footer-copy-text"></span></a>
         </div>
     </footer>
 
     <script>
         /**
+         * ==========================================
          * 小白维护区 - 修改这里即可更改页面内容
+         * ==========================================
          */
         const CONFIG = {
-            itemsPerPage: 12, // 每页显示的图片数量
-            currentPageUrl: "https://apparedit.neuepoor.com/", // 当前页面的 URL（用于导航栏高亮）
-            links: [ // 导航栏链接
-                { name: "CATEGORY", url: "https://neuepoor.com/library/" },
-                { name: "APPAREDIT", url: "https://apparedit.neuepoor.com/" },
-                { name: "INFO", url: "https://neuepoor.com/contacts/" }
+            logoText: "PoorLegalGuy", // 网站显示的文字 Logo
+            logoUrl: "https://neuepoor.com", // 点击 Logo 跳转的链接地址
+            
+            itemsPerPage: 12,        // 每页显示的图片数量
+            currentPageUrl: "https://apparedit.neuepoor.com/", // 当前页面链接（用于识别高亮状态）
+            
+            // 导航栏链接：可以随意增加、删除或修改顺序
+            links: [ 
+                { name: "Category", url: "https://neuepoor.com/library/" },
+                { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
+                { name: "Info", url: "https://neuepoor.com/contacts/" }
             ]
         };
 
-        const GALLERY_DATA = [ // 图片数据列表
-            { title: "ITEM 030", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 029", img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 028", img: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 027", img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 026", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 025", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 024", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 023", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 022", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 021", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 019", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" }
+        const GALLERY_DATA = [ // 图片数据列表：[图片名, 图片链接, 跳转链接]
+            { title: "Item 030", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 029", img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 028", img: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 027", img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 026", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 025", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 024", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 023", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 022", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 021", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "Item 019", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" }
         ];
 
-        /* --- 以下为系统逻辑，如无必要请勿修改 --- */
+        /**
+         * ==========================================
+         * 系统核心逻辑 - 如无必要请勿修改
+         * ==========================================
+         */
 
         let currentPage = 1;
         const mainNav = document.getElementById('main-nav');
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
 
+        // 滚动监听
         window.addEventListener('scroll', () => {
             if (window.scrollY > 10) {
                 mainNav.classList.add('scrolled');
@@ -351,6 +360,7 @@
             }
         });
 
+        // 移动端菜单切换
         function toggleMenu() {
             const isActive = mobileMenu.classList.toggle('active');
             const spans = menuToggle.querySelectorAll('span');
@@ -367,6 +377,7 @@
 
         menuToggle.addEventListener('click', toggleMenu);
 
+        // 渲染列表项
         function renderItems() {
             const container = document.getElementById('archive-container');
             if(!container) return;
@@ -395,18 +406,35 @@
             document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
         }
 
+        // 初始化
         function init() {
+            // 注入 Logo 文字和链接
+            const logoEl = document.getElementById('site-logo');
+            logoEl.innerText = CONFIG.logoText;
+            logoEl.href = CONFIG.logoUrl;
+
+            // 页脚 Logo 文字和链接
+            document.getElementById('footer-copy-text').innerText = CONFIG.logoText + " Archive";
+            document.getElementById('footer-logo-link').href = CONFIG.logoUrl;
+
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
             
+            // 清空并重新生成导航链接
+            desktop.innerHTML = "";
+            mobile.innerHTML = "";
+
             CONFIG.links.forEach(link => {
                 const isCurrent = link.url === CONFIG.currentPageUrl;
+                
+                // 桌面端链接
                 const dLink = document.createElement('a');
                 dLink.href = link.url;
                 dLink.innerText = link.name;
                 if(isCurrent) dLink.style.opacity = "0.3";
                 desktop.appendChild(dLink);
 
+                // 移动端链接
                 const mLink = document.createElement('a');
                 mLink.href = link.url;
                 mLink.innerText = link.name;
