@@ -10,9 +10,10 @@
 
     <style>
         /* 版本: ApparEdit v0.8.9 
-           更新内容: 
-           1. 增加滚动监听：初始状态为常规模式，滚动后激活差值反色模式
-           2. 保持字号与 10px 独立边距
+           核心优化: 
+           1. 弃用图片 Logo，改用纯文字 Logo 以解决反色偏色问题。
+           2. 保持 navigation 元素在同一层级，确保 mix-blend-mode 直接作用于 body 背景。
+           3. 滚动后强制文字为 #ffffff 配合 difference 模式实现“智能变色”。
         */
 
         :root {
@@ -51,7 +52,7 @@
             flex-direction: column;
         }
 
-        /* 导航栏基础样式 */
+        /* 导航栏容器 - 必须保持透明且无层级干扰 */
         nav {
             position: fixed;
             top: 0;
@@ -65,17 +66,16 @@
             background-color: transparent;
             z-index: 10000;
             pointer-events: none;
-            transition: mix-blend-mode 0.3s ease;
         }
 
-        /* 初始状态：文字随系统颜色 */
+        /* 导航内的所有可交互元素 */
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
             color: var(--text-color);
             transition: color 0.3s ease;
         }
 
-        /* 激活状态：差值模式开启 */
+        /* 滚动后的核心逻辑：开启差值模式并将基础色转为白色 */
         nav.scrolled {
             mix-blend-mode: difference;
         }
@@ -83,10 +83,10 @@
         nav.scrolled .brand, 
         nav.scrolled .nav-links, 
         nav.scrolled #menu-toggle {
-            /* 激活差值模式时强制为白色以实现反色 */
             color: #ffffff !important; 
         }
 
+        /* 文字 Logo 样式 */
         .brand {
             display: flex;
             align-items: center;
@@ -95,18 +95,6 @@
             font-size: 16px;
             letter-spacing: -0.02em;
             text-decoration: none;
-        }
-
-        .brand img {
-            height: 1.1em;
-            width: auto;
-            display: block;
-            transition: filter 0.3s ease;
-        }
-
-        /* 滚动后图片 Logo 也要反色处理 */
-        nav.scrolled .brand img {
-            filter: invert(1);
         }
 
         .nav-links {
@@ -130,13 +118,6 @@
         .nav-links a:hover { opacity: 0.5; }
 
         /* 移动端菜单开关 */
-        #menu-toggle span {
-            width: 18px;
-            height: 1px;
-            background-color: currentColor; /* 随文字颜色 */
-            transition: 0.3s;
-        }
-
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -150,11 +131,18 @@
             height: var(--nav-h);
         }
 
+        #menu-toggle span {
+            width: 18px;
+            height: 1px;
+            background-color: currentColor; 
+            transition: 0.3s;
+        }
+
         @media (min-width: 768px) {
             #menu-toggle { display: none; }
         }
 
-        /* 移动端全屏菜单（保持常规显示，不应用差值模式） */
+        /* 全屏菜单（不受滚动混合模式影响） */
         #mobile-menu {
             position: fixed;
             top: 0;
@@ -286,11 +274,9 @@
 <body>
 
     <nav id="main-nav">
-        <a href="https://neuepoor.com" class="brand">
-            <img src="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" 
-                 alt="PoorLegalGuy" 
-                 onerror="this.parentElement.innerText='PoorLegalGuy'">
-        </a>
+        <!-- 替换为文字 Logo -->
+        <a href="https://neuepoor.com" class="brand">poorlegalguy</a>
+        
         <div class="nav-links" id="desktop-links"></div>
         <button id="menu-toggle" aria-label="Menu">
             <span></span>
@@ -317,40 +303,46 @@
 
     <script>
         /**
-         * 小白维护区
+         * 小白维护区 - 修改这里即可更改页面内容
          */
         const CONFIG = {
-            itemsPerPage: 12,
-            currentPageUrl: "https://apparedit.neuepoor.com/",
-            links: [
+            itemsPerPage: 12, // 每页显示的图片数量
+            currentPageUrl: "https://apparedit.neuepoor.com/", // 当前页面的 URL（用于导航栏高亮）
+            links: [ // 导航栏链接
                 { name: "CATEGORY", url: "https://neuepoor.com/library/" },
                 { name: "APPAREDIT", url: "https://apparedit.neuepoor.com/" },
                 { name: "INFO", url: "https://neuepoor.com/contacts/" }
             ]
         };
 
-        const GALLERY_DATA = [
-            { title: "ITEM 030", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 029", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 028", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 027", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 026", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 025", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 024", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 023", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 022", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 021", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+        const GALLERY_DATA = [ // 图片数据列表
+            { title: "ITEM 030", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 029", img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 028", img: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 027", img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 026", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 025", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 024", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 023", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 022", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 021", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
             { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
-            { title: "ITEM 019", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" }
+            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
+            { title: "ITEM 019", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" }
         ];
 
-        /* 系统逻辑 */
+        /* --- 以下为系统逻辑，如无必要请勿修改 --- */
+
         let currentPage = 1;
         const mainNav = document.getElementById('main-nav');
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
 
-        // 监听滚动逻辑
         window.addEventListener('scroll', () => {
             if (window.scrollY > 10) {
                 mainNav.classList.add('scrolled');
