@@ -3,27 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Product Detail - ApparEdit v0.9.12</title>
+    <title>Product Detail - ApparEdit v.0.1</title>
     
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEditPDP v0.9.12
-           更新重点: 
-           1. 像素级同步 ApparEdit v0.8.4 Navbar 全套样式（Logo、PC Links、Mobile Menu）。
-           2. 保持 PDP 页面特有的双栏布局逻辑与侧边栏自动缩放。
-           3. 完整保留“小白维护注释”。
-        */
-
+        /* 继承自 Archive 基础样式 */
         :root {
             --bg-color: #ffffff;    
             --text-color: #000000;  
             --border-color: #efefef;
             --muted-color: #999999; 
-            --nav-h: 50px;
-            --nav-bg: rgba(255, 255, 255, 0.8); 
-            --grid-gap: 15px; 
+            --nav-h: 28px; 
+            --grid-gap: 2px; 
+            --side-padding: 2px; 
+            --nav-footer-padding: 10px; 
+
+            --logo-size: 16px;
+            --nav-link-size: 11px;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -32,135 +30,234 @@
                 --text-color: #ffffff;
                 --border-color: #111111;
                 --muted-color: #666666;
-                --nav-bg: rgba(0, 0, 0, 0.8); 
             }
         }
 
-        @media (min-width: 768px) {
-            :root { 
-                --nav-h: 60px; 
-                --grid-gap: 20px; /* 同步 v0.8.4 的 20px */
-            } 
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            padding: 0;
         }
 
-        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; margin: 0; padding: 0; }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
-        /* =========================================
-           🚀 严格同步 ApparEdit v0.8.4 NAVBAR 样式
-           ========================================= */
+        /* 导航栏 (完全还原 Archive) */
         nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-h);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 var(--grid-gap); background-color: var(--nav-bg);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
-            border-bottom: 1px solid var(--border-color); z-index: 10000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-h);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 var(--nav-footer-padding);
+            background-color: transparent;
+            z-index: 10000;
+            pointer-events: none;
+            transform: translateZ(0); 
+            will-change: mix-blend-mode;
         }
 
-        .brand {
-            display: flex; align-items: center; text-transform: uppercase;
-            font-weight: 800; font-size: 16px; letter-spacing: -0.02em;
-            text-decoration: none; color: inherit;
+        .brand, .nav-links, #menu-toggle {
+            pointer-events: auto;
+            color: var(--text-color);
+            transition: color 0.3s ease, font-weight 0.3s ease;
         }
 
-        .brand img { height: 1.2em; width: auto; display: block; }
-
-        .nav-links {
-            display: none; gap: 25px; text-transform: uppercase; 
-            font-size: 10px; letter-spacing: 0.05em; 
+        nav.scrolled { 
+            mix-blend-mode: difference; 
         }
 
-        @media (min-width: 768px) {
-            .nav-links { display: flex; align-items: center; }
-            .brand { font-size: 20px; } /* 同步 v0.8.4 PC端字号 */
+        nav.scrolled .brand, 
+        nav.scrolled .nav-links, 
+        nav.scrolled #menu-toggle { 
+            color: #ffffff !important; 
+            font-weight: 500; 
         }
 
-        .nav-links a { text-decoration: none; color: inherit; transition: opacity 0.3s; }
-        .nav-links a:hover { opacity: 0.4; }
+        .brand { display: flex; align-items: center; font-weight: 600; font-size: var(--logo-size); letter-spacing: -0.02em; text-decoration: none; }
+        .nav-links { display: none; gap: 12px; font-size: var(--nav-link-size); }
+        @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } }
+        .nav-links a { text-decoration: none; color: inherit; opacity: 1; transition: opacity 0.3s; }
+        .nav-links a:hover { opacity: 0.5; }
 
-        .nav-links a.active, 
-        #mobile-menu a.active {
-            opacity: 0.25; cursor: default; pointer-events: none;
-        }
-
-        #menu-toggle {
-            display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 5px;
-            background: none; border: none; cursor: pointer; width: 40px; height: 40px; z-index: 10001;
-        }
-
-        #menu-toggle span {
-            width: 18px; height: 1px; background-color: var(--text-color); transition: 0.3s;
-        }
-
+        #menu-toggle { display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 5px; background: none; border: none; cursor: pointer; width: 32px; height: var(--nav-h); }
+        #menu-toggle span { width: 18px; height: 1px; background-color: currentColor; transition: 0.3s; }
         @media (min-width: 768px) { #menu-toggle { display: none; } }
 
-        #mobile-menu {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            background-color: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            gap: 30px; visibility: hidden; opacity: 0; transition: 0.3s ease;
-        }
-
+        #mobile-menu { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 30px; visibility: hidden; opacity: 0; transition: 0.3s ease; }
         #mobile-menu.active { visibility: visible; opacity: 1; }
+        #mobile-menu a { font-size: 14px; text-decoration: none; color: var(--text-color); }
 
-        #mobile-menu a {
-            font-size: 14px; text-transform: uppercase; text-decoration: none; color: inherit;
+        /* 📦 PDP 特有布局逻辑 */
+        main { 
+            margin-top: 0; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
         }
-
-        /* =========================================
-           📦 PDP 特有布局逻辑
-           ========================================= */
-        main { margin-top: var(--nav-h); flex-grow: 1; display: flex; flex-direction: column; }
-        @media (min-width: 768px) { main { flex-direction: row; height: calc(100vh - var(--nav-h)); overflow: hidden; } }
+        
+        @media (min-width: 768px) { 
+            main { 
+                flex-direction: row; 
+                height: 100vh; 
+                overflow: hidden; 
+            } 
+        }
 
         /* 左侧画廊 */
-        .gallery-wrapper { position: relative; flex: 1.6; display: flex; flex-direction: column; background-color: var(--bg-color); overflow: hidden; }
-        .product-gallery { flex-grow: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .product-gallery::-webkit-scrollbar { display: none; }
-        @media (min-width: 768px) {
-            .product-gallery { flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-snap-type: none; padding: 40px; gap: 40px; }
+        .gallery-wrapper { 
+            position: relative; 
+            flex: 1.6; 
+            display: flex; 
+            flex-direction: column; 
+            background-color: var(--bg-color); 
+            overflow: hidden; 
         }
-        .gallery-item { min-width: 100%; height: 65vh; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; }
-        @media (min-width: 768px) { .gallery-item { height: auto; } }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-        @media (min-width: 768px) { .gallery-item img { height: auto; object-fit: initial; } }
+
+        .product-gallery { 
+            flex-grow: 1; 
+            display: flex; 
+            overflow-x: auto; 
+            scroll-snap-type: x mandatory; 
+            scrollbar-width: none; 
+        }
+
+        .product-gallery::-webkit-scrollbar { display: none; }
+
+        @media (min-width: 768px) {
+            .product-gallery { 
+                flex-direction: column; 
+                overflow-x: hidden; 
+                overflow-y: auto; 
+                scroll-snap-type: none; 
+                padding: 60px 40px 40px 40px; 
+                gap: 40px; 
+            }
+        }
+
+        .gallery-item { 
+            min-width: 100%; 
+            height: 70vh; 
+            scroll-snap-align: start; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        @media (min-width: 768px) { 
+            .gallery-item { height: auto; min-width: auto; width: 100%; } 
+        }
+
+        .gallery-item img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+
+        @media (min-width: 768px) { 
+            .gallery-item img { height: auto; object-fit: contain; max-width: 100%; } 
+        }
 
         /* 移动端底部缩略图导航 */
-        .gallery-nav { height: 60px; display: flex; align-items: center; padding: 0 var(--grid-gap); border-top: 1px solid var(--border-color); gap: 10px; overflow-x: auto; scrollbar-width: none; background-color: var(--bg-color); }
+        .gallery-nav { 
+            height: 60px; 
+            display: flex; 
+            align-items: center; 
+            padding: 0 10px; 
+            border-top: 1px solid var(--border-color); 
+            gap: 10px; 
+            overflow-x: auto; 
+            scrollbar-width: none; 
+            background-color: var(--bg-color); 
+        }
+
         @media (min-width: 768px) { .gallery-nav { display: none; } }
-        .thumb { width: 30px; height: 40px; background-color: #f0f0f0; flex-shrink: 0; cursor: pointer; opacity: 0.5; transition: 0.2s; border: 1px solid transparent; }
+
+        .thumb { 
+            width: 30px; 
+            height: 40px; 
+            background-color: #f0f0f0; 
+            flex-shrink: 0; 
+            cursor: pointer; 
+            opacity: 0.5; 
+            transition: 0.2s; 
+            border: 1px solid transparent; 
+        }
+
         .thumb.active { border-color: var(--text-color); opacity: 1; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
         /* 右侧信息侧边栏 */
-        .info-sidebar { flex: 1; overflow-y: auto; padding: var(--grid-gap); border-top: 1px solid var(--border-color); }
-        @media (min-width: 768px) { .info-sidebar { border-top: none; border-left: 1px solid var(--border-color); padding: 40px; } }
-        .sidebar-content { width: 100%; display: flex; flex-direction: column; gap: 40px; }
-        .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted-color); margin-bottom: -30px; display: block; }
-        .img-wrap { width: 100%; background-color: #f6f6f6; border: 1px solid var(--border-color); overflow: hidden; line-height: 0; }
+        .info-sidebar { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 40px 10px; 
+            border-top: 1px solid var(--border-color); 
+        }
+
+        @media (min-width: 768px) { 
+            .info-sidebar { 
+                border-top: none; 
+                border-left: 1px solid var(--border-color); 
+                padding: 60px 40px 40px 40px; 
+            } 
+        }
+
+        .sidebar-content { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 40px; 
+        }
+
+        .section-label { 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.12em; 
+            color: var(--muted-color); 
+            margin-bottom: -30px; 
+            display: block; 
+        }
+
+        .img-wrap { 
+            width: 100%; 
+            background-color: #f6f6f6; 
+            border: 1px solid var(--border-color); 
+            overflow: hidden; 
+            line-height: 0; 
+        }
+
         .img-wrap img { width: 100%; height: auto; display: block; }
-        .text-block { font-size: 13px; line-height: 1.7; color: var(--text-color); }
-        .text-block p { margin-bottom: 1.5em; }
+
+        .text-block { 
+            font-size: 13px; 
+            line-height: 1.7; 
+            color: var(--text-color); 
+        }
+
+        .text-block p { margin-bottom: 1em; }
+
         @media (prefers-color-scheme: dark) { .img-wrap { background-color: #0a0a0a; } }
+
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a href="https://neuepoor.com" class="brand" id="brand-logo">
-            <img src="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp" 
-                 alt="PoorLegalGuy" 
-                 onerror="this.parentElement.innerText='PoorLegalGuy'">
-        </a>
+    <nav id="main-nav">
+        <a href="#" class="brand" id="site-logo"></a>
         <div class="nav-links" id="desktop-links"></div>
         <button id="menu-toggle" aria-label="Menu">
             <span></span>
@@ -172,47 +269,60 @@
 
     <main>
         <div class="gallery-wrapper">
-            <div class="product-gallery" id="image-gallery"></div>
-            <div class="gallery-nav" id="gallery-thumbs"></div>
+            <div id="product-gallery" class="product-gallery"></div>
+            <div id="gallery-nav" class="gallery-nav"></div>
         </div>
+
         <aside class="info-sidebar">
-            <div class="sidebar-content" id="sidebar-render-area"></div>
+            <div id="sidebar-content" class="sidebar-content"></div>
         </aside>
     </main>
 
     <script>
-        /**
-         * ==========================================
-         * 💡 小白维护手册 (内容配置区)
-         * ==========================================
-         */
-        const DATA_CONFIG = {
-            currentPageUrl: "https://apparedit.neuepoor.com/pdp", // PDP页面的URL
-            navLinks: [
-                { name: "CATEGORY", url: "https://neuepoor.com/library/" },
-                { name: "APPAREDIT", url: "https://apparedit.neuepoor.com/" },
-                { name: "INFO", url: "https://neuepoor.com/contacts/" }
-            ],
+        const CONFIG = {
+            logoText: "PoorLegalGuy", 
+            logoUrl: "https://neuepoor.com", 
+            currentPageUrl: "https://apparedit.neuepoor.com/PDP/", 
+            links: [ 
+                { name: "Category", url: "https://neuepoor.com/library/" },
+                { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
+                { name: "Info", url: "https://neuepoor.com/contacts/" }
+            ]
+        };
+
+        const PDP_DATA = {
             galleryImages: [
                 "https://placehold.co/1200x1600/000/fff?text=IMAGE+01",
-                "https://placehold.co/1200x1600/222/fff?text=IMAGE+03"
+                "https://placehold.co/1200x1600/222/fff?text=IMAGE+02",
+                "https://placehold.co/1200x1600/444/fff?text=IMAGE+03"
             ],
             sidebarBlocks: [
                 { type: "label", content: "Contextual Research" },
                 { type: "image", src: "https://placehold.co/1000x1000/333/fff?text=Square+Image" },
-                { type: "text", content: "This is a simple text block. You can change this text easily." },
+                { type: "text", content: "This is a simple text block. You can change this text easily. It supports multiple paragraphs if needed." },
                 { type: "label", content: "Graphic Archive" },
-                { type: "image", src: "https://placehold.co/1600x900/444/fff?text=Landscape+Image" }
+                { type: "image", src: "https://placehold.co/1600x900/444/fff?text=Landscape+Image" },
+                { type: "text", content: "Final notes or project descriptions go here." }
             ]
         };
 
-        /**
-         * ==========================================
-         * ⚙️ 核心渲染逻辑
-         * ==========================================
-         */
+        const mainNav = document.getElementById('main-nav');
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
+        const gallery = document.getElementById('product-gallery');
+        const galleryNav = document.getElementById('gallery-nav');
+
+        const updateNavClass = (scrollTop) => {
+            if (scrollTop > 10) mainNav.classList.add('scrolled');
+            else mainNav.classList.remove('scrolled');
+        };
+
+        document.querySelector('.info-sidebar').addEventListener('scroll', (e) => updateNavClass(e.target.scrollTop));
+        gallery.addEventListener('scroll', (e) => {
+            const top = window.innerWidth >= 768 ? e.target.scrollTop : 0;
+            updateNavClass(top);
+        });
+        window.addEventListener('scroll', () => updateNavClass(window.scrollY));
 
         function toggleMenu() {
             const isActive = mobileMenu.classList.toggle('active');
@@ -220,7 +330,7 @@
             if(isActive) {
                 spans[0].style.transform = "rotate(45deg) translateY(4px)";
                 spans[1].style.transform = "rotate(-45deg) translateY(-4px)";
-                document.body.style.overflow = 'hidden'; 
+                document.body.style.overflow = 'hidden';
             } else {
                 spans[0].style.transform = "none";
                 spans[1].style.transform = "none";
@@ -228,67 +338,80 @@
             }
         }
 
-        function renderAll() {
-            const desktopLinks = document.getElementById('desktop-links');
-            const mMenu = document.getElementById('mobile-menu');
-            
-            DATA_CONFIG.navLinks.forEach(link => {
-                const isCurrent = link.url === DATA_CONFIG.currentPageUrl;
-                
-                // Desktop
-                const dLink = document.createElement('a');
-                dLink.href = link.url;
-                dLink.innerText = link.name;
-                if(isCurrent) dLink.classList.add('active');
-                desktopLinks.appendChild(dLink);
+        menuToggle.addEventListener('click', toggleMenu);
 
-                // Mobile
-                const mLink = document.createElement('a');
-                mLink.href = link.url;
-                mLink.innerText = link.name;
-                if(isCurrent) mLink.classList.add('active');
-                mLink.onclick = toggleMenu; 
-                mMenu.appendChild(mLink);
-            });
-
-            // Gallery
-            const gallery = document.getElementById('image-gallery');
-            const thumbs = document.getElementById('gallery-thumbs');
-            gallery.innerHTML = DATA_CONFIG.galleryImages.map((src, i) => `
-                <div class="gallery-item" id="item-${i}"><img src="${src}" alt="img"></div>
-            `).join('');
-            thumbs.innerHTML = DATA_CONFIG.galleryImages.map((src, i) => `
-                <div class="thumb ${i===0?'active':''}" data-idx="${i}"><img src="${src}" alt="thumb"></div>
+        function renderPDP() {
+            gallery.innerHTML = PDP_DATA.galleryImages.map((img, idx) => `
+                <div class="gallery-item" id="img-${idx}">
+                    <img src="${img}" alt="Product image ${idx+1}">
+                </div>
             `).join('');
 
-            // Sidebar
-            const sidebar = document.getElementById('sidebar-render-area');
-            sidebar.innerHTML = DATA_CONFIG.sidebarBlocks.map(block => {
-                if(block.type === 'label') return `<span class="section-label">${block.content}</span>`;
-                if(block.type === 'image') return `<div class="img-wrap"><img src="${block.src}"></div>`;
-                if(block.type === 'text') return `<div class="text-block"><p>${block.content}</p></div>`;
+            galleryNav.innerHTML = PDP_DATA.galleryImages.map((img, idx) => `
+                <div class="thumb ${idx === 0 ? 'active' : ''}" onclick="scrollToImage(${idx})">
+                    <img src="${img}" alt="Thumb ${idx+1}">
+                </div>
+            `).join('');
+
+            const sidebar = document.getElementById('sidebar-content');
+            sidebar.innerHTML = PDP_DATA.sidebarBlocks.map(block => {
+                if (block.type === 'label') return `<span class="section-label">${block.content}</span>`;
+                if (block.type === 'image') return `<div class="img-wrap"><img src="${block.src}"></div>`;
+                if (block.type === 'text') return `<div class="text-block"><p>${block.content}</p></div>`;
                 return '';
             }).join('');
-
-            // Interaction
-            document.querySelectorAll('.thumb').forEach(t => {
-                t.onclick = () => {
-                    const idx = t.dataset.idx;
-                    const target = document.getElementById(`item-${idx}`);
-                    if(window.innerWidth < 768) gallery.scrollTo({left: target.offsetLeft, behavior: 'smooth'});
-                };
-            });
-            gallery.onscroll = () => {
-                if(window.innerWidth >= 768) return;
-                const idx = Math.round(gallery.scrollLeft / gallery.offsetWidth);
-                document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === idx));
-            };
         }
 
-        window.onload = () => {
-            menuToggle.addEventListener('click', toggleMenu);
-            renderAll();
+        window.scrollToImage = (index) => {
+            const target = document.getElementById(`img-${index}`);
+            if (window.innerWidth < 768) {
+                gallery.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+            } else {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+            updateThumbs(index);
         };
+
+        gallery.addEventListener('scroll', () => {
+            if (window.innerWidth < 768) {
+                const index = Math.round(gallery.scrollLeft / gallery.offsetWidth);
+                updateThumbs(index);
+            }
+        });
+
+        function updateThumbs(index) {
+            const thumbs = document.querySelectorAll('.thumb');
+            thumbs.forEach((t, i) => {
+                if(i === index) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+        }
+
+        function init() {
+            const logoEl = document.getElementById('site-logo');
+            logoEl.innerText = CONFIG.logoText;
+            logoEl.href = CONFIG.logoUrl;
+
+            const desktop = document.getElementById('desktop-links');
+            const mobile = document.getElementById('mobile-menu');
+            
+            CONFIG.links.forEach(link => {
+                const isCurrent = link.url === CONFIG.currentPageUrl;
+                const dLink = document.createElement('a');
+                dLink.href = link.url; dLink.innerText = link.name;
+                if(isCurrent) dLink.style.opacity = "0.3";
+                desktop.appendChild(dLink);
+
+                const mLink = document.createElement('a');
+                mLink.href = link.url; mLink.innerText = link.name;
+                mLink.onclick = toggleMenu;
+                mobile.appendChild(mLink);
+            });
+
+            renderPDP();
+        }
+
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
