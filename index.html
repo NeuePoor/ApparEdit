@@ -11,8 +11,8 @@
     <style>
         /* 版本: ApparEdit v0.8.9 
            更新内容: 
-           1. 滚动触发逻辑中排除 Logo 图片，保持其原始显示状态
-           2. 导航文字与菜单按钮继续执行差值反色逻辑
+           1. 增加滚动监听：初始状态为常规模式，滚动后激活差值反色模式
+           2. 保持字号与 10px 独立边距
         */
 
         :root {
@@ -65,6 +65,7 @@
             background-color: transparent;
             z-index: 10000;
             pointer-events: none;
+            transition: mix-blend-mode 0.3s ease;
         }
 
         /* 初始状态：文字随系统颜色 */
@@ -74,14 +75,18 @@
             transition: color 0.3s ease;
         }
 
-        /* 激活状态：差值模式开启 (仅应用于文字和按钮容器，避开 Logo) */
+        /* 激活状态：差值模式开启 */
+        nav.scrolled {
+            mix-blend-mode: difference;
+        }
+
+        nav.scrolled .brand, 
         nav.scrolled .nav-links, 
         nav.scrolled #menu-toggle {
-            mix-blend-mode: difference;
+            /* 激活差值模式时强制为白色以实现反色 */
             color: #ffffff !important; 
         }
 
-        /* 滚动后排除 Logo 图片的反色处理 */
         .brand {
             display: flex;
             align-items: center;
@@ -90,14 +95,18 @@
             font-size: 16px;
             letter-spacing: -0.02em;
             text-decoration: none;
-            mix-blend-mode: normal !important; /* 强制保持普通模式 */
         }
 
         .brand img {
             height: 1.1em;
             width: auto;
             display: block;
-            /* 移除之前的 invert(1) 滤镜 */
+            transition: filter 0.3s ease;
+        }
+
+        /* 滚动后图片 Logo 也要反色处理 */
+        nav.scrolled .brand img {
+            filter: invert(1);
         }
 
         .nav-links {
@@ -124,7 +133,7 @@
         #menu-toggle span {
             width: 18px;
             height: 1px;
-            background-color: currentColor; 
+            background-color: currentColor; /* 随文字颜色 */
             transition: 0.3s;
         }
 
@@ -145,7 +154,7 @@
             #menu-toggle { display: none; }
         }
 
-        /* 移动端全屏菜单 */
+        /* 移动端全屏菜单（保持常规显示，不应用差值模式） */
         #mobile-menu {
             position: fixed;
             top: 0;
