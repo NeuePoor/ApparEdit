@@ -55,7 +55,7 @@
             overflow-x: hidden;
         }
 
-        /* 导航栏 */
+        /* 导航栏：核心反色逻辑 */
         nav {
             position: fixed;
             top: 0;
@@ -67,27 +67,32 @@
             align-items: center;
             padding: 0 var(--nav-footer-padding);
             background-color: transparent;
-            z-index: 10000; 
+            z-index: 10001; /* 确保在菜单之上 */
             pointer-events: none;
             transform: translateZ(0); 
-            will-change: mix-blend-mode;
+            transition: mix-blend-mode 0.3s ease;
+        }
+
+        /* 滚动触发反色 */
+        nav.scrolled {
+            mix-blend-mode: difference;
         }
 
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
             color: var(--text-color);
-            transition: color 0.3s ease;
             text-decoration: none;
         }
 
-        /* 核心：滚动触发的反色效果 */
-        nav.scrolled {
-            mix-blend-mode: difference;
-        }
+        /* 反色状态下的文字颜色强制为白（在 Difference 下会根据背景反转） */
         nav.scrolled .brand, 
-        nav.scrolled .nav-links, 
-        nav.scrolled #menu-toggle {
+        nav.scrolled .nav-links a, 
+        nav.scrolled #menu-toggle span {
             color: #ffffff !important;
+            background-color: transparent;
+        }
+        nav.scrolled #menu-toggle span {
+            background-color: #ffffff !important;
         }
 
         .brand {
@@ -123,13 +128,13 @@
             width: 32px;
             height: var(--nav-h);
         }
-        #menu-toggle span { width: 18px; height: 1px; background-color: currentColor; transition: 0.3s; }
+        #menu-toggle span { width: 18px; height: 1px; background-color: var(--text-color); transition: 0.3s; }
 
         @media (min-width: 768px) {
             #menu-toggle { display: none; }
         }
 
-        /* 移动端菜单 */
+        /* 移动端全屏菜单 */
         #mobile-menu {
             position: fixed;
             top: 0;
@@ -137,7 +142,7 @@
             width: 100%;
             height: 100vh;
             background-color: var(--bg-color);
-            z-index: 9999;
+            z-index: 10000;
             display: flex;
             flex-direction: column;
             justify-content: center; 
@@ -165,7 +170,7 @@
             main { flex-direction: row; height: 100vh; overflow: hidden; }
         }
 
-        /* 画廊部分 */
+        /* 画廊 */
         .pdp-gallery-container {
             position: relative;
             flex: 1.6;
@@ -212,14 +217,14 @@
         .gallery-item img { width: 100%; height: auto; display: block; object-fit: cover; }
         @media (min-width: 768px) { .gallery-item img { min-height: 100vh; } }
 
-        /* 侧边栏部分 */
+        /* 侧边栏 */
         .pdp-sidebar {
             flex: 1.0;
             background-color: #e7e8e8; 
             border-left: var(--grid-gap) solid var(--border-color);
             display: flex;
             flex-direction: column;
-            overflow-y: auto; /* 确保在所有尺寸下都允许滚动检测 */
+            overflow-y: auto;
             scrollbar-width: none;
         }
         .pdp-sidebar::-webkit-scrollbar { display: none; }
@@ -266,7 +271,7 @@
         };
 
         const CONFIG = {
-            pageTitle: "PDP - ApparEdit v1.7",
+            pageTitle: "PDP - ApparEdit v1.0.1",
             logoText: "PoorLegalGuy", 
             logoUrl: "index.html", 
             faviconUrl: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp",
@@ -287,16 +292,11 @@
 
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "当前页面已修复滚动检测逻辑：现在同时监听左侧画廊和右侧详情栏。窄屏模式下，横向滑动画廊也会正确触发导航栏反色。",
+            description: "已修复：无论菜单是否开启，滚动反色效果均保持同步。窄屏模式横向滚动图片、纵向滚动详情均会触发 Difference 模式。",
             blocks: [
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
-                { type: "text", content: "更多详情内容测试滚动效果..." },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
-                { type: "text", content: "更多详情内容测试滚动效果..." },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
-                { type: "text", content: "更多详情内容测试滚动效果..." },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "底部占位符。" }
+                { type: "text", content: "测试文字块。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" }
             ]
         };
 
@@ -310,30 +310,26 @@
                 spans[0].style.transform = "rotate(45deg) translateY(4px)";
                 spans[1].style.transform = "rotate(-45deg) translateY(-4px)";
                 document.body.style.overflow = 'hidden';
-                document.getElementById('main-nav').classList.remove('scrolled');
             } else {
                 spans[0].style.transform = "none";
                 spans[1].style.transform = "none";
                 document.body.style.overflow = '';
-                checkScroll();
             }
+            // 开启菜单时不再手动干预 scrolled 类，让它根据滚动位置自然存在
         }
 
-        // 核心：检查两个容器的滚动状态
         function checkScroll() {
             const gallery = document.getElementById('pdp-gallery');
             const sidebar = document.getElementById('pdp-sidebar');
             const nav = document.getElementById('main-nav');
             
-            const threshold = 10;
+            const threshold = 5; // 减小阈值，让反应更灵敏
             
-            // 窄屏下画廊是水平滚动的 scrollLeft，右侧 sidebar 是垂直滚动的 scrollTop
+            // 窄屏横向、宽屏纵向、以及详情纵向滚动检测
             const isGalleryScrolled = (gallery.scrollTop > threshold) || (gallery.scrollLeft > threshold);
             const isSidebarScrolled = sidebar.scrollTop > threshold;
 
-            // 只要有一侧被划出初始位置，导航栏进入反色模式
-            const shouldBeScrolled = isGalleryScrolled || isSidebarScrolled;
-            nav.classList.toggle('scrolled', shouldBeScrolled);
+            nav.classList.toggle('scrolled', isGalleryScrolled || isSidebarScrolled);
         }
 
         function init() {
@@ -344,10 +340,7 @@
             root.style.setProperty('--nav-weight', UI_CONFIG.navWeight);
             root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
 
-            document.title = CONFIG.pageTitle;
-            const logoEl = document.getElementById('site-logo');
-            logoEl.innerText = CONFIG.logoText;
-            logoEl.href = CONFIG.logoUrl;
+            document.getElementById('site-logo').innerText = CONFIG.logoText;
             document.getElementById('dynamic-favicon').href = CONFIG.faviconUrl;
 
             const desktop = document.getElementById('desktop-links');
@@ -379,7 +372,7 @@
 
             document.getElementById('menu-toggle').onclick = toggleMenu;
 
-            // 同时监听左侧画廊和右侧侧边栏
+            // 核心事件监听
             gallery.addEventListener('scroll', () => {
                 const index = Math.round(gallery.scrollLeft / gallery.clientWidth);
                 document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index));
@@ -387,12 +380,11 @@
             });
 
             sidebar.addEventListener('scroll', checkScroll);
-
+            window.addEventListener('resize', checkScroll);
             checkScroll();
         }
 
         window.addEventListener('load', init);
-        window.addEventListener('resize', checkScroll);
     </script>
 </body>
 </html>
