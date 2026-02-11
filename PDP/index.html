@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Product Detail - ApparEdit v.0.1</title>
+    <title>PDP - ApparEdit v1.0.0</title>
     
-    <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
-    <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
+    <link id="dynamic-favicon" rel="icon" type="image/webp" href="">
+    <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
 
     <style>
-        /* 继承自 Archive 基础样式 */
+        /* ApparEdit v1.0.0 核心框架规范同步 */
         :root {
             --bg-color: #ffffff;    
             --text-color: #000000;  
@@ -20,8 +20,10 @@
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
 
-            --logo-size: 16px;
-            --nav-link-size: 11px;
+            --primary-font: "Arial";
+            --logo-size: 21px;
+            --nav-link-size: 12px;
+            --item-title-size: 10px;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -42,16 +44,16 @@
         }
 
         body {
-            font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--primary-font), -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
+            overflow: hidden; 
         }
 
-        /* 导航栏 (完全还原 Archive) */
+        /* 导航栏 */
         nav {
             position: fixed;
             top: 0;
@@ -65,193 +67,169 @@
             background-color: transparent;
             z-index: 10000;
             pointer-events: none;
-            transform: translateZ(0); 
-            will-change: mix-blend-mode;
+            mix-blend-mode: difference;
         }
 
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
-            color: var(--text-color);
-            transition: color 0.3s ease, font-weight 0.3s ease;
+            color: #ffffff !important;
+            transition: opacity 0.3s ease;
         }
 
-        nav.scrolled { 
-            mix-blend-mode: difference; 
+        .brand {
+            display: flex;
+            align-items: center;
+            font-weight: 600; 
+            font-size: var(--logo-size);
+            letter-spacing: -0.02em;
+            text-decoration: none;
         }
 
-        nav.scrolled .brand, 
-        nav.scrolled .nav-links, 
-        nav.scrolled #menu-toggle { 
-            color: #ffffff !important; 
-            font-weight: 500; 
+        .nav-links {
+            display: none; 
+            gap: 12px;
+            font-size: var(--nav-link-size);
+            font-weight: 600;
         }
 
-        .brand { display: flex; align-items: center; font-weight: 600; font-size: var(--logo-size); letter-spacing: -0.02em; text-decoration: none; }
-        .nav-links { display: none; gap: 12px; font-size: var(--nav-link-size); }
-        @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } }
-        .nav-links a { text-decoration: none; color: inherit; opacity: 1; transition: opacity 0.3s; }
+        @media (min-width: 768px) { 
+            .nav-links { display: flex; } 
+        }
+
+        .nav-links a { text-decoration: none; color: inherit; }
         .nav-links a:hover { opacity: 0.5; }
 
-        #menu-toggle { display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 5px; background: none; border: none; cursor: pointer; width: 32px; height: var(--nav-h); }
-        #menu-toggle span { width: 18px; height: 1px; background-color: currentColor; transition: 0.3s; }
-        @media (min-width: 768px) { #menu-toggle { display: none; } }
-
-        #mobile-menu { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 30px; visibility: hidden; opacity: 0; transition: 0.3s ease; }
-        #mobile-menu.active { visibility: visible; opacity: 1; }
-        #mobile-menu a { font-size: 14px; text-decoration: none; color: var(--text-color); }
-
-        /* 📦 PDP 特有布局逻辑 */
-        main { 
-            margin-top: 0; 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
+        #menu-toggle {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 32px;
+            height: var(--nav-h);
         }
-        
-        @media (min-width: 768px) { 
-            main { 
-                flex-direction: row; 
-                height: 100vh; 
-                overflow: hidden; 
-            } 
+
+        #menu-toggle span { width: 18px; height: 1px; background-color: currentColor; }
+
+        @media (min-width: 768px) {
+            #menu-toggle { display: none; }
+        }
+
+        /* 移动端菜单 */
+        #mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s ease;
+        }
+        #mobile-menu.active { visibility: visible; opacity: 1; }
+
+        /* PDP 布局结构 */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        @media (min-width: 768px) {
+            main { flex-direction: row; }
         }
 
         /* 左侧画廊 */
-        .gallery-wrapper { 
-            position: relative; 
-            flex: 1.6; 
-            display: flex; 
-            flex-direction: column; 
-            background-color: var(--bg-color); 
-            overflow: hidden; 
+        .pdp-gallery {
+            flex: 1.6;
+            overflow-y: auto;
+            scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--grid-gap);
+            background-color: var(--border-color);
         }
 
-        .product-gallery { 
-            flex-grow: 1; 
-            display: flex; 
-            overflow-x: auto; 
-            scroll-snap-type: x mandatory; 
-            scrollbar-width: none; 
-        }
-
-        .product-gallery::-webkit-scrollbar { display: none; }
-
-        @media (min-width: 768px) {
-            .product-gallery { 
-                flex-direction: column; 
-                overflow-x: hidden; 
-                overflow-y: auto; 
-                scroll-snap-type: none; 
-                padding: 60px 40px 40px 40px; 
-                gap: 40px; 
+        @media (max-width: 767px) {
+            .pdp-gallery {
+                flex: none;
+                height: 60vh;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+            }
+            .gallery-item {
+                min-width: 100%;
+                height: 100%;
+                scroll-snap-align: start;
             }
         }
 
-        .gallery-item { 
-            min-width: 100%; 
-            height: 70vh; 
-            scroll-snap-align: start; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
         }
 
-        @media (min-width: 768px) { 
-            .gallery-item { height: auto; min-width: auto; width: 100%; } 
+        @media (min-width: 768px) {
+            .gallery-item img { min-height: 100vh; }
         }
 
-        .gallery-item img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
+        /* 右侧侧边栏 */
+        .pdp-sidebar {
+            flex: 1.0;
+            background-color: var(--bg-color);
+            border-left: var(--grid-gap) solid var(--border-color);
+            overflow-y: auto;
+            scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
         }
 
-        @media (min-width: 768px) { 
-            .gallery-item img { height: auto; object-fit: contain; max-width: 100%; } 
+        .sidebar-scroll-container {
+            padding-top: var(--nav-h); 
+            flex-grow: 1;
         }
 
-        /* 移动端底部缩略图导航 */
-        .gallery-nav { 
-            height: 60px; 
-            display: flex; 
-            align-items: center; 
-            padding: 0 10px; 
-            border-top: 1px solid var(--border-color); 
-            gap: 10px; 
-            overflow-x: auto; 
-            scrollbar-width: none; 
-            background-color: var(--bg-color); 
+        .sidebar-content {
+            padding: 40px 20px 100px; /* 底部加深间距确保滑动感 */
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
         }
 
-        @media (min-width: 768px) { .gallery-nav { display: none; } }
-
-        .thumb { 
-            width: 30px; 
-            height: 40px; 
-            background-color: #f0f0f0; 
-            flex-shrink: 0; 
-            cursor: pointer; 
-            opacity: 0.5; 
-            transition: 0.2s; 
-            border: 1px solid transparent; 
+        .sidebar-media img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
-        .thumb.active { border-color: var(--text-color); opacity: 1; }
-        .thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* 右侧信息侧边栏 */
-        .info-sidebar { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 40px 10px; 
-            border-top: 1px solid var(--border-color); 
+        .sidebar-text {
+            font-size: var(--item-title-size);
+            line-height: 1.8;
+            letter-spacing: 0.02em;
         }
 
-        @media (min-width: 768px) { 
-            .info-sidebar { 
-                border-top: none; 
-                border-left: 1px solid var(--border-color); 
-                padding: 60px 40px 40px 40px; 
-            } 
+        .sidebar-text h1 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
 
-        .sidebar-content { 
-            width: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 40px; 
-        }
-
-        .section-label { 
-            font-size: 10px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.12em; 
-            color: var(--muted-color); 
-            margin-bottom: -30px; 
-            display: block; 
-        }
-
-        .img-wrap { 
-            width: 100%; 
-            background-color: #f6f6f6; 
-            border: 1px solid var(--border-color); 
-            overflow: hidden; 
-            line-height: 0; 
-        }
-
-        .img-wrap img { width: 100%; height: auto; display: block; }
-
-        .text-block { 
-            font-size: 13px; 
-            line-height: 1.7; 
-            color: var(--text-color); 
-        }
-
-        .text-block p { margin-bottom: 1em; }
-
-        @media (prefers-color-scheme: dark) { .img-wrap { background-color: #0a0a0a; } }
-
-        ::-webkit-scrollbar { display: none; }
+        ::-webkit-scrollbar { display: none; } 
     </style>
 </head>
 <body>
@@ -268,61 +246,66 @@
     <div id="mobile-menu"></div>
 
     <main>
-        <div class="gallery-wrapper">
-            <div id="product-gallery" class="product-gallery"></div>
-            <div id="gallery-nav" class="gallery-nav"></div>
-        </div>
-
-        <aside class="info-sidebar">
-            <div id="sidebar-content" class="sidebar-content"></div>
+        <!-- 左侧：产品画廊 -->
+        <div id="pdp-gallery" class="pdp-gallery"></div>
+        
+        <!-- 右侧：详情侧边栏 -->
+        <aside class="pdp-sidebar">
+            <div class="sidebar-scroll-container">
+                <div id="sidebar-content" class="sidebar-content"></div>
+            </div>
         </aside>
     </main>
 
     <script>
+        /**
+         * ==========================================
+         * 小白维护区
+         * ==========================================
+         */
+        
+        const UI_CONFIG = {
+            primaryFont: "Arial",
+            logoSize: "21px",
+            navLinksSize: "12px",
+            itemTitleSize: "10px"
+        };
+
         const CONFIG = {
+            pageTitle: "PDP - PoorLegalGuy",
             logoText: "PoorLegalGuy", 
-            logoUrl: "https://neuepoor.com", 
-            currentPageUrl: "https://apparedit.neuepoor.com/PDP/", 
+            logoUrl: "neuepoor.com", 
+            faviconUrl: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp",
+            currentPageUrl: "pdp.html",
             links: [ 
-                { name: "Category", url: "https://neuepoor.com/library/" },
-                { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
-                { name: "Info", url: "https://neuepoor.com/contacts/" }
+                { name: "Category", url: "https://apparedit.neuepoor.com/" },
+                { name: "Archive", url: "https://apparedit.neuepoor.com/" },
+                { name: "A0260211", url: "https://apparedit.neuepoor.com/PDP/" }
             ]
         };
+
+        const GALLERY_DATA = [
+            { img: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
+            { img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
+            { img: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
+            { img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" }
+        ];
 
         const PDP_DATA = {
-            galleryImages: [
-                "https://placehold.co/1200x1600/000/fff?text=IMAGE+01",
-                "https://placehold.co/1200x1600/222/fff?text=IMAGE+02",
-                "https://placehold.co/1200x1600/444/fff?text=IMAGE+03"
-            ],
-            sidebarBlocks: [
-                { type: "label", content: "Contextual Research" },
-                { type: "image", src: "https://placehold.co/1000x1000/333/fff?text=Square+Image" },
-                { type: "text", content: "This is a simple text block. You can change this text easily. It supports multiple paragraphs if needed." },
-                { type: "label", content: "Graphic Archive" },
-                { type: "image", src: "https://placehold.co/1600x900/444/fff?text=Landscape+Image" },
-                { type: "text", content: "Final notes or project descriptions go here." }
+            title: "ITEM 030 / VOLUMETRIC STUDY",
+            description: "这是移除 Footer 后的纯净版本。侧边栏现在完全由内容驱动，提供了更专注的阅读体验。",
+            blocks: [
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
+                { type: "text", content: "侧边栏内容流示例。在 ApparEdit 框架下，我们优先保证视觉的秩序感，即使没有页脚，内容的垂直节奏依然清晰。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
+                { type: "text", content: "继续滑动可预览更多媒体块。右侧区域提供了充足的底部留白，确保最后一段内容也能舒适地呈现在屏幕中心。" }
             ]
         };
 
-        const mainNav = document.getElementById('main-nav');
+        /** * 系统核心逻辑 */
+
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
-        const gallery = document.getElementById('product-gallery');
-        const galleryNav = document.getElementById('gallery-nav');
-
-        const updateNavClass = (scrollTop) => {
-            if (scrollTop > 10) mainNav.classList.add('scrolled');
-            else mainNav.classList.remove('scrolled');
-        };
-
-        document.querySelector('.info-sidebar').addEventListener('scroll', (e) => updateNavClass(e.target.scrollTop));
-        gallery.addEventListener('scroll', (e) => {
-            const top = window.innerWidth >= 768 ? e.target.scrollTop : 0;
-            updateNavClass(top);
-        });
-        window.addEventListener('scroll', () => updateNavClass(window.scrollY));
 
         function toggleMenu() {
             const isActive = mobileMenu.classList.toggle('active');
@@ -341,53 +324,47 @@
         menuToggle.addEventListener('click', toggleMenu);
 
         function renderPDP() {
-            gallery.innerHTML = PDP_DATA.galleryImages.map((img, idx) => `
-                <div class="gallery-item" id="img-${idx}">
-                    <img src="${img}" alt="Product image ${idx+1}">
-                </div>
-            `).join('');
-
-            galleryNav.innerHTML = PDP_DATA.galleryImages.map((img, idx) => `
-                <div class="thumb ${idx === 0 ? 'active' : ''}" onclick="scrollToImage(${idx})">
-                    <img src="${img}" alt="Thumb ${idx+1}">
+            const gallery = document.getElementById('pdp-gallery');
+            gallery.innerHTML = GALLERY_DATA.map(item => `
+                <div class="gallery-item">
+                    <img src="${item.img}" loading="lazy" alt="Gallery Image">
                 </div>
             `).join('');
 
             const sidebar = document.getElementById('sidebar-content');
-            sidebar.innerHTML = PDP_DATA.sidebarBlocks.map(block => {
-                if (block.type === 'label') return `<span class="section-label">${block.content}</span>`;
-                if (block.type === 'image') return `<div class="img-wrap"><img src="${block.src}"></div>`;
-                if (block.type === 'text') return `<div class="text-block"><p>${block.content}</p></div>`;
-                return '';
-            }).join('');
+            let contentHtml = `
+                <div class="sidebar-text">
+                    <h1>${PDP_DATA.title}</h1>
+                    <p>${PDP_DATA.description}</p>
+                </div>
+            `;
+
+            PDP_DATA.blocks.forEach(block => {
+                if(block.type === 'image') {
+                    contentHtml += `<div class="sidebar-media"><img src="${block.src}"></div>`;
+                } else if(block.type === 'text') {
+                    contentHtml += `<div class="sidebar-text"><p>${block.content}</p></div>`;
+                }
+            });
+
+            sidebar.innerHTML = contentHtml;
         }
 
-        window.scrollToImage = (index) => {
-            const target = document.getElementById(`img-${index}`);
-            if (window.innerWidth < 768) {
-                gallery.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
-            } else {
-                target.scrollIntoView({ behavior: 'smooth' });
-            }
-            updateThumbs(index);
-        };
-
-        gallery.addEventListener('scroll', () => {
-            if (window.innerWidth < 768) {
-                const index = Math.round(gallery.scrollLeft / gallery.offsetWidth);
-                updateThumbs(index);
-            }
-        });
-
-        function updateThumbs(index) {
-            const thumbs = document.querySelectorAll('.thumb');
-            thumbs.forEach((t, i) => {
-                if(i === index) t.classList.add('active');
-                else t.classList.remove('active');
-            });
+        function applyDynamicUI() {
+            const root = document.documentElement;
+            root.style.setProperty('--primary-font', UI_CONFIG.primaryFont);
+            root.style.setProperty('--logo-size', UI_CONFIG.logoSize);
+            root.style.setProperty('--nav-link-size', UI_CONFIG.navLinksSize);
+            root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
         }
 
         function init() {
+            applyDynamicUI();
+            document.title = CONFIG.pageTitle;
+            
+            const favEl = document.getElementById('dynamic-favicon');
+            if(favEl) favEl.href = CONFIG.faviconUrl;
+
             const logoEl = document.getElementById('site-logo');
             logoEl.innerText = CONFIG.logoText;
             logoEl.href = CONFIG.logoUrl;
@@ -396,12 +373,9 @@
             const mobile = document.getElementById('mobile-menu');
             
             CONFIG.links.forEach(link => {
-                const isCurrent = link.url === CONFIG.currentPageUrl;
                 const dLink = document.createElement('a');
                 dLink.href = link.url; dLink.innerText = link.name;
-                if(isCurrent) dLink.style.opacity = "0.3";
                 desktop.appendChild(dLink);
-
                 const mLink = document.createElement('a');
                 mLink.href = link.url; mLink.innerText = link.name;
                 mLink.onclick = toggleMenu;
@@ -410,7 +384,6 @@
 
             renderPDP();
         }
-
         window.addEventListener('load', init);
     </script>
 </body>
