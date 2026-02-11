@@ -189,15 +189,19 @@
         @media (min-width: 768px) { .pdp-sidebar { overflow-y: auto; scrollbar-width: none; } }
 
         .sidebar-scroll-container { padding-top: var(--nav-h); }
-        .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; gap: 40px; }
+        .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; }
         
-        /* 侧边栏文字样式 */
+        /* 侧边栏文字样式 (小白方案 B 核心逻辑) */
         .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; color: var(--text-color); }
         .sidebar-text h1 { font-size: 18px; margin-bottom: 16px; font-weight: var(--nav-weight); letter-spacing: -0.01em; }
-        .sidebar-text p { margin-bottom: 12px; }
+        .sidebar-text p { 
+            margin-bottom: 12px; 
+            white-space: pre-wrap; /* 允许在维护区直接敲回车换行 */
+            word-break: break-all; /* 强制乱码或长URL断行 */
+        }
         
         /* 侧边栏图片样式 */
-        .sidebar-image { width: 100%; margin: 10px 0; }
+        .sidebar-image { width: 100%; margin: 0 0 12px 0; }
         .sidebar-image img { width: 100%; height: auto; display: block; }
         
         ::-webkit-scrollbar { display: none; }
@@ -274,18 +278,22 @@
 
         // 4. 侧边栏内容维护
         const SIDEBAR_DATA = {
-            title: "ITEM 030 / VOLUMETRIC STUDY",
+            title: "this is tittle",
             content: [
-                { type: "text", value: "这是项目的第一段正文。你可以在维护区的 content 数组中随意调整这个段落和图片的位置。" },
+                { type: "text", value: "测试一下正文的选项，if thie suppor pooreelaehaed." },
                 { type: "image", value: "https://placehold.co/800x600/FF5733/FFFFFF?text=Sidebar+Image+1" },
                 { type: "text", value: "这是第二段正文。通过增加图片链接，可以实现图文混排的效果。" },
                 { type: "image", value: "https://placehold.co/800x600/33FF57/000000?text=Sidebar+Image+2" },
                 { type: "image", value: "https://placehold.co/800x600/3357FF/FFFFFF?text=Sidebar+Image+3" },
-                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
+                { type: "text", value: "这是测试一段完整文字的排版问题asljlajfklajfasfjdalkasjljalkjaflsdjfkdjaklaffadsjjfalkaljfdsk。" },
                 { type: "image", value: "https://placehold.co/800x600/F333FF/FFFFFF?text=Sidebar+Image+4" },
+                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
                 { type: "image", value: "https://placehold.co/800x600/33FFF3/000000?text=Sidebar+Image+5" },
+                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
                 { type: "image", value: "https://placehold.co/800x1200/FFB833/000000?text=Sidebar+Image+6" },
+                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
                 { type: "image", value: "https://placehold.co/800x600/8D33FF/FFFFFF?text=Sidebar+Image+7" },
+                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
                 { type: "image", value: "https://placehold.co/1200x800/FF3385/FFFFFF?text=Sidebar+Image+8" },
                 { type: "text", value: "页面底部可以作为备注或者版权信息的区域。" }
             ]
