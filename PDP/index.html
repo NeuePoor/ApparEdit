@@ -57,7 +57,7 @@
             overflow-x: hidden;
         }
 
-        /* 导航栏：完全对标 v1.0.0 的 Difference 渲染 */
+        /* 导航栏：100% 对标 v1.0.0 的 Difference 混合渲染 */
         nav {
             position: fixed;
             top: 0;
@@ -95,6 +95,7 @@
             font-size: var(--nav-link-size);
             font-weight: var(--nav-weight); 
             letter-spacing: 0.02em; 
+            /* 注意：此处已根据 v1.0.0 要求删除了强制大写逻辑 */
         }
 
         @media (min-width: 768px) { 
@@ -123,7 +124,7 @@
             #menu-toggle { display: none; }
         }
 
-        /* PDP 布局 */
+        /* PDP 核心布局架构 */
         main {
             flex-grow: 1;
             display: flex;
@@ -138,12 +139,14 @@
             }
         }
 
-        /* 画廊 */
+        /* 画廊容器：左侧主展示区 */
         .pdp-gallery-container {
             position: relative;
             flex: 1.6;
             background-color: var(--border-color);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .pdp-gallery {
@@ -152,17 +155,39 @@
             height: 100%;
         }
 
+        /* 移动端/窄屏：横向滑动 + 自动指示器 */
         @media (max-width: 767px) {
             .pdp-gallery {
                 flex-direction: row;
                 overflow-x: auto;
                 scroll-snap-type: x mandatory;
                 scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
             }
             .pdp-gallery::-webkit-scrollbar { display: none; }
             .gallery-item { min-width: 100%; height: auto; scroll-snap-align: start; }
+            
+            .gallery-dots {
+                position: absolute;
+                bottom: 15px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 8px;
+                z-index: 10;
+                pointer-events: none;
+            }
+            .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: rgba(255,255,255,0.3);
+                transition: background-color 0.3s;
+            }
+            .dot.active { background-color: #ffffff; }
         }
 
+        /* 桌面端/宽屏：纵向滚动 */
         @media (min-width: 768px) {
             .pdp-gallery {
                 flex-direction: column;
@@ -172,6 +197,7 @@
             }
             .pdp-gallery::-webkit-scrollbar { display: none; }
             .gallery-item { width: 100%; }
+            .gallery-dots { display: none; }
         }
 
         .gallery-item img {
@@ -185,10 +211,10 @@
             .gallery-item img { min-height: 100vh; }
         }
 
-        /* 侧边栏：维持 #e7e8e8 方便检查反色 */
+        /* 详情侧边栏：右侧滚动区 */
         .pdp-sidebar {
             flex: 1.0;
-            background-color: #e7e8e8; 
+            background-color: #e7e8e8; /* 用户指定的测试背景色 */
             border-left: var(--grid-gap) solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -200,14 +226,14 @@
         }
 
         .sidebar-scroll-container { padding-top: var(--nav-h); flex-grow: 1; }
-        .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; gap: 35px; }
+        .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; gap: 40px; }
         
-        .sidebar-media { width: 100%; margin-top: 10px; }
+        .sidebar-media { width: 100%; margin-top: 5px; }
         .sidebar-media img { width: 100%; height: auto; display: block; object-fit: cover; }
 
         .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; letter-spacing: 0.02em; }
         .sidebar-text h1 { font-size: 18px; margin-bottom: 12px; font-weight: var(--nav-weight); }
-        .sidebar-text p { margin-bottom: 1.5em; color: var(--text-color); }
+        .sidebar-text p { margin-bottom: 1em; color: var(--text-color); }
     </style>
 </head>
 <body>
@@ -224,6 +250,8 @@
     <main>
         <div class="pdp-gallery-container">
             <div id="pdp-gallery" class="pdp-gallery"></div>
+            <!-- 窄屏专用的指示圆点：数量由 JS 根据图片自动渲染 -->
+            <div id="gallery-dots" class="gallery-dots"></div>
         </div>
         <aside class="pdp-sidebar">
             <div class="sidebar-scroll-container">
@@ -243,7 +271,7 @@
         };
 
         /* 【小白维护区】：基础配置
-           导航栏文字已支持自定义大小写。
+           支持自定义区分大小写，请直接在 name 中修改。
         */
         const CONFIG = {
             pageTitle: "PDP - ApparEdit v1.0.0",
@@ -258,7 +286,7 @@
             ]
         };
 
-        /* 8 张测试图片数据 */
+        /* 【核心数据区】：左侧画廊 - 精准 8 张图片 */
         const GALLERY_DATA = [
             { img: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
             { img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
@@ -270,21 +298,27 @@
             { img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" }
         ];
 
-        /* 侧边栏丰富的内容填充 */
+        /* 【核心数据区】：右侧详情 - 精准 8 组块 */
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "当前版本已深度对标 ApparEdit v1.0.0 源码逻辑。右侧详情栏背景色已临时设定为 #e7e8e8 以供粗细校验。以下为 8 张图片的填充测试，用于检查滚动流畅度及布局稳定性。",
+            description: "当前页面已填充 8x8 完整测试模组。左侧画廊包含 8 张主图；右侧详情包含 8 个内容块。背景色已调整为 #e7e8e8 以供校验字体反色渲染。",
             blocks: [
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "通过将 navWeight 设为 600，配合 -webkit-font-smoothing: antialiased，文字在反色模式下应呈现锐利且饱和的质感。" },
+                { type: "text", content: "Block 01: 测试详情页首个内容块与标题的垂直间距。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
-                { type: "text", content: "补充区块 01：测试侧边栏文字间距与图片边缘的平衡感。" },
+                { type: "text", content: "Block 02: 检查侧边栏独立滚动的流畅性，确保不产生布局抖动。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
-                { type: "text", content: "补充区块 02：在 768px 以上分辨率，侧边栏具备独立滚动条，且滚动时不干扰左侧画廊。" },
+                { type: "text", content: "Block 03: 校验 mix-blend-mode 对文字在 #e7e8e8 背景下的反向色彩影响。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
-                { type: "text", content: "补充区块 03：色彩校准图，用于检查 mix-blend-mode 在不同色相下的表现。" },
+                { type: "text", content: "Block 04: 色彩校准块。在不同色温的显示器上检查暗部细节表现。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "补充区块 04：页面底部留白测试，确保 Footer 逻辑（如有）或滚动到底部时的视觉完整性。" }
+                { type: "text", content: "Block 05: 这里的 navWeight 为 600，旨在模拟 v1.0.0 的印刷感权重。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
+                { type: "text", content: "Block 06: 测试侧边栏图片与文字的配比平衡。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
+                { type: "text", content: "Block 07: 接近底部的滚动测试点。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
+                { type: "text", content: "Block 08: 最后一个内容块，下方应留出足够的 Padding 以便完全滑出屏幕边缘。" }
             ]
         };
 
@@ -297,9 +331,53 @@
             root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
         }
 
+        function initGallery() {
+            const gallery = document.getElementById('pdp-gallery');
+            const dotsContainer = document.getElementById('gallery-dots');
+            
+            // 渲染 8 张图片
+            gallery.innerHTML = GALLERY_DATA.map(item => `
+                <div class="gallery-item"><img src="${item.img}" loading="lazy"></div>
+            `).join('');
+
+            // 渲染 8 个圆点
+            dotsContainer.innerHTML = GALLERY_DATA.map((_, i) => `
+                <div class="dot ${i === 0 ? 'active' : ''}"></div>
+            `).join('');
+
+            // 滑动监听：实时同步圆点状态
+            gallery.addEventListener('scroll', () => {
+                const scrollLeft = gallery.scrollLeft;
+                const width = gallery.offsetWidth;
+                if (width === 0) return;
+                const index = Math.round(scrollLeft / width);
+                
+                const dots = dotsContainer.querySelectorAll('.dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            });
+        }
+
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar-content');
+            let contentHtml = `<div class="sidebar-text"><h1>${PDP_DATA.title}</h1><p>${PDP_DATA.description}</p></div>`;
+            
+            // 循环渲染 8 个内容块
+            PDP_DATA.blocks.forEach(block => {
+                if(block.type === 'image') {
+                    contentHtml += `<div class="sidebar-media"><img src="${block.src}"></div>`;
+                } else if(block.type === 'text') {
+                    contentHtml += `<div class="sidebar-text"><p>${block.content}</p></div>`;
+                }
+            });
+            sidebar.innerHTML = contentHtml;
+        }
+
         function init() {
             applyDynamicUI();
             document.title = CONFIG.pageTitle;
+            
             const logoEl = document.getElementById('site-logo');
             logoEl.innerText = CONFIG.logoText;
             logoEl.href = CONFIG.logoUrl;
@@ -313,25 +391,13 @@
                 const isCurrent = link.url === CONFIG.currentPageUrl;
                 const dLink = document.createElement('a');
                 dLink.href = link.url; 
-                dLink.innerText = link.name; 
+                dLink.innerText = link.name; // 尊重 CONFIG 输入的大小写
                 if(isCurrent) dLink.style.opacity = "0.3";
                 desktop.appendChild(dLink);
             });
 
-            // 渲染左侧画廊
-            const gallery = document.getElementById('pdp-gallery');
-            gallery.innerHTML = GALLERY_DATA.map(item => `
-                <div class="gallery-item"><img src="${item.img}" loading="lazy"></div>
-            `).join('');
-
-            // 渲染右侧详情
-            const sidebar = document.getElementById('sidebar-content');
-            let contentHtml = `<div class="sidebar-text"><h1>${PDP_DATA.title}</h1><p>${PDP_DATA.description}</p></div>`;
-            PDP_DATA.blocks.forEach(block => {
-                if(block.type === 'image') contentHtml += `<div class="sidebar-media"><img src="${block.src}"></div>`;
-                else if(block.type === 'text') contentHtml += `<div class="sidebar-text"><p>${block.content}</p></div>`;
-            });
-            sidebar.innerHTML = contentHtml;
+            initGallery();
+            initSidebar();
         }
 
         window.addEventListener('load', init);
