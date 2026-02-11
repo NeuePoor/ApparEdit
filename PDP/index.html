@@ -54,7 +54,7 @@
             overflow-x: hidden;
         }
 
-        /* 导航栏 - 同步 v1.0.0 逻辑 */
+        /* 导航栏 - 严格同步 v1.0.0 样式 */
         nav {
             position: fixed;
             top: 0;
@@ -73,26 +73,26 @@
 
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
-            color: #ffffff !important;
+            color: #ffffff !important; /* 混合模式下显示为白色（与黑色背景差值为白色） */
             transition: opacity 0.3s ease;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            font-weight: 600; 
+            font-weight: 600; /* 严格对齐 v1.0.0 */
             font-size: var(--logo-size);
             letter-spacing: -0.02em;
             text-decoration: none;
-            text-transform: none; /* 修复：区分大小写 */
+            text-transform: none; 
         }
 
         .nav-links {
             display: none; 
             gap: 12px;
             font-size: var(--nav-link-size);
-            font-weight: 600;
-            text-transform: none; /* 修复：区分大小写 */
+            font-weight: 600; /* 严格对齐 v1.0.0 */
+            text-transform: none; 
             letter-spacing: 0.05em;
         }
 
@@ -122,7 +122,7 @@
             #menu-toggle { display: none; }
         }
 
-        /* 移动端菜单 - 修复样式同步 v1.0.0 */
+        /* 移动端菜单 - 修复字体粗细与大小写同步 v1.0.0 */
         #mobile-menu {
             position: fixed;
             top: 0;
@@ -143,11 +143,12 @@
         #mobile-menu.active { visibility: visible; opacity: 1; }
         
         #mobile-menu a {
-            font-size: 14px;
+            font-size: var(--nav-link-size); /* 严格同步 12px */
             text-decoration: none;
             color: var(--text-color);
-            font-weight: 600;
-            text-transform: none; /* 修复：区分大小写 */
+            font-weight: 600; /* 严格同步 600 */
+            text-transform: none; 
+            letter-spacing: 0.05em;
         }
 
         /* PDP 布局结构 */
@@ -178,7 +179,6 @@
             .pdp-gallery {
                 flex: none;
                 width: 100%;
-                /* 修复：移除固定高度限制，适应图片比例 */
                 height: auto; 
                 overflow-y: visible;
             }
@@ -195,7 +195,7 @@
             width: 100%;
             height: auto;
             display: block;
-            object-fit: contain; /* 确保比例完整显示 */
+            object-fit: contain; 
             image-rendering: -webkit-optimize-contrast;
         }
 
@@ -311,12 +311,12 @@
 
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "已修复窄屏图片比例自适应问题。导航栏和折叠菜单现在严格遵循区分大小写的规范，且抗锯齿渲染已全局生效。",
+            description: "已修正宽屏/窄屏导航样式。现在字体粗细（600）及大小写逻辑已完全同步 ApparEdit v1.0.0。",
             blocks: [
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "在窄屏模式下，画廊不再强制设为 60vh 高度，而是根据图片内容垂直排列并自动适应比例，消除了底部多余的空白。" },
+                { type: "text", content: "通过修正 #mobile-menu a 的 font-weight 和字号，折叠菜单现在在窄屏下也能保持 V1.0.0 的精致外观。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
-                { type: "text", content: "移动端折叠菜单的字体大小、粗细及大小写格式已完全同步 Archive 页面标准。" }
+                { type: "text", content: "所有配置项均已由小白维护区接管，修改 UI_CONFIG 将实时影响页面渲染效果。" }
             ]
         };
 
