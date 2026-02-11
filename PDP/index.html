@@ -20,11 +20,11 @@
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
 
-            /* 动态字体变量：由 JS 中的 UI_CONFIG 控制 */
+            /* 动态字体变量 */
             --primary-font: "Arial";
             --logo-size: 21px;
             --nav-link-size: 12px;
-            --nav-weight: 600; /* 默认对标 v1.0.0 粗细感 */
+            --nav-weight: 600; 
             --item-title-size: 10px;
         }
 
@@ -37,7 +37,7 @@
             }
         }
 
-        /* 极致渲染优化：这是 v1.0.0 质感的来源 */
+        /* 极致渲染优化 */
         * {
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased; 
@@ -57,7 +57,7 @@
             overflow-x: hidden;
         }
 
-        /* 导航栏：完全对标 v1.0.0 的混合模式渲染 */
+        /* 导航栏：完全对标 v1.0.0 的 Difference 渲染 */
         nav {
             position: fixed;
             top: 0;
@@ -87,7 +87,6 @@
             font-size: var(--logo-size);
             letter-spacing: -0.02em;
             text-decoration: none;
-            /* 移除 text-transform: uppercase; 尊重 CONFIG 输入 */
         }
 
         .nav-links {
@@ -95,8 +94,7 @@
             gap: 15px; 
             font-size: var(--nav-link-size);
             font-weight: var(--nav-weight); 
-            letter-spacing: 0.02em; /* 稍微紧凑的字间距 */
-            /* 关键修正：移除强制大写，尊重自定义输入 */
+            letter-spacing: 0.02em; 
         }
 
         @media (min-width: 768px) { 
@@ -125,7 +123,7 @@
             #menu-toggle { display: none; }
         }
 
-        /* PDP 布局控制 */
+        /* PDP 布局 */
         main {
             flex-grow: 1;
             display: flex;
@@ -187,10 +185,10 @@
             .gallery-item img { min-height: 100vh; }
         }
 
-        /* 侧边栏 */
+        /* 侧边栏：维持 #e7e8e8 方便检查反色 */
         .pdp-sidebar {
             flex: 1.0;
-            background-color: var(--bg-color);
+            background-color: #e7e8e8; 
             border-left: var(--grid-gap) solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -204,7 +202,7 @@
         .sidebar-scroll-container { padding-top: var(--nav-h); flex-grow: 1; }
         .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; gap: 35px; }
         
-        .sidebar-media { width: 100%; }
+        .sidebar-media { width: 100%; margin-top: 10px; }
         .sidebar-media img { width: 100%; height: auto; display: block; object-fit: cover; }
 
         .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; letter-spacing: 0.02em; }
@@ -235,10 +233,7 @@
     </main>
 
     <script>
-        /* 【小白维护区】：UI 配置
-           这里你可以自由控制字体粗细 (navWeight)。
-           设为 600 是 v1.0.0 的标准加粗质感，设为 400 则会变纤细。
-        */
+        /* 【小白维护区】：UI 配置 */
         const UI_CONFIG = {
             primaryFont: "Arial",
             logoSize: "21px",
@@ -248,13 +243,12 @@
         };
 
         /* 【小白维护区】：基础配置
-           现在的导航栏链接会完全遵循你输入的大小写。
-           例如："Category" 会显示 "Category"，写成 "category" 就会显示全小写。
+           导航栏文字已支持自定义大小写。
         */
         const CONFIG = {
             pageTitle: "PDP - ApparEdit v1.0.0",
             logoText: "Poorlegalguy", 
-            logoUrl: "neuepoor.com", 
+            logoUrl: "index.html", 
             faviconUrl: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp",
             currentPageUrl: "pdp.html", 
             links: [ 
@@ -264,19 +258,33 @@
             ]
         };
 
+        /* 8 张测试图片数据 */
         const GALLERY_DATA = [
+            { img: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
+            { img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
+            { img: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
+            { img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
             { img: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
             { img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
             { img: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
             { img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" }
         ];
 
+        /* 侧边栏丰富的内容填充 */
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "修正说明：删除了 CSS 中的强制大写转换。现在导航栏文字的大小写状态完全取决于你在 CONFIG.links 里的输入，与 ApparEdit v1.0.0 的自定义逻辑保持一致。",
+            description: "当前版本已深度对标 ApparEdit v1.0.0 源码逻辑。右侧详情栏背景色已临时设定为 #e7e8e8 以供粗细校验。以下为 8 张图片的填充测试，用于检查滚动流畅度及布局稳定性。",
             blocks: [
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "通过 UI_CONFIG.navWeight 可以精细调节粗细感。当前对标 v1.0.0 的 600 权重。" }
+                { type: "text", content: "通过将 navWeight 设为 600，配合 -webkit-font-smoothing: antialiased，文字在反色模式下应呈现锐利且饱和的质感。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
+                { type: "text", content: "补充区块 01：测试侧边栏文字间距与图片边缘的平衡感。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
+                { type: "text", content: "补充区块 02：在 768px 以上分辨率，侧边栏具备独立滚动条，且滚动时不干扰左侧画廊。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
+                { type: "text", content: "补充区块 03：色彩校准图，用于检查 mix-blend-mode 在不同色相下的表现。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
+                { type: "text", content: "补充区块 04：页面底部留白测试，确保 Footer 逻辑（如有）或滚动到底部时的视觉完整性。" }
             ]
         };
 
@@ -305,17 +313,18 @@
                 const isCurrent = link.url === CONFIG.currentPageUrl;
                 const dLink = document.createElement('a');
                 dLink.href = link.url; 
-                dLink.innerText = link.name; // 这里直接取 name，不经过大小写转换
+                dLink.innerText = link.name; 
                 if(isCurrent) dLink.style.opacity = "0.3";
                 desktop.appendChild(dLink);
             });
 
-            // 渲染详情
+            // 渲染左侧画廊
             const gallery = document.getElementById('pdp-gallery');
             gallery.innerHTML = GALLERY_DATA.map(item => `
                 <div class="gallery-item"><img src="${item.img}" loading="lazy"></div>
             `).join('');
 
+            // 渲染右侧详情
             const sidebar = document.getElementById('sidebar-content');
             let contentHtml = `<div class="sidebar-text"><h1>${PDP_DATA.title}</h1><p>${PDP_DATA.description}</p></div>`;
             PDP_DATA.blocks.forEach(block => {
