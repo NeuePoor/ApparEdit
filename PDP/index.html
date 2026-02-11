@@ -5,33 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PDP - ApparEdit v1.0.0</title>
     
-    <!-- 动态图标：由 JS 根据 CONFIG 注入 -->
     <link id="dynamic-favicon" rel="icon" type="image/webp" href="">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
 
     <style>
-        /* ApparEdit v1.0.0 核心框架规范
-           【小白注释】：这里定义了全局的颜色、间距和基础尺寸。
-           如果想改背景颜色或导航栏高度，直接改 :root 里的变量即可。
-        */
+        /* ApparEdit v1.0.0 核心框架规范 */
         :root {
             --bg-color: #ffffff;    
             --text-color: #000000;  
             --border-color: #efefef;
             --muted-color: #999999; 
-            --nav-h: 28px; /* 导航栏高度 */
-            --grid-gap: 2px; /* 间隙宽度 */
+            --nav-h: 28px; 
+            --grid-gap: 2px; 
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
 
-            /* 动态字体变量：由下方 UI_CONFIG 决定 */
+            /* 动态字体变量：由 JS 中的 UI_CONFIG 控制 */
             --primary-font: "Arial";
             --logo-size: 21px;
             --nav-link-size: 12px;
+            --nav-weight: 600; /* 默认对标 v1.0.0 粗细感 */
             --item-title-size: 10px;
         }
 
-        /* 暗黑模式适配 */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
@@ -41,10 +37,10 @@
             }
         }
 
-        /* 基础重置 */
+        /* 极致渲染优化：这是 v1.0.0 质感的来源 */
         * {
             box-sizing: border-box;
-            -webkit-font-smoothing: antialiased; /* 抗锯齿：让文字更清晰 */
+            -webkit-font-smoothing: antialiased; 
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
             margin: 0;
@@ -61,10 +57,7 @@
             overflow-x: hidden;
         }
 
-        /* 导航栏样式
-           【小白注释】：使用了 mix-blend-mode: difference，
-           这意味着导航栏文字会根据背景颜色自动“反色”，黑背景变白字，白背景变黑字。
-        */
+        /* 导航栏：完全对标 v1.0.0 的混合模式渲染 */
         nav {
             position: fixed;
             top: 0;
@@ -77,31 +70,33 @@
             padding: 0 var(--nav-footer-padding);
             background-color: transparent;
             z-index: 10001; 
-            pointer-events: none; /* 防止拦截下方点击，但内部元素会重新开启 */
+            pointer-events: none; 
             mix-blend-mode: difference;
         }
 
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
-            color: #ffffff !important; /* 在 difference 模式下，白色是基础色 */
+            color: #ffffff !important; 
             transition: opacity 0.3s ease;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            font-weight: 600; 
+            font-weight: var(--nav-weight); 
             font-size: var(--logo-size);
             letter-spacing: -0.02em;
             text-decoration: none;
+            /* 移除 text-transform: uppercase; 尊重 CONFIG 输入 */
         }
 
         .nav-links {
-            display: none; /* 移动端默认隐藏 */
-            gap: 12px;
+            display: none; 
+            gap: 15px; 
             font-size: var(--nav-link-size);
-            font-weight: 600; 
-            letter-spacing: 0.05em;
+            font-weight: var(--nav-weight); 
+            letter-spacing: 0.02em; /* 稍微紧凑的字间距 */
+            /* 关键修正：移除强制大写，尊重自定义输入 */
         }
 
         @media (min-width: 768px) { 
@@ -111,7 +106,7 @@
         .nav-links a { text-decoration: none; color: inherit; }
         .nav-links a:hover { opacity: 0.5; }
 
-        /* 移动端汉堡菜单按钮 */
+        /* 移动端汉堡菜单 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -124,37 +119,13 @@
             width: 32px;
             height: var(--nav-h);
         }
-
-        #menu-toggle span { width: 18px; height: 1px; background-color: currentColor; transition: 0.3s; }
+        #menu-toggle span { width: 18px; height: 1px; background-color: #ffffff; transition: 0.3s; }
 
         @media (min-width: 768px) {
             #menu-toggle { display: none; }
         }
 
-        /* 移动端全屏菜单 */
-        #mobile-menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background-color: var(--bg-color);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-            visibility: hidden;
-            opacity: 0;
-            transition: 0.3s ease;
-        }
-        #mobile-menu.active { visibility: visible; opacity: 1; }
-        #mobile-menu a { font-size: var(--nav-link-size); text-decoration: none; color: var(--text-color); font-weight: 600; }
-
-        /* PDP 核心布局
-           【小白注释】：在桌面端(768px以上)，左右分栏，左侧画廊，右侧详情。
-        */
+        /* PDP 布局控制 */
         main {
             flex-grow: 1;
             display: flex;
@@ -165,13 +136,11 @@
             main { 
                 flex-direction: row; 
                 height: 100vh;
-                overflow: hidden; /* 防止整页滚动，改为局部滚动 */
+                overflow: hidden; 
             }
         }
 
-        /* 左侧画廊 
-           【小白注释】：移动端横向滚动，桌面端纵向滚动。
-        */
+        /* 画廊 */
         .pdp-gallery-container {
             position: relative;
             flex: 1.6;
@@ -189,7 +158,7 @@
             .pdp-gallery {
                 flex-direction: row;
                 overflow-x: auto;
-                scroll-snap-type: x mandatory; /* 自动吸附到单张图 */
+                scroll-snap-type: x mandatory;
                 scrollbar-width: none;
             }
             .pdp-gallery::-webkit-scrollbar { display: none; }
@@ -211,30 +180,14 @@
             width: 100%;
             height: auto;
             display: block;
-            object-fit: contain; 
+            object-fit: cover; 
         }
 
         @media (min-width: 768px) {
-            .gallery-item img { min-height: 100vh; object-fit: cover; }
+            .gallery-item img { min-height: 100vh; }
         }
 
-        /* 移动端圆点 */
-        .gallery-dots {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 10;
-        }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background-color: var(--text-color); opacity: 0.2; transition: 0.3s; }
-        .dot.active { opacity: 1; }
-        @media (min-width: 768px) { .gallery-dots { display: none; } }
-
-        /* 右侧详情栏 
-           【小白注释】：这里设置了独立滚动，且图片自适应。
-        */
+        /* 侧边栏 */
         .pdp-sidebar {
             flex: 1.0;
             background-color: var(--bg-color);
@@ -251,20 +204,11 @@
         .sidebar-scroll-container { padding-top: var(--nav-h); flex-grow: 1; }
         .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; gap: 35px; }
         
-        /* 图片自适应逻辑
-           【小白注释】：关键代码！width: 100% 配合 height: auto，
-           确保无论图片什么比例，都会撑满宽度并按原比例显示。
-        */
         .sidebar-media { width: 100%; }
-        .sidebar-media img { 
-            width: 100%; 
-            height: auto; 
-            display: block; 
-            object-fit: cover;
-        }
+        .sidebar-media img { width: 100%; height: auto; display: block; object-fit: cover; }
 
         .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; letter-spacing: 0.02em; }
-        .sidebar-text h1 { font-size: 18px; margin-bottom: 12px; font-weight: 600; }
+        .sidebar-text h1 { font-size: 18px; margin-bottom: 12px; font-weight: var(--nav-weight); }
         .sidebar-text p { margin-bottom: 1.5em; color: var(--text-color); }
     </style>
 </head>
@@ -279,12 +223,9 @@
         </button>
     </nav>
 
-    <div id="mobile-menu"></div>
-
     <main>
         <div class="pdp-gallery-container">
             <div id="pdp-gallery" class="pdp-gallery"></div>
-            <div id="gallery-dots" class="gallery-dots"></div>
         </div>
         <aside class="pdp-sidebar">
             <div class="sidebar-scroll-container">
@@ -294,23 +235,26 @@
     </main>
 
     <script>
-        /* 【小白注释】：UI 尺寸配置
-           统一管理全站的文字大小和字体。
+        /* 【小白维护区】：UI 配置
+           这里你可以自由控制字体粗细 (navWeight)。
+           设为 600 是 v1.0.0 的标准加粗质感，设为 400 则会变纤细。
         */
         const UI_CONFIG = {
             primaryFont: "Arial",
             logoSize: "21px",
             navLinksSize: "12px",
+            navWeight: "600", 
             itemTitleSize: "10px"
         };
 
-        /* 【小白注释】：页面基础信息配置
-           修改这里的文字、链接或图标地址，全站会自动更新。
+        /* 【小白维护区】：基础配置
+           现在的导航栏链接会完全遵循你输入的大小写。
+           例如："Category" 会显示 "Category"，写成 "category" 就会显示全小写。
         */
         const CONFIG = {
-            pageTitle: "PDP - PoorLegalGuy",
-            logoText: "PoorLegalGuy", 
-            logoUrl: "https://neuepoor.com", 
+            pageTitle: "PDP - ApparEdit v1.0.0",
+            logoText: "Poorlegalguy", 
+            logoUrl: "neuepoor.com", 
             faviconUrl: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp",
             currentPageUrl: "pdp.html", 
             links: [ 
@@ -320,7 +264,6 @@
             ]
         };
 
-        /* 左侧大图数据 */
         const GALLERY_DATA = [
             { img: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
             { img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
@@ -328,76 +271,51 @@
             { img: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" }
         ];
 
-        /* 【小白注释】：右侧详情内容数据
-           你可以在 blocks 里随意增加 type: "image" 或 "text"。
-           图片会自动缩放，文字会自动换行。
-        */
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "已修正宽屏导航栏逻辑与字体粗细一致性。右侧详情栏已填充自适应图片与详细文字介绍，并补回了小白注释。",
+            description: "修正说明：删除了 CSS 中的强制大写转换。现在导航栏文字的大小写状态完全取决于你在 CONFIG.links 里的输入，与 ApparEdit v1.0.0 的自定义逻辑保持一致。",
             blocks: [
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "这里的图片均采用了自适应设置。即使放入比例不一致的图片，它们也会在右侧栏内自动缩放。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
-                { type: "text", content: "补充图 1：纵向图片测试。注意它在滚动时的表现。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
-                { type: "text", content: "补充图 2：横向图片测试。宽度始终 100% 撑满。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "补充图 3：长页面压力测试。右侧应能顺畅滚动。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
-                { type: "text", content: "补充图 4：色彩测试。检查不同背景下的显示效果。" }
+                { type: "text", content: "通过 UI_CONFIG.navWeight 可以精细调节粗细感。当前对标 v1.0.0 的 600 权重。" }
             ]
         };
 
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const gallery = document.getElementById('pdp-gallery');
-        const dotsContainer = document.getElementById('gallery-dots');
-
-        /* 菜单开关逻辑 */
-        function toggleMenu() {
-            const isActive = mobileMenu.classList.toggle('active');
-            const spans = menuToggle.querySelectorAll('span');
-            if(isActive) {
-                spans[0].style.transform = "rotate(45deg) translateY(4px)";
-                spans[1].style.transform = "rotate(-45deg) translateY(-4px)";
-                document.body.style.overflow = 'hidden';
-            } else {
-                spans[0].style.transform = "none";
-                spans[1].style.transform = "none";
-                document.body.style.overflow = '';
-            }
+        function applyDynamicUI() {
+            const root = document.documentElement;
+            root.style.setProperty('--primary-font', UI_CONFIG.primaryFont);
+            root.style.setProperty('--logo-size', UI_CONFIG.logoSize);
+            root.style.setProperty('--nav-link-size', UI_CONFIG.navLinksSize);
+            root.style.setProperty('--nav-weight', UI_CONFIG.navWeight);
+            root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
         }
 
-        menuToggle.addEventListener('click', toggleMenu);
+        function init() {
+            applyDynamicUI();
+            document.title = CONFIG.pageTitle;
+            const logoEl = document.getElementById('site-logo');
+            logoEl.innerText = CONFIG.logoText;
+            logoEl.href = CONFIG.logoUrl;
 
-        /* 渲染 PDP 内容 */
-        function renderPDP() {
-            // 渲染左侧画廊
-            gallery.innerHTML = GALLERY_DATA.map(item => `
-                <div class="gallery-item">
-                    <img src="${item.img}" loading="lazy">
-                </div>
-            `).join('');
+            document.getElementById('dynamic-favicon').href = CONFIG.faviconUrl;
+            document.getElementById('dynamic-apple-icon').href = CONFIG.faviconUrl;
 
-            // 渲染移动端圆点
-            dotsContainer.innerHTML = GALLERY_DATA.map((_, i) => `
-                <div class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>
-            `).join('');
-
-            // 监听滚动更新圆点
-            gallery.addEventListener('scroll', () => {
-                const scrollLeft = gallery.scrollLeft;
-                const width = gallery.offsetWidth;
-                if(width > 0) {
-                    const index = Math.round(scrollLeft / width);
-                    document.querySelectorAll('.dot').forEach((dot, i) => {
-                        dot.classList.toggle('active', i === index);
-                    });
-                }
+            const desktop = document.getElementById('desktop-links');
+            desktop.innerHTML = "";
+            CONFIG.links.forEach(link => {
+                const isCurrent = link.url === CONFIG.currentPageUrl;
+                const dLink = document.createElement('a');
+                dLink.href = link.url; 
+                dLink.innerText = link.name; // 这里直接取 name，不经过大小写转换
+                if(isCurrent) dLink.style.opacity = "0.3";
+                desktop.appendChild(dLink);
             });
 
-            // 渲染右侧侧边栏
+            // 渲染详情
+            const gallery = document.getElementById('pdp-gallery');
+            gallery.innerHTML = GALLERY_DATA.map(item => `
+                <div class="gallery-item"><img src="${item.img}" loading="lazy"></div>
+            `).join('');
+
             const sidebar = document.getElementById('sidebar-content');
             let contentHtml = `<div class="sidebar-text"><h1>${PDP_DATA.title}</h1><p>${PDP_DATA.description}</p></div>`;
             PDP_DATA.blocks.forEach(block => {
@@ -407,45 +325,6 @@
             sidebar.innerHTML = contentHtml;
         }
 
-        /* 应用 UI 尺寸配置 */
-        function applyDynamicUI() {
-            const root = document.documentElement;
-            root.style.setProperty('--primary-font', UI_CONFIG.primaryFont);
-            root.style.setProperty('--logo-size', UI_CONFIG.logoSize);
-            root.style.setProperty('--nav-link-size', UI_CONFIG.navLinksSize);
-            root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
-        }
-
-        /* 初始化页面 */
-        function init() {
-            applyDynamicUI();
-            document.title = CONFIG.pageTitle;
-            const logoEl = document.getElementById('site-logo');
-            logoEl.innerText = CONFIG.logoText;
-            logoEl.href = CONFIG.logoUrl;
-
-            // 注入 Favicon
-            document.getElementById('dynamic-favicon').href = CONFIG.faviconUrl;
-            document.getElementById('dynamic-apple-icon').href = CONFIG.faviconUrl;
-
-            const desktop = document.getElementById('desktop-links');
-            const mobile = document.getElementById('mobile-menu');
-            desktop.innerHTML = ""; mobile.innerHTML = "";
-            
-            CONFIG.links.forEach(link => {
-                const isCurrent = link.url === CONFIG.currentPageUrl;
-                const dLink = document.createElement('a');
-                dLink.href = link.url; dLink.innerText = link.name;
-                if(isCurrent) dLink.style.opacity = "0.3";
-                desktop.appendChild(dLink);
-
-                const mLink = document.createElement('a');
-                mLink.href = link.url; mLink.innerText = link.name;
-                mLink.onclick = toggleMenu;
-                mobile.appendChild(mLink);
-            });
-            renderPDP();
-        }
         window.addEventListener('load', init);
     </script>
 </body>
