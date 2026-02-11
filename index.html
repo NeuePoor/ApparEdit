@@ -9,11 +9,8 @@
     <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
 
     <style>
-        /* 版本: ApparEdit v1.0.0 (抗锯齿优化版)
-           维护说明:
-           - 针对 mix-blend-mode 导致的文字加粗进行了抗锯齿处理。
-           - 已将 Arial 设为首选字体。
-           - 增加了全局文字大小控制变量。
+        /* ApparEdit v1.0.0 
+           稳定版本 - 包含抗锯齿、首选 Arial 及文字大小维护功能
         */
 
         :root {
@@ -26,10 +23,10 @@
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
 
-            /* 文字大小变量 - 由 JS 动态注入 */
-            --logo-size: 16px;
-            --nav-link-size: 11px;
-            --item-title-size: 9px;
+            /* 默认字号 - 将由 JS 动态覆盖 */
+            --logo-size: 21px;
+            --nav-link-size: 12px;
+            --item-title-size: 10px;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -43,7 +40,6 @@
 
         * {
             box-sizing: border-box;
-            /* 强制开启抗锯齿 */
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             margin: 0;
@@ -51,7 +47,6 @@
         }
 
         body {
-            /* 优先级从左往右：首先尝试 Arial，失败后再尝试系统原生字体栈 */
             font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
@@ -60,7 +55,7 @@
             flex-direction: column;
         }
 
-        /* 导航栏容器 */
+        /* 导航栏 */
         nav {
             position: fixed;
             top: 0;
@@ -74,7 +69,7 @@
             background-color: transparent;
             z-index: 10000;
             pointer-events: none;
-            /* 预设转换，防止文字跳动 */
+            /* 解决滚动时文字变粗的关键：强制开启 3D 加速并维持合成层 */
             transform: translateZ(0); 
             will-change: mix-blend-mode;
         }
@@ -82,10 +77,9 @@
         .brand, .nav-links, #menu-toggle {
             pointer-events: auto;
             color: var(--text-color);
-            transition: color 0.3s ease, font-weight 0.3s ease;
+            transition: color 0.3s ease;
         }
 
-        /* 智能反色逻辑优化 */
         nav.scrolled {
             mix-blend-mode: difference;
         }
@@ -94,11 +88,8 @@
         nav.scrolled .nav-links, 
         nav.scrolled #menu-toggle {
             color: #ffffff !important;
-            /* 补偿白色在 difference 模式下的视觉溢出，略微调细 */
-            font-weight: 500; 
         }
 
-        /* Logo 样式 */
         .brand {
             display: flex;
             align-items: center;
@@ -125,12 +116,11 @@
             text-decoration: none;
             color: inherit;
             transition: opacity 0.3s;
-            font-weight: 400;
+            font-weight: 600; 
         }
 
         .nav-links a:hover { opacity: 0.5; }
 
-        /* 菜单按钮 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -155,7 +145,7 @@
             #menu-toggle { display: none; }
         }
 
-        /* 全屏菜单 */
+        /* 移动端菜单 */
         #mobile-menu {
             position: fixed;
             top: 0;
@@ -183,10 +173,9 @@
             font-size: 14px;
             text-decoration: none;
             color: var(--text-color);
-            text-transform: none;
         }
 
-        /* 主体内容 */
+        /* 布局 */
         main {
             padding: 0 var(--side-padding); 
             flex-grow: 1;
@@ -228,7 +217,6 @@
             font-size: var(--item-title-size);
             letter-spacing: 0.02em;
             opacity: 0.9;
-            text-transform: none;
         }
 
         /* 页脚 */
@@ -254,7 +242,6 @@
             font-size: 11px;
             color: var(--muted-color);
             letter-spacing: 0.02em;
-            text-transform: none;
         }
 
         .copyright a {
@@ -267,7 +254,6 @@
             gap: 15px;
             align-items: center;
             font-size: 11px;
-            text-transform: none;
         }
 
         .page-btn {
@@ -323,13 +309,14 @@
          * ==========================================
          */
         
-        // [新增] 文字大小调整功能
+        // 1. 文字大小设置
         const UI_FONT_SIZE = {
-            logo: "21px",        // Logo 大小 (对应 CONFIG)
-            navLinks: "12px",    // 导航栏链接大小 (对应 CONFIG)
-            itemTitle: "10px"     // 作品标题大小 (对应 GALLERY_DATA)
+            logo: "21px",        // Logo 字号
+            navLinks: "12px",    // 顶部导航链接字号
+            itemTitle: "10px"    // 图片下方标题字号
         };
 
+        // 2. 基础配置
         const CONFIG = {
             logoText: "PoorLegalGuy", 
             logoUrl: "https://neuepoor.com", 
@@ -342,6 +329,7 @@
             ]
         };
 
+        // 3. 内容数据
         const GALLERY_DATA = [
             { title: "Item 030", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" },
             { title: "Item 029", img: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp", link: "https://apparedit.neuepoor.com/PDP/" },
@@ -356,6 +344,9 @@
             { title: "Item 020", img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", link: "https://apparedit.neuepoor.com/PDP/" },
             { title: "Item 019", img: "https://cdn.neuepoor.com/apparedit/colortest.webp", link: "https://apparedit.neuepoor.com/PDP/" }
         ];
+
+        /** * 以下为系统核心逻辑，非必要请勿改动
+         */
 
         let currentPage = 1;
         const mainNav = document.getElementById('main-nav');
@@ -416,7 +407,7 @@
         }
 
         function init() {
-            applyFontSize(); // 应用文字大小
+            applyFontSize(); 
 
             const logoEl = document.getElementById('site-logo');
             logoEl.innerText = CONFIG.logoText;
