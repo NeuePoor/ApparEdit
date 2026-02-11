@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Archive - ApparEdit v1.0.0</title>
     
-    <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
-    <link rel="apple-touch-icon" href="https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp">
+    <link id="dynamic-favicon" rel="icon" type="image/webp" href="">
+    <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
 
     <style>
         /* ApparEdit v1.0.0 
-           稳定版本 - 包含抗锯齿、首选 Arial 及文字大小维护功能
+           稳定版本 - 包含抗锯齿、字体维护及文字大小维护功能
         */
 
         :root {
@@ -23,7 +23,8 @@
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
 
-            /* 默认字号 - 将由 JS 动态覆盖 */
+            /* 动态配置变量 - 将由 JS 注入 */
+            --primary-font: "Arial";
             --logo-size: 21px;
             --nav-link-size: 12px;
             --item-title-size: 10px;
@@ -47,7 +48,8 @@
         }
 
         body {
-            font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            /* 保持原生字体栈作为兜底回退 */
+            font-family: var(--primary-font), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             min-height: 100vh;
@@ -69,7 +71,6 @@
             background-color: transparent;
             z-index: 10000;
             pointer-events: none;
-            /* 解决滚动时文字变粗的关键：强制开启 3D 加速并维持合成层 */
             transform: translateZ(0); 
             will-change: mix-blend-mode;
         }
@@ -309,17 +310,22 @@
          * ==========================================
          */
         
-        // 1. 文字大小设置
-        const UI_FONT_SIZE = {
-            logo: "21px",        // Logo 字号
-            navLinks: "12px",    // 顶部导航链接字号
-            itemTitle: "10px"    // 图片下方标题字号
+        // 1. 字体与文字大小设置
+        const UI_CONFIG = {
+            primaryFont: "Arial",  // 首选字体（如 "Arial", "Helvetica", "Times New Roman"）
+            logoSize: "21px",      // Logo 字号
+            navLinksSize: "12px",  // 顶部导航链接字号
+            itemTitleSize: "10px"  // 图片下方标题字号
         };
 
         // 2. 基础配置
         const CONFIG = {
+            pageTitle: "ApparEdit", // 浏览器标签页显示的标题
             logoText: "PoorLegalGuy", 
             logoUrl: "https://neuepoor.com", 
+            footerText: "PoorLegalGuy Archive",      // 页脚显示的版权文字内容
+            footerUrl: "https://neuepoor.com",       // 页脚文字点击后的跳转链接
+            faviconUrl: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp", // Favicon图标链接
             itemsPerPage: 12,        
             currentPageUrl: "https://apparedit.neuepoor.com/", 
             links: [ 
@@ -399,21 +405,34 @@
             document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
         }
 
-        function applyFontSize() {
+        function applyDynamicUI() {
             const root = document.documentElement;
-            root.style.setProperty('--logo-size', UI_FONT_SIZE.logo);
-            root.style.setProperty('--nav-link-size', UI_FONT_SIZE.navLinks);
-            root.style.setProperty('--item-title-size', UI_FONT_SIZE.itemTitle);
+            root.style.setProperty('--primary-font', UI_CONFIG.primaryFont);
+            root.style.setProperty('--logo-size', UI_CONFIG.logoSize);
+            root.style.setProperty('--nav-link-size', UI_CONFIG.navLinksSize);
+            root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
         }
 
         function init() {
-            applyFontSize(); 
+            applyDynamicUI(); 
 
+            // 设置浏览器标签页标题
+            document.title = CONFIG.pageTitle;
+
+            // 设置 Favicon
+            const favEl = document.getElementById('dynamic-favicon');
+            const appleFavEl = document.getElementById('dynamic-apple-icon');
+            if(favEl) favEl.href = CONFIG.faviconUrl;
+            if(appleFavEl) appleFavEl.href = CONFIG.faviconUrl;
+
+            // 设置顶部导航 Logo
             const logoEl = document.getElementById('site-logo');
             logoEl.innerText = CONFIG.logoText;
             logoEl.href = CONFIG.logoUrl;
-            document.getElementById('footer-copy-text').innerText = CONFIG.logoText + " Archive";
-            document.getElementById('footer-logo-link').href = CONFIG.logoUrl;
+
+            // 设置页脚版权内容（从 CONFIG 中读取，不再强制同步 Logo 文字）
+            document.getElementById('footer-copy-text').innerText = CONFIG.footerText;
+            document.getElementById('footer-logo-link').href = CONFIG.footerUrl;
 
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
