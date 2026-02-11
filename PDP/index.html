@@ -9,7 +9,7 @@
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
 
     <style>
-        /* ApparEdit v1.0.0 核心框架规范同步 */
+        /* ApparEdit v1.0.0 核心框架规范 */
         :root {
             --bg-color: #ffffff;    
             --text-color: #000000;  
@@ -37,8 +37,10 @@
 
         * {
             box-sizing: border-box;
+            /* 修复：重新引入抗锯齿规范 */
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
             margin: 0;
             padding: 0;
         }
@@ -53,7 +55,7 @@
             overflow: hidden; 
         }
 
-        /* 导航栏 */
+        /* 导航栏 - 严格同步 ApparEdit v1.0.0 逻辑 */
         nav {
             position: fixed;
             top: 0;
@@ -90,6 +92,7 @@
             gap: 12px;
             font-size: var(--nav-link-size);
             font-weight: 600;
+            text-transform: uppercase;
         }
 
         @media (min-width: 768px) { 
@@ -182,6 +185,8 @@
             height: auto;
             display: block;
             object-fit: cover;
+            /* 优化图片缩放抗锯齿 */
+            image-rendering: -webkit-optimize-contrast;
         }
 
         @media (min-width: 768px) {
@@ -205,7 +210,7 @@
         }
 
         .sidebar-content {
-            padding: 40px 20px 100px; /* 底部加深间距确保滑动感 */
+            padding: 40px 20px 100px;
             display: flex;
             flex-direction: column;
             gap: 35px;
@@ -246,10 +251,7 @@
     <div id="mobile-menu"></div>
 
     <main>
-        <!-- 左侧：产品画廊 -->
         <div id="pdp-gallery" class="pdp-gallery"></div>
-        
-        <!-- 右侧：详情侧边栏 -->
         <aside class="pdp-sidebar">
             <div class="sidebar-scroll-container">
                 <div id="sidebar-content" class="sidebar-content"></div>
@@ -260,7 +262,7 @@
     <script>
         /**
          * ==========================================
-         * 小白维护区
+         * 小白维护区 (ApparEdit v1.0.0 标准配置)
          * ==========================================
          */
         
@@ -274,13 +276,13 @@
         const CONFIG = {
             pageTitle: "PDP - PoorLegalGuy",
             logoText: "PoorLegalGuy", 
-            logoUrl: "neuepoor.com", 
+            logoUrl: "https://neuepoor.com", 
             faviconUrl: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp",
-            currentPageUrl: "pdp.html",
+            currentPageUrl: "pdp.html", 
             links: [ 
-                { name: "Category", url: "https://apparedit.neuepoor.com/" },
-                { name: "Archive", url: "https://apparedit.neuepoor.com/" },
-                { name: "A0260211", url: "https://apparedit.neuepoor.com/PDP/" }
+                { name: "Category", url: "index.html" },
+                { name: "Archive", url: "archive.html" },
+                { name: "A0260211", url: "pdp.html" }
             ]
         };
 
@@ -293,12 +295,12 @@
 
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "这是移除 Footer 后的纯净版本。侧边栏现在完全由内容驱动，提供了更专注的阅读体验。",
+            description: "这是已修复抗锯齿（Anti-aliasing）设置的 PDP 页面。所有字体和图像渲染已回归 ApparEdit v1.0.0 稳定版的高质量表现。",
             blocks: [
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "侧边栏内容流示例。在 ApparEdit 框架下，我们优先保证视觉的秩序感，即使没有页脚，内容的垂直节奏依然清晰。" },
+                { type: "text", content: "通过在全局样式中重新声明 -webkit-font-smoothing，文字在不同背景下都会保持锐利且平滑的效果。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
-                { type: "text", content: "继续滑动可预览更多媒体块。右侧区域提供了充足的底部留白，确保最后一段内容也能舒适地呈现在屏幕中心。" }
+                { type: "text", content: "你可以通过滑动右侧侧边栏来预览内容流。侧边栏底部保留了充足的 padding 空间。" }
             ]
         };
 
@@ -372,10 +374,17 @@
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-menu');
             
+            desktop.innerHTML = "";
+            mobile.innerHTML = "";
+            
             CONFIG.links.forEach(link => {
+                const isCurrent = link.url === CONFIG.currentPageUrl;
+                
                 const dLink = document.createElement('a');
                 dLink.href = link.url; dLink.innerText = link.name;
+                if(isCurrent) dLink.style.opacity = "0.3";
                 desktop.appendChild(dLink);
+
                 const mLink = document.createElement('a');
                 mLink.href = link.url; mLink.innerText = link.name;
                 mLink.onclick = toggleMenu;
