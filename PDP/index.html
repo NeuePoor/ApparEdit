@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PDP - ApparEdit v1.0.3</title>
+    <title>PDP - ApparEdit v1.0.0</title>
     
     <link id="dynamic-favicon" rel="icon" type="image/webp" href="">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
@@ -20,6 +20,7 @@
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
 
+            /* 动态配置变量 - 由 UI_CONFIG 注入 */
             --primary-font: "Arial";
             --logo-size: 21px;
             --nav-link-size: 12px;
@@ -36,10 +37,16 @@
             }
         }
 
-        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; margin: 0; padding: 0; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-font-smoothing: antialiased; 
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0; 
+            padding: 0; 
+        }
 
         body {
-            font-family: var(--primary-font), sans-serif;
+            font-family: var(--primary-font), -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             min-height: 100vh;
@@ -76,7 +83,12 @@
             letter-spacing: -0.02em;
         }
 
-        .nav-links { display: none; gap: 15px; font-size: var(--nav-link-size); font-weight: var(--nav-weight); }
+        .nav-links { 
+            display: none; 
+            gap: 15px; 
+            font-size: var(--nav-link-size); 
+            font-weight: var(--nav-weight); 
+        }
         @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } }
 
         #menu-toggle {
@@ -94,7 +106,7 @@
         #menu-toggle span { width: 18px; height: 1px; background-color: #ffffff; transition: 0.3s; }
         @media (min-width: 768px) { #menu-toggle { display: none; } }
 
-        /* 修正：窄屏菜单完全对标 ApparEdit v1.0.0 截图样式 */
+        /* 移动端菜单覆盖层 */
         .mobile-overlay {
             position: fixed;
             top: 0;
@@ -105,25 +117,20 @@
             z-index: 15000;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* 对标截图居中对齐 */
+            justify-content: center; 
             align-items: center;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease;
         }
         .mobile-overlay.active { opacity: 1; visibility: visible; }
-
         .mobile-overlay a {
             font-size: var(--nav-link-size);
-            font-weight: normal; /* 对标截图，非加粗 */
             color: var(--text-color);
             text-decoration: none;
             margin: 15px 0;
             letter-spacing: 0.02em;
-            transition: opacity 0.3s;
         }
-        
-        /* 修正：当前页面在菜单中显示为灰色 */
         .mobile-overlay a.current { color: var(--muted-color); pointer-events: none; }
 
         /* 画廊与侧边栏布局 */
@@ -155,13 +162,13 @@
                 display: flex;
                 gap: 8px;
             }
-            .dot { width: 6px; height: 6px; border-radius: 50%; background-color: rgba(0,0,0,0.1); transition: 0.3s; }
+            .dot { width: 6px; height: 6px; border-radius: 50%; background-color: rgba(128,128,128,0.2); transition: 0.3s; }
             .dot.active { background-color: var(--text-color); }
         }
 
         @media (min-width: 768px) {
             .pdp-gallery { flex-direction: column; overflow-y: auto; scrollbar-width: none; gap: var(--grid-gap); }
-            .gallery-item { width: 100%; }
+            .gallery-item { width: 100%; background: var(--bg-color); }
             .gallery-dots { display: none; }
         }
 
@@ -170,7 +177,7 @@
 
         .pdp-sidebar {
             flex: 1.0;
-            background-color: #f5f5f5; 
+            background-color: var(--bg-color); 
             border-left: var(--grid-gap) solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -179,8 +186,17 @@
 
         .sidebar-scroll-container { padding-top: var(--nav-h); }
         .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; gap: 40px; }
-        .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; }
-        .sidebar-text h1 { font-size: 18px; margin-bottom: 12px; font-weight: var(--nav-weight); }
+        
+        /* 侧边栏文字样式 */
+        .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; color: var(--text-color); }
+        .sidebar-text h1 { font-size: 18px; margin-bottom: 16px; font-weight: var(--nav-weight); letter-spacing: -0.01em; }
+        .sidebar-text p { margin-bottom: 12px; }
+        
+        /* 侧边栏图片样式 */
+        .sidebar-image { width: 100%; margin: 10px 0; }
+        .sidebar-image img { width: 100%; height: auto; display: block; }
+        
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -188,7 +204,7 @@
     <nav>
         <a href="#" class="brand" id="site-logo"></a>
         <div class="nav-links" id="desktop-links"></div>
-        <button id="menu-toggle">
+        <button id="menu-toggle" aria-label="Menu">
             <span></span>
             <span></span>
         </button>
@@ -211,22 +227,103 @@
     </main>
 
     <script>
-        const UI_CONFIG = { primaryFont: "Arial", logoSize: "21px", navLinksSize: "12px", navWeight: "600", itemTitleSize: "10px" };
+        /**
+         * ==========================================
+         * 小白维护区 (ApparEdit v1.0)
+         * ==========================================
+         */
+        
+        // 1. 字体与文字大小设置
+        const UI_CONFIG = {
+            primaryFont: "Arial",  
+            logoSize: "21px",      
+            navLinksSize: "12px",  
+            navWeight: "600",
+            itemTitleSize: "10px"  
+        };
+
+        // 2. 基础配置
         const CONFIG = {
-            logoText: "PoorLegalGuy",
-            currentPageUrl: "pdp.html",
-            links: [
+            pageTitle: "PDP - PoorLegalGuy", 
+            logoText: "PoorLegalGuy", 
+            logoUrl: "https://neuepoor.com",
+            faviconUrl: "https://cdn.neuepoor.com/apparedit/colortest.webp",
+            currentPageUrl: "pdp.html", 
+            links: [ 
                 { name: "Category", url: "index.html" },
                 { name: "Archive", url: "archive.html" },
                 { name: "A0260211", url: "pdp.html" }
             ]
         };
 
-        const GALLERY_DATA = Array(8).fill({ img: "https://cdn.neuepoor.com/apparedit/colortest.webp" });
+        // 3. 画廊图片数据 (在此添加、删除或调整图片顺序)
+        const GALLERY_DATA = [
+            { img: "https://placehold.co/1200x1600/000000/FFFFFF?text=Slide+1" },
+            { img: "https://placehold.co/1200x1600/222222/FFFFFF?text=Slide+2" },
+            { img: "https://placehold.co/1200x1600/444444/FFFFFF?text=Slide+3" },
+            { img: "https://placehold.co/1200x1600/666666/FFFFFF?text=Slide+4" },
+            { img: "https://placehold.co/1200x1600/888888/FFFFFF?text=Slide+5" },
+            { img: "https://placehold.co/1200x1600/AAAAAA/000000?text=Slide+6" },
+            { img: "https://placehold.co/1200x1600/CCCCCC/000000?text=Slide+7" },
+            { img: "https://placehold.co/1200x1600/EEEEEE/000000?text=Slide+8" }
+        ];
+
+        // 4. 侧边栏内容维护 (在此调整文字和图片的混合顺序)
+        const SIDEBAR_DATA = {
+            title: "ITEM 030 / VOLUMETRIC STUDY",
+            content: [
+                { type: "text", value: "这是项目的第一段正文。你可以在维护区的 content 数组中随意调整这个段落和图片的位置。" },
+                { type: "image", value: "https://placehold.co/800x600/FF5733/FFFFFF?text=Sidebar+Image+1" },
+                { type: "text", value: "这是第二段正文。通过增加图片链接，可以实现图文混排的效果。" },
+                { type: "image", value: "https://placehold.co/800x600/33FF57/000000?text=Sidebar+Image+2" },
+                { type: "image", value: "https://placehold.co/800x600/3357FF/FFFFFF?text=Sidebar+Image+3" },
+                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
+                { type: "image", value: "https://placehold.co/800x600/F333FF/FFFFFF?text=Sidebar+Image+4" },
+                { type: "image", value: "https://placehold.co/800x600/33FFF3/000000?text=Sidebar+Image+5" },
+                { type: "image", value: "https://placehold.co/800x1200/FFB833/000000?text=Sidebar+Image+6" },
+                { type: "image", value: "https://placehold.co/800x600/8D33FF/FFFFFF?text=Sidebar+Image+7" },
+                { type: "image", value: "https://placehold.co/1200x800/FF3385/FFFFFF?text=Sidebar+Image+8" },
+                { type: "text", value: "页面底部可以作为备注或者版权信息的区域。" }
+            ]
+        };
+
+        /**
+         * ==========================================
+         * 系统核心逻辑 (严禁改动)
+         * ==========================================
+         */
+
+        function applyDynamicUI() {
+            const root = document.documentElement;
+            root.style.setProperty('--primary-font', UI_CONFIG.primaryFont);
+            root.style.setProperty('--logo-size', UI_CONFIG.logoSize);
+            root.style.setProperty('--nav-link-size', UI_CONFIG.navLinksSize);
+            root.style.setProperty('--nav-weight', UI_CONFIG.navWeight);
+            root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const isActive = menu.classList.toggle('active');
+            document.body.style.overflow = isActive ? 'hidden' : '';
+        }
 
         function init() {
-            // 设置 Logo 和 链接
-            document.getElementById('site-logo').innerText = CONFIG.logoText;
+            applyDynamicUI();
+            document.title = CONFIG.pageTitle;
+
+            // Favicon 维护
+            const fav = document.getElementById('dynamic-favicon');
+            const appleFav = document.getElementById('dynamic-apple-icon');
+            if(fav) fav.href = CONFIG.faviconUrl;
+            if(appleFav) appleFav.href = CONFIG.faviconUrl;
+
+            // Logo 渲染
+            const logo = document.getElementById('site-logo');
+            logo.innerText = CONFIG.logoText;
+            logo.href = CONFIG.logoUrl;
+
+            // 导航渲染
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-links');
             
@@ -237,33 +334,40 @@
                 if(link.url === CONFIG.currentPageUrl) a.classList.add('current');
                 
                 desktop.appendChild(a.cloneNode(true));
-                mobile.appendChild(a);
+                const mA = a.cloneNode(true);
+                mA.onclick = toggleMenu;
+                mobile.appendChild(mA);
             });
 
-            // 画廊指示器逻辑
+            document.getElementById('menu-toggle').onclick = toggleMenu;
+
+            // 画廊渲染 (自动同步 GALLERY_DATA)
             const gallery = document.getElementById('pdp-gallery');
             const dotsContainer = document.getElementById('gallery-dots');
+            
             gallery.innerHTML = GALLERY_DATA.map(i => `<div class="gallery-item"><img src="${i.img}"></div>`).join('');
             dotsContainer.innerHTML = GALLERY_DATA.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
 
-            // 修正：窄屏左右滑动实时更新指示器
             gallery.addEventListener('scroll', () => {
                 const index = Math.round(gallery.scrollLeft / gallery.clientWidth);
                 const dots = dotsContainer.querySelectorAll('.dot');
                 dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
             }, { passive: true });
 
-            // 侧边栏内容填充
-            document.getElementById('sidebar-content').innerHTML = `
-                <div class="sidebar-text"><h1>ITEM 030 / VOLUMETRIC STUDY</h1>
-                <p>已根据 ApparEdit v1.0.0 截图修正菜单样式与画廊同步逻辑。</p></div>
-                ${Array(4).fill('<div style="width:100%; height:300px; background:#ddd; margin:20px 0;"></div>').join('')}
-            `;
-
-            // 菜单切换
-            const btn = document.getElementById('menu-toggle');
-            const menu = document.getElementById('mobile-menu');
-            btn.onclick = () => menu.classList.toggle('active');
+            // 侧边栏渲染 (自适应文本/图片混合)
+            const sidebarContainer = document.getElementById('sidebar-content');
+            let contentHtml = `<div class="sidebar-text"><h1>${SIDEBAR_DATA.title}</h1>`;
+            
+            SIDEBAR_DATA.content.forEach(item => {
+                if (item.type === "text") {
+                    contentHtml += `<p>${item.value}</p>`;
+                } else if (item.type === "image") {
+                    // 如果之前在写文本，先关闭 text div
+                    contentHtml += `</div><div class="sidebar-image"><img src="${item.value}"></div><div class="sidebar-text">`;
+                }
+            });
+            contentHtml += `</div>`;
+            sidebarContainer.innerHTML = contentHtml;
         }
 
         window.onload = init;
