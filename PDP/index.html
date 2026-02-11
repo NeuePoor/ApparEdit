@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PDP - ApparEdit v1.0.2</title>
+    <title>PDP - ApparEdit v1.0.1</title>
     
     <link id="dynamic-favicon" rel="icon" type="image/webp" href="">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
 
     <style>
-        /* ApparEdit 核心框架规范 */
+        /* ApparEdit v1.0.1 核心框架规范 */
         :root {
             --bg-color: #ffffff;    
             --text-color: #000000;  
@@ -20,6 +20,7 @@
             --side-padding: 2px; 
             --nav-footer-padding: 10px; 
 
+            /* 动态字体变量 */
             --primary-font: "Arial";
             --logo-size: 21px;
             --nav-link-size: 12px;
@@ -36,6 +37,7 @@
             }
         }
 
+        /* 极致渲染优化 */
         * {
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased; 
@@ -55,6 +57,7 @@
             overflow-x: hidden;
         }
 
+        /* 导航栏：100% 对标 v1.0.0 的 Difference 混合渲染 */
         nav {
             position: fixed;
             top: 0;
@@ -66,7 +69,7 @@
             align-items: center;
             padding: 0 var(--nav-footer-padding);
             background-color: transparent;
-            z-index: 20000; 
+            z-index: 20000; /* 提升至最高层级，确保在菜单展开时穿透显示 */
             pointer-events: none; 
             mix-blend-mode: difference;
         }
@@ -94,9 +97,14 @@
             letter-spacing: 0.02em; 
         }
 
-        @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } }
-        .nav-links a { text-decoration: none; color: inherit; }
+        @media (min-width: 768px) { 
+            .nav-links { display: flex; align-items: center; } 
+        }
 
+        .nav-links a { text-decoration: none; color: inherit; }
+        .nav-links a:hover { opacity: 0.5; }
+
+        /* 移动端汉堡菜单 - 严格对标 v1.0.0 */
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -111,9 +119,11 @@
         }
         #menu-toggle span { width: 18px; height: 1px; background-color: #ffffff; transition: 0.3s; }
 
-        @media (min-width: 768px) { #menu-toggle { display: none; } }
+        @media (min-width: 768px) {
+            #menu-toggle { display: none; }
+        }
 
-        /* 修正：窄屏折叠菜单文字样式对标 v1.0.0 */
+        /* 窄屏遮罩菜单：修正文字消失与排版不一致问题 */
         .mobile-overlay {
             position: fixed;
             top: 0;
@@ -121,11 +131,11 @@
             width: 100%;
             height: 100vh;
             background-color: var(--bg-color);
-            z-index: 15000;
+            z-index: 15000; /* 低于导航栏层级 */
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            padding: 80px var(--nav-footer-padding); /* 左右间距对标导航栏 */
+            padding: 100px 20px; /* 对标 v1.0.0 的顶部留白 */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s;
@@ -133,19 +143,32 @@
         .mobile-overlay.active { opacity: 1; visibility: visible; }
 
         .mobile-overlay a {
-            font-size: var(--nav-link-size); /* 保持与导航文字逻辑一致 */
+            font-size: 24px; /* 菜单文字字号对标 v1.0.0 */
             font-weight: var(--nav-weight);
             color: var(--text-color);
             text-decoration: none;
-            margin-bottom: 12px; /* 紧凑垂直排列 */
-            line-height: 1.2;
+            margin-bottom: 25px;
+            line-height: 1;
             width: fit-content;
-            letter-spacing: 0.02em;
+            letter-spacing: -0.01em;
         }
 
-        main { flex-grow: 1; display: flex; flex-direction: column; }
-        @media (min-width: 768px) { main { flex-direction: row; height: 100vh; overflow: hidden; } }
+        /* PDP 核心布局架构 */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
+        @media (min-width: 768px) {
+            main { 
+                flex-direction: row; 
+                height: 100vh;
+                overflow: hidden; 
+            }
+        }
+
+        /* 画廊容器 */
         .pdp-gallery-container {
             position: relative;
             flex: 1.6;
@@ -178,20 +201,40 @@
                 z-index: 10;
                 pointer-events: none;
             }
-            .dot { width: 6px; height: 6px; border-radius: 50%; background-color: rgba(255,255,255,0.3); transition: 0.3s; }
+            .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: rgba(255,255,255,0.3);
+                transition: background-color 0.3s;
+            }
             .dot.active { background-color: #ffffff; }
         }
 
         @media (min-width: 768px) {
-            .pdp-gallery { flex-direction: column; overflow-y: auto; scrollbar-width: none; gap: var(--grid-gap); }
+            .pdp-gallery {
+                flex-direction: column;
+                overflow-y: auto;
+                scrollbar-width: none;
+                gap: var(--grid-gap);
+            }
             .pdp-gallery::-webkit-scrollbar { display: none; }
             .gallery-item { width: 100%; }
             .gallery-dots { display: none; }
         }
 
-        .gallery-item img { width: 100%; height: auto; display: block; object-fit: cover; }
-        @media (min-width: 768px) { .gallery-item img { min-height: 100vh; } }
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover; 
+        }
 
+        @media (min-width: 768px) {
+            .gallery-item img { min-height: 100vh; }
+        }
+
+        /* 详情侧边栏 */
         .pdp-sidebar {
             flex: 1.0;
             background-color: #e7e8e8; 
@@ -207,9 +250,13 @@
 
         .sidebar-scroll-container { padding-top: var(--nav-h); flex-grow: 1; }
         .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; gap: 40px; }
-        .sidebar-media img { width: 100%; height: auto; display: block; object-fit: cover; margin-top: 5px; }
+        
+        .sidebar-media { width: 100%; margin-top: 5px; }
+        .sidebar-media img { width: 100%; height: auto; display: block; object-fit: cover; }
+
         .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; letter-spacing: 0.02em; }
         .sidebar-text h1 { font-size: 18px; margin-bottom: 12px; font-weight: var(--nav-weight); }
+        .sidebar-text p { margin-bottom: 1em; color: var(--text-color); }
     </style>
 </head>
 <body>
@@ -223,6 +270,7 @@
         </button>
     </nav>
 
+    <!-- 窄屏折叠菜单 -->
     <div id="mobile-menu" class="mobile-overlay">
         <div id="mobile-links" style="display: flex; flex-direction: column;"></div>
     </div>
@@ -240,7 +288,6 @@
     </main>
 
     <script>
-        /* 【小白维护区】 */
         const UI_CONFIG = {
             primaryFont: "Arial",
             logoSize: "21px",
@@ -250,7 +297,7 @@
         };
 
         const CONFIG = {
-            pageTitle: "PDP - ApparEdit v1.0.2",
+            pageTitle: "PDP - ApparEdit v1.0.1",
             logoText: "Poorlegalguy", 
             logoUrl: "index.html", 
             faviconUrl: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp",
@@ -275,24 +322,24 @@
 
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "当前版本 v1.0.2 已修复窄屏菜单样式一致性及画廊指示器实时同步问题。请在窄屏下左右滑动左侧画廊进行校验。",
+            description: "修复窄屏菜单一致性。Logo 现已通过 z-index 20000 置顶。菜单排版调整为左对齐大字号，以严格对标 v1.0.0 规范。",
             blocks: [
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "Block 01: 测试详情页内容。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
-                { type: "text", content: "Block 02: 滚动深度测试。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
-                { type: "text", content: "Block 03: 校验 mix-blend-mode 影响。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
-                { type: "text", content: "Block 04: 色彩校准。" },
+                { type: "text", content: "Block 01: 内容测试。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
-                { type: "text", content: "Block 05: 导航权重对标。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
-                { type: "text", content: "Block 06: 图片文字配比。" },
+                { type: "text", content: "Block 01: 内容测试。" },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
-                { type: "text", content: "Block 07: 底部触达测试。" },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
-                { type: "text", content: "Block 08: 最后一个内容块。" }
+                { type: "text", content: "Block 01: 内容测试。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
+                { type: "text", content: "Block 01: 内容测试。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
+                { type: "text", content: "Block 01: 内容测试。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
+                { type: "text", content: "Block 01: 内容测试。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
+                { type: "text", content: "Block 01: 内容测试。" },
+                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
+                { type: "text", content: "Block 02: 滚动测试。" }
             ]
         };
 
@@ -303,6 +350,16 @@
             root.style.setProperty('--nav-link-size', UI_CONFIG.navLinksSize);
             root.style.setProperty('--nav-weight', UI_CONFIG.navWeight);
             root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
+        }
+
+        function initMenu() {
+            const btn = document.getElementById('menu-toggle');
+            const menu = document.getElementById('mobile-menu');
+            let active = false;
+            btn.onclick = () => {
+                active = !active;
+                menu.classList.toggle('active', active);
+            };
         }
 
         function init() {
@@ -324,18 +381,9 @@
                 mobile.appendChild(a);
             });
 
-            const gallery = document.getElementById('pdp-gallery');
-            const dotsContainer = document.getElementById('gallery-dots');
-            gallery.innerHTML = GALLERY_DATA.map(i => `<div class="gallery-item"><img src="${i.img}"></div>`).join('');
-            dotsContainer.innerHTML = GALLERY_DATA.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
+            document.getElementById('pdp-gallery').innerHTML = GALLERY_DATA.map(i => `<div class="gallery-item"><img src="${i.img}"></div>`).join('');
+            document.getElementById('gallery-dots').innerHTML = GALLERY_DATA.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
             
-            // 修正：修正窄屏画廊滑动时的实时同步逻辑
-            gallery.addEventListener('scroll', () => {
-                const index = Math.round(gallery.scrollLeft / gallery.offsetWidth);
-                const dots = dotsContainer.querySelectorAll('.dot');
-                dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
-            });
-
             let html = `<div class="sidebar-text"><h1>${PDP_DATA.title}</h1><p>${PDP_DATA.description}</p></div>`;
             PDP_DATA.blocks.forEach(b => {
                 if(b.type === 'image') html += `<div class="sidebar-media"><img src="${b.src}"></div>`;
@@ -343,14 +391,7 @@
             });
             document.getElementById('sidebar-content').innerHTML = html;
 
-            // 菜单逻辑
-            const btn = document.getElementById('menu-toggle');
-            const menu = document.getElementById('mobile-menu');
-            let active = false;
-            btn.onclick = () => {
-                active = !active;
-                menu.classList.toggle('active', active);
-            };
+            initMenu();
         }
 
         window.addEventListener('load', init);
