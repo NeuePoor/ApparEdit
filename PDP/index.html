@@ -287,15 +287,13 @@
 
         const PDP_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
-            description: "当前页面已修复滚动检测逻辑：现在同时监听左侧画廊和右侧详情栏。只要任意一侧向上滚动超过阈值，导航栏即触发反色效果。",
+            description: "当前页面已修复滚动检测逻辑：现在同时监听左侧画廊和右侧详情栏。窄屏模式下，横向滑动画廊也会正确触发导航栏反色。",
             blocks: [
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/colortest.webp" },
                 { type: "text", content: "更多详情内容测试滚动效果..." },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(1).webp" },
                 { type: "text", content: "更多详情内容测试滚动效果..." },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(2).webp" },
-                { type: "text", content: "更多详情内容测试滚动效果..." },
-                { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webpp" },
                 { type: "text", content: "更多详情内容测试滚动效果..." },
                 { type: "image", src: "https://cdn.neuepoor.com/apparedit/bg1%20(4).webp" },
                 { type: "text", content: "底部占位符。" }
@@ -329,14 +327,11 @@
             
             const threshold = 10;
             
-            // 宽屏模式下判断垂直滚动，窄屏模式画廊判断水平滚动
-            const isGalleryScrolled = window.innerWidth >= 768 
-                ? gallery.scrollTop > threshold 
-                : gallery.scrollLeft > threshold;
-                
+            // 窄屏下画廊是水平滚动的 scrollLeft，右侧 sidebar 是垂直滚动的 scrollTop
+            const isGalleryScrolled = (gallery.scrollTop > threshold) || (gallery.scrollLeft > threshold);
             const isSidebarScrolled = sidebar.scrollTop > threshold;
 
-            // 只要有一个在动，就变色
+            // 只要有一侧被划出初始位置，导航栏进入反色模式
             const shouldBeScrolled = isGalleryScrolled || isSidebarScrolled;
             nav.classList.toggle('scrolled', shouldBeScrolled);
         }
