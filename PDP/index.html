@@ -91,6 +91,11 @@
         }
         @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } }
 
+        .nav-links a {
+            text-decoration: none;
+            color: inherit;
+        }
+
         #menu-toggle {
             display: flex;
             flex-direction: column;
@@ -131,7 +136,6 @@
             margin: 15px 0;
             letter-spacing: 0.02em;
         }
-        .mobile-overlay a.current { color: var(--muted-color); pointer-events: none; }
 
         /* 画廊与侧边栏布局 */
         main { flex-grow: 1; display: flex; flex-direction: column; }
@@ -256,7 +260,7 @@
             ]
         };
 
-        // 3. 画廊图片数据 (在此添加、删除或调整图片顺序)
+        // 3. 画廊图片数据
         const GALLERY_DATA = [
             { img: "https://placehold.co/1200x1600/000000/FFFFFF?text=Slide+1" },
             { img: "https://placehold.co/1200x1600/222222/FFFFFF?text=Slide+2" },
@@ -268,7 +272,7 @@
             { img: "https://placehold.co/1200x1600/EEEEEE/000000?text=Slide+8" }
         ];
 
-        // 4. 侧边栏内容维护 (在此调整文字和图片的混合顺序)
+        // 4. 侧边栏内容维护
         const SIDEBAR_DATA = {
             title: "ITEM 030 / VOLUMETRIC STUDY",
             content: [
@@ -326,12 +330,17 @@
             // 导航渲染
             const desktop = document.getElementById('desktop-links');
             const mobile = document.getElementById('mobile-links');
+            desktop.innerHTML = "";
+            mobile.innerHTML = "";
             
             CONFIG.links.forEach(link => {
+                const isCurrent = link.url === CONFIG.currentPageUrl;
                 const a = document.createElement('a');
                 a.href = link.url;
                 a.innerText = link.name;
-                if(link.url === CONFIG.currentPageUrl) a.classList.add('current');
+                
+                // 还原 ApparEdit v1.0 默认高亮逻辑：低透明度
+                if(isCurrent) a.style.opacity = "0.3";
                 
                 desktop.appendChild(a.cloneNode(true));
                 const mA = a.cloneNode(true);
@@ -341,10 +350,9 @@
 
             document.getElementById('menu-toggle').onclick = toggleMenu;
 
-            // 画廊渲染 (自动同步 GALLERY_DATA)
+            // 画廊渲染
             const gallery = document.getElementById('pdp-gallery');
             const dotsContainer = document.getElementById('gallery-dots');
-            
             gallery.innerHTML = GALLERY_DATA.map(i => `<div class="gallery-item"><img src="${i.img}"></div>`).join('');
             dotsContainer.innerHTML = GALLERY_DATA.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
 
@@ -354,15 +362,13 @@
                 dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
             }, { passive: true });
 
-            // 侧边栏渲染 (自适应文本/图片混合)
+            // 侧边栏渲染
             const sidebarContainer = document.getElementById('sidebar-content');
             let contentHtml = `<div class="sidebar-text"><h1>${SIDEBAR_DATA.title}</h1>`;
-            
             SIDEBAR_DATA.content.forEach(item => {
                 if (item.type === "text") {
                     contentHtml += `<p>${item.value}</p>`;
                 } else if (item.type === "image") {
-                    // 如果之前在写文本，先关闭 text div
                     contentHtml += `</div><div class="sidebar-image"><img src="${item.value}"></div><div class="sidebar-text">`;
                 }
             });
