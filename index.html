@@ -2,7 +2,7 @@
   v1.4 VERSION LOG:
   1. 转换为 JSON 数据驱动模式，通过 fetch("data.json") 获取数据。
   2. 取消翻页功能，Landing Page 固定展示前 36 个项目。
-  3. 增加模拟数据生成函数，用于在没有 data.json 时预览 36 个 PDP 项目。
+  3. 增加模拟数据生成函数，用于在没有 data.json 时预览 36 个相同 PDP 项目。
   4. 保持 v1.3 的 12 列响应式网格系统及 4px 间距。
 -->
 <!DOCTYPE html>
@@ -177,19 +177,19 @@
             document.body.style.overflow = isOpen ? 'hidden' : '';
         };
 
-        const createCard = (item) => `
+        const createCard = (item, index) => `
             <a href="/apparedit/${item.id}/index.html" class="card">
                 <div class="img-box">
                     <img src="${item.img}" loading="lazy" alt="${item.id}" onerror="this.src='https://via.placeholder.com/600x800?text=Image+Not+Found'">
                 </div>
-                <div class="card-title">${item.id}_${item.date}</div>
+                <div class="card-title">${item.id}_${String(index + 1).padStart(2, '0')} [${item.date}]</div>
             </a>
         `;
 
-        // 生成预览用的 36 个模拟数据
+        // 生成 36 个重复的 PDP 数据进行预览
         function generateMockData() {
             return Array.from({ length: 36 }, (_, i) => ({
-                id: `PDP_${String(i + 1).padStart(2, '0')}`,
+                id: "PDP",
                 img: "https://cdn.neuepoor.com/apparedit/image-035296a5-5b03-42bd-91b5-4fb17d40b48c.webp",
                 date: "2023"
             }));
@@ -203,22 +203,21 @@
                 if (response.ok) {
                     data = await response.json();
                 } else {
-                    // 如果找不到 data.json，则生成模拟数据供预览
-                    console.warn("data.json not found, using mock data for preview.");
+                    // 如果找不到 data.json，使用模拟数据
+                    console.warn("data.json not found, using mock data.");
                     data = generateMockData();
                 }
                 
                 const displayData = data.slice(0, APP_CONFIG.landingLimit);
                 
                 if (displayData.length > 0) {
-                    $('grid').innerHTML = displayData.map(item => createCard(item)).join('');
+                    $('grid').innerHTML = displayData.map((item, idx) => createCard(item, idx)).join('');
                 } else {
                     $('grid').innerHTML = '<div id="loading">NO ITEMS FOUND.</div>';
                 }
             } catch (error) {
-                // 网络错误（如本地打开）时也使用模拟数据预览
                 const mockData = generateMockData();
-                $('grid').innerHTML = mockData.map(item => createCard(item)).join('');
+                $('grid').innerHTML = mockData.map((item, idx) => createCard(item, idx)).join('');
             }
         }
 
