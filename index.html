@@ -1,9 +1,9 @@
 <!--
-  v1.4.2 VERSION LOG:
-  1. 修复数据加载逻辑：增加对绝对路径和相对路径的兼容性处理。
-  2. 增强错误处理：在 fetch 失败时提供更详细的控制台反馈。
-  3. 路径优化：使用相对路径以兼容 GitHub/Vercel 的子目录部署。
-  4. 保持 v1.3 的 12 列响应式网格系统及 4px 间距。
+  v1.4.3 VERSION LOG:
+  1. 修复 Canvas 预览环境下的路径解析错误（Failed to parse URL）。
+  2. 优化 fetch 路径逻辑：在预览环境使用完整 URL，在部署环境使用相对路径。
+  3. 增加对 data.json 响应内容的严格检查。
+  4. 保持 v1.4.2 的 12 列响应式网格及 4px 间距。
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -148,7 +148,7 @@
 
     <script>
         const APP_CONFIG = {
-            version: "1.4.2",
+            version: "1.4.3",
             landingLimit: 36, 
             dataPath: "data.json", 
             curUrl: "https://apparedit.neuepoor.com/",
@@ -199,8 +199,13 @@
 
         async function loadAndRender() {
             try {
-                // 确保使用当前路径下的 data.json
-                const fetchUrl = `./${APP_CONFIG.dataPath}?t=${Date.now()}`;
+                // 判断是否在 Canvas 预览环境 (blob: 协议)
+                const isBlob = window.location.protocol === 'blob:';
+                // 如果是预览环境且报错，尝试使用绝对路径
+                let fetchUrl = isBlob 
+                    ? `https://apparedit.neuepoor.com/${APP_CONFIG.dataPath}?t=${Date.now()}` 
+                    : `./${APP_CONFIG.dataPath}?t=${Date.now()}`;
+                
                 const response = await fetch(fetchUrl);
                 
                 if (!response.ok) {
@@ -208,6 +213,11 @@
                 }
                 
                 const data = await response.json();
+                
+                if (!Array.isArray(data)) {
+                    throw new Error("JSON 数据格式不正确，应为数组。");
+                }
+
                 const displayData = data.slice(0, APP_CONFIG.landingLimit);
                 
                 if (displayData.length > 0) {
@@ -216,8 +226,7 @@
                     $('grid').innerHTML = '<div id="loading">未找到任何项目。</div>';
                 }
             } catch (error) {
-                console.error("加载真实数据失败:", error);
-                // 只有在加载失败时才显示模拟数据，方便预览
+                console.warn("加载真实数据失败，回退到预览模式:", error.message);
                 const mockData = generateMockData();
                 $('grid').innerHTML = mockData.map((item, idx) => createCard(item, idx)).join('');
             }
