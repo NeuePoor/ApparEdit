@@ -3,406 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Template v1.6 - ApparEdit PDP</title>
-    
-    <link id="dynamic-favicon" rel="icon" type="image/webp" href="">
-    <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
+    <title>ApparEdit™ - PoorLegalGuy®</title>
+    <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/Favicon.webp">
 
     <style>
-        /* * ADS (ApparEdit Design System) Tokens
-         * -------------------------------------------------- 
-         */
         :root {
-            --ads-bg: #ffffff;
-            --ads-text: #000000;
-            --ads-inverted: #ffffff; 
-            --ads-border: #efefef;
-            --ads-muted: #999999;
-            
-            --ads-nav-h: 28px;
-            --ads-grid-gap: 2px;
-            --ads-safe-area: 10px;
-            
-            --ads-font-main: "Arial";
-            --ads-fs-logo: 21px;
-            --ads-fs-nav: 12px;
-            --ads-fw-bold: 600;
-            --ads-fs-content: 10px;
+            --bg: #fff; --text: #000; --border: #efefef;
+            --nav-h: 44px; --gap: 2px; --safe: 15px;
+            --f-main: "Arial", sans-serif;
+            /* 差值模式下的文字基础色：必须为白色才能在白色背景上反转为黑色 */
+            --nav-diff-color: #ffffff; 
         }
 
         @media (prefers-color-scheme: dark) {
-            :root {
-                --ads-bg: #000000;
-                --ads-text: #ffffff;
-                --ads-border: #111111;
-                --ads-muted: #666666;
-            }
+            :root { --bg: #000; --text: #fff; --border: #111; }
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body {
-            font-family: var(--ads-font-main), -apple-system, sans-serif;
-            background-color: var(--ads-bg);
-            color: var(--ads-text);
-            min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            font-family: var(--f-main); background: var(--bg); color: var(--text);
+            overflow-x: hidden; -webkit-font-smoothing: antialiased;
         }
 
-        /* * Component: Navbar (Difference Mode)
-         * -------------------------------------------------- 
-         */
-        .ads-navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--ads-nav-h);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 var(--ads-safe-area);
-            z-index: 3000;
-            background-color: transparent;
+        /* Navbar: 差值模式重设计 */
+        .nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-h);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 var(--safe); z-index: 2000;
+            
+            /* 核心修改：去掉背景，启用差值混合 */
+            background: transparent; 
             mix-blend-mode: difference;
-            pointer-events: none;
+            pointer-events: none; /* 穿透容器本身 */
         }
 
-        .ads-navbar__brand, 
-        .ads-navbar__links a,
-        .ads-navbar__toggle {
-            pointer-events: auto;
-            color: var(--ads-inverted) !important;
+        .nav a, .menu-btn {
+            pointer-events: auto; /* 仅链接和按钮响应点击 */
+            color: var(--nav-diff-color) !important;
             text-decoration: none;
-        }
-
-        .ads-navbar__brand {
-            font-weight: var(--ads-fw-bold);
-            font-size: var(--ads-fs-logo);
-            letter-spacing: -0.02em;
-        }
-
-        .ads-navbar__links {
-            display: none;
-            gap: 15px;
-        }
-        
-        .ads-navbar__links a {
-            font-size: var(--ads-fs-nav);
-            font-weight: var(--ads-fw-bold);
-            letter-spacing: -0.01em;
             transition: opacity 0.2s ease;
         }
 
-        @media (min-width: 768px) { .ads-navbar__links { display: flex; } }
+        .logo { font-size: 18px; letter-spacing: -0.5px; font-weight: 700; }
+        .nav-links { display: none; gap: 20px; }
+        .nav-links a { font-weight: 600; font-size: 13px; }
+        
+        @media (min-width: 768px) { .nav-links { display: flex; } }
 
-        .ads-navbar__toggle {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 5px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            width: 32px;
-            height: var(--ads-nav-h);
-        }
-        .ads-navbar__toggle span { width: 18px; height: 1px; background-color: var(--ads-inverted); transition: 0.3s; }
-        @media (min-width: 768px) { .ads-navbar__toggle { display: none; } }
-
-        /* * Layout: Responsive Engine
-         * -------------------------------------------------- 
-         */
-        .ads-main { display: flex; flex-direction: column; width: 100%; }
-        @media (min-width: 768px) { 
-            .ads-main { flex-direction: row; height: 100vh; overflow: hidden; } 
+        /* Layout Engine */
+        .main { display: flex; flex-direction: column; }
+        @media (min-width: 768px) {
+            .main { flex-direction: row; height: 100vh; overflow: hidden; }
         }
 
-        /* * Component: Gallery
-         * -------------------------------------------------- 
-         */
-        .ads-gallery { flex: 1.6; background-color: var(--ads-border); position: relative; }
-        .ads-gallery__track {
-            display: flex;
-            width: 100%;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
+        /* Gallery */
+        .gallery { flex: 1.6; position: relative; background: var(--bg); }
+        .gallery-track {
+            display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory;
+            scrollbar-width: none; -ms-overflow-style: none;
         }
-        .ads-gallery__track::-webkit-scrollbar { display: none; }
-        .ads-gallery__item { min-width: 100%; scroll-snap-align: start; background: var(--ads-bg); }
-        .ads-gallery__item img { 
-            width: 100%; 
-            height: auto; 
-            display: block; 
-            object-fit: cover; 
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        .ads-gallery__item img.is-loaded { opacity: 1; }
-
-        .ads-gallery__dots {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 10;
-        }
-        .ads-gallery__dot { width: 6px; height: 6px; border-radius: 50%; background-color: rgba(128,128,128,0.2); transition: 0.3s; }
-        .ads-gallery__dot.is-active { background-color: var(--ads-text); }
+        .gallery-track::-webkit-scrollbar { display: none; }
+        .gallery-item { min-width: 100%; scroll-snap-align: start; }
+        .gallery-item img { width: 100%; height: auto; display: block; object-fit: cover; background: var(--border); min-height: 100vh; }
 
         @media (min-width: 768px) {
-            .ads-gallery { height: 100vh; overflow: hidden; }
-            .ads-gallery__track { 
-                flex-direction: column; 
-                height: 100vh; 
-                overflow-y: auto; 
-                overflow-x: hidden; 
-                gap: var(--ads-grid-gap); 
-                scroll-snap-type: none;
-            }
-            .ads-gallery__item img { min-height: 100vh; }
-            .ads-gallery__dots { display: none; }
+            .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; scroll-snap-type: none; gap: var(--gap); }
+            .gallery-item img { min-height: 100vh; }
         }
 
-        /* * Component: Sidebar 
-         * -------------------------------------------------- 
-         */
-        .ads-sidebar { flex: 1.0; background-color: var(--ads-bg); border-left: var(--ads-grid-gap) solid var(--ads-border); }
-        @media (min-width: 768px) {
-            .ads-sidebar { height: 100vh; overflow-y: auto; scrollbar-width: none; }
-            .ads-sidebar::-webkit-scrollbar { display: none; }
-        }
-        .ads-sidebar__inner { padding-top: var(--ads-nav-h); }
-        .ads-sidebar__content { padding: 40px 20px 100px; }
+        /* Sidebar */
+        .sidebar { flex: 1; border-left: var(--gap) solid var(--border); background: var(--bg); overflow-y: auto; }
+        .sidebar-inner { padding: 80px var(--safe) 100px; } /* 增加顶部 padding 避免文字重叠 */
+        .rich-text { font-size: 11px; line-height: 1.8; }
+        .rich-text h1 { font-size: 20px; margin-bottom: 20px; font-weight: 700; }
+        .rich-text p { margin-bottom: 15px; opacity: 0.9; }
+        .media-box { width: 100%; margin: 10px 0 20px; background: var(--border); }
+        .media-box img { width: 100%; height: auto; display: block; }
 
-        .ads-rich-text { font-size: var(--ads-fs-content); line-height: 1.8; color: var(--ads-text); }
-        .ads-rich-text h1 { font-size: 18px; margin-bottom: 16px; font-weight: var(--ads-fw-bold); letter-spacing: -0.01em; }
-        .ads-rich-text p { margin-bottom: 12px; white-space: pre-wrap; word-break: break-word; }
-        .ads-media-box { width: 100%; margin: 0 0 12px 0; background: var(--ads-border); }
-        .ads-media-box img { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.4s ease; }
-        .ads-media-box img.is-loaded { opacity: 1; }
-
-        /* * Component: MobileOverlay 
-         * -------------------------------------------------- 
-         */
-        .ads-mobile-overlay {
-            position: fixed; inset: 0; background-color: var(--ads-bg); z-index: 2500;
+        /* Mobile Menu */
+        .menu-btn { background: none; border: none; cursor: pointer; display: block; padding: 5px; }
+        .menu-btn span { display: block; width: 20px; height: 1.5px; background: var(--nav-diff-color); margin: 4px 0; }
+        @media (min-width: 768px) { .menu-btn { display: none; } }
+        
+        .overlay {
+            position: fixed; inset: 0; background: var(--bg); z-index: 1500;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            opacity: 0; visibility: hidden; transition: 0.3s ease;
+            transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .ads-mobile-overlay.is-active { opacity: 1; visibility: visible; }
-        .ads-mobile-overlay a { font-size: 14px; color: var(--ads-text); text-decoration: none; margin: 15px 0; font-weight: var(--ads-fw-bold); }
+        .overlay.active { transform: translateY(0); }
+        .overlay a { font-size: 24px; margin: 15px; font-weight: 700; color: var(--text) !important; text-decoration: none; }
     </style>
 </head>
 <body>
 
-    <nav class="ads-navbar">
-        <a href="#" class="ads-navbar__brand" id="ui-logo"></a>
-        <div class="ads-navbar__links" id="ui-desktop-nav"></div>
-        <button class="ads-navbar__toggle" id="ui-menu-btn" aria-label="切换菜单">
-            <span></span><span></span>
-        </button>
+    <nav class="nav">
+        <a href="https://home.neuepoor.com/" class="logo">PoorLegalGuy®</a>
+        <div class="nav-links">
+            <a href="https://home.neuepoor.com">Category</a>
+            <a href="https://apparedit.neuepoor.com/">ApparEdit</a>
+            <a href="#" style="opacity: 0.3">PDP</a>
+        </div>
+        <button class="menu-btn" onclick="toggleMenu()"><span></span><span></span></button>
     </nav>
 
-    <div class="ads-mobile-overlay" id="ui-mobile-menu">
-        <div id="ui-mobile-nav" style="display: flex; flex-direction: column; align-items: center;"></div>
+    <div class="overlay" id="mobileMenu">
+        <a href="https://home.neuepoor.com" onclick="toggleMenu()">Category</a>
+        <a href="https://apparedit.neuepoor.com/" onclick="toggleMenu()">ApparEdit</a>
+        <a href="#" onclick="toggleMenu()">PDP</a>
     </div>
 
-    <main class="ads-main">
-        <section class="ads-gallery">
-            <div class="ads-gallery__track" id="ui-gallery-track"></div>
-            <div class="ads-gallery__dots" id="ui-gallery-dots"></div>
+    <main class="main">
+        <section class="gallery">
+            <div class="gallery-track" id="gallery"></div>
         </section>
 
-        <aside class="ads-sidebar">
-            <div class="ads-sidebar__inner">
-                <div class="ads-sidebar__content" id="ui-sidebar-root"></div>
-            </div>
+        <aside class="sidebar">
+            <div class="sidebar-inner" id="sidebar"></div>
         </aside>
     </main>
 
     <script>
-        /**
-         * ==========================================
-         * ADS CONFIGURATION (原始数据锁定)
-         * ==========================================
-         */
-        const DS_CONFIG = {
-            tokens: {
-                primaryFont: "Arial",
-                logoSize: "21px",
-                navSize: "12px",
-                navWeight: "600",
-                contentSize: "10px"
-            },
-            site: {
-                title: "Template v1.6",
-                logo: "PoorLegalGuy®",
-                logoLink: "https://home.neuepoor.com/",
-                favicon: "https://cdn.neuepoor.com/Favicon.webp",
-                currentUrl: "https://apparedit.neuepoor.com/PDP",
-                navigation: [
-                    { name: "Category", url: "https://home.neuepoor.com" },
-                    { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
-                    { name: "PDP", url: "https://apparedit.neuepoor.com/PDP" }
-                ]
-            }
+        const TARGET_IMG = "https://cdn.neuepoor.com/apparedit/bg1%20%282%29.webp";
+
+        const APP_DATA = {
+            gallery: Array(14).fill(TARGET_IMG),
+            sidebarTitle: "ApparEdit™",
+            sidebarBlocks: [
+                { t: "p", v: "测试一下的选项，if this support poorlegalguy." },
+                { t: "img", v: TARGET_IMG },
+                { t: "p", v: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。" },
+                { t: "img", v: TARGET_IMG },
+                { t: "img", v: TARGET_IMG },
+                { t: "p", v: "在 ADS 设计系统下，我们确保跨平台的视觉一致性。" },
+                { t: "img", v: TARGET_IMG },
+                { t: "p", v: "感谢您选择 PoorLegalGuy® 的设计服务。我们将持续为您迭代。" }
+            ]
         };
 
-        const PAGE_DATA = {
-            gallery: [
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_01.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_02.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_03.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_04.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_05.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_06.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_07.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_08.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_09.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_10.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_11.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_12.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_13.webp" },
-                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_14.webp" }
-            ],
-            sidebar: {
-                title: "ApparEdit™",
-                blocks: [
-                    { type: "text", value: "测试一下的选项，if this support poorlegalguy." },
-                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_01.webp" },
-                    { type: "text", value: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。每一个像素的跳动，都在诉说着极简主义与功能性的完美融合。" },
-                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_02.webp" },
-                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_03.webp" },
-                    { type: "text", value: "在 ADS 设计系统下，我们确保跨平台的视觉一致性。无论是移动端的纵向滑动手感，还是桌面端的全屏分栏体验，都旨在让内容本身成为焦点。" },
-                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_04.webp" },
-                    { type: "text", value: "感谢您选择 PoorLegalGuy® 的设计服务。我们将持续为您迭代，打造更纯粹的数字化体验。" }
-                ]
-            }
-        };
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+            document.body.style.overflow = menu.classList.contains('active') ? 'hidden' : '';
+        }
 
-        const App = {
-            init() {
-                this.applyTokens();
-                this.renderMeta();
-                this.renderNavbar();
-                this.renderGallery();
-                this.renderSidebar();
-                this.bindEvents();
-            },
+        function init() {
+            // 渲染画廊
+            document.getElementById('gallery').innerHTML = APP_DATA.gallery.map(src => `
+                <div class="gallery-item"><img src="${src}" onerror="this.src='https://placehold.co/800x1200?text=Image+Error'"></div>
+            `).join('');
 
-            applyTokens() {
-                const s = document.documentElement.style;
-                const t = DS_CONFIG.tokens;
-                s.setProperty('--ads-font-main', t.primaryFont);
-                s.setProperty('--ads-fs-logo', t.logoSize);
-                s.setProperty('--ads-fs-nav', t.navSize);
-                s.setProperty('--ads-fw-bold', t.navWeight);
-                s.setProperty('--ads-fs-content', t.contentSize);
-            },
+            // 渲染侧边栏
+            const sidebarHtml = `
+                <div class="rich-text">
+                    <h1>${APP_DATA.sidebarTitle}</h1>
+                    ${APP_DATA.sidebarBlocks.map(b => 
+                        b.t === 'p' ? `<p>${b.v}</p>` : `</div><div class="media-box"><img src="${b.v}"></div><div class="rich-text">`
+                    ).join('')}
+                </div>
+            `;
+            document.getElementById('sidebar').innerHTML = sidebarHtml;
+        }
 
-            renderMeta() {
-                document.title = DS_CONFIG.site.title;
-                const icon = DS_CONFIG.site.favicon;
-                document.getElementById('dynamic-favicon').href = icon;
-                document.getElementById('dynamic-apple-icon').href = icon;
-            },
-
-            // 统一的图片处理逻辑
-            handleImageLoad(img) {
-                img.classList.add('is-loaded');
-            },
-
-            handleImageError(img) {
-                // 如果 CDN 地址失败，切换到基础占位图，确保页面不破裂
-                const fallback = `https://placehold.co/1200x1600/efefef/999999?text=Image+Unavailable`;
-                if (img.src !== fallback) {
-                    img.src = fallback;
-                    img.classList.add('is-loaded');
-                }
-            },
-
-            renderNavbar() {
-                const logo = document.getElementById('ui-logo');
-                logo.innerText = DS_CONFIG.site.logo;
-                logo.href = DS_CONFIG.site.logoLink;
-
-                const dNav = document.getElementById('ui-desktop-nav');
-                const mNav = document.getElementById('ui-mobile-nav');
-                
-                DS_CONFIG.site.navigation.forEach(item => {
-                    const a = document.createElement('a');
-                    a.href = item.url;
-                    a.innerText = item.name;
-                    if(item.url === DS_CONFIG.site.currentUrl) a.style.opacity = "0.3";
-                    
-                    dNav.appendChild(a.cloneNode(true));
-                    const ma = a.cloneNode(true);
-                    ma.onclick = () => this.toggleMenu(false);
-                    mNav.appendChild(ma);
-                });
-            },
-
-            renderGallery() {
-                const track = document.getElementById('ui-gallery-track');
-                const dots = document.getElementById('ui-gallery-dots');
-
-                track.innerHTML = PAGE_DATA.gallery.map(img => `
-                    <div class="ads-gallery__item">
-                        <img src="${img.src}" 
-                             onload="App.handleImageLoad(this)" 
-                             onerror="App.handleImageError(this)" 
-                             alt="PDP Image">
-                    </div>
-                `).join('');
-
-                dots.innerHTML = PAGE_DATA.gallery.map((_, i) => `
-                    <div class="ads-gallery__dot ${i===0?'is-active':''}"></div>
-                `).join('');
-
-                track.addEventListener('scroll', () => {
-                    if (window.innerWidth < 768) {
-                        const idx = Math.round(track.scrollLeft / track.clientWidth);
-                        const allDots = dots.querySelectorAll('.ads-gallery__dot');
-                        allDots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
-                    }
-                }, { passive: true });
-            },
-
-            renderSidebar() {
-                const root = document.getElementById('ui-sidebar-root');
-                const data = PAGE_DATA.sidebar;
-
-                let html = `<div class="ads-rich-text"><h1>${data.title}</h1>`;
-                data.blocks.forEach(block => {
-                    if(block.type === 'text') {
-                        html += `<p>${block.value}</p>`;
-                    } else if(block.type === 'image') {
-                        html += `</div><div class="ads-media-box"><img src="${block.value}" onload="App.handleImageLoad(this)" onerror="App.handleImageError(this)"></div><div class="ads-rich-text">`;
-                    }
-                });
-                html += `</div>`;
-                root.innerHTML = html;
-            },
-
-            toggleMenu(force) {
-                const menu = document.getElementById('ui-mobile-menu');
-                const isNowActive = typeof force === 'boolean' ? force : !menu.classList.contains('is-active');
-                menu.classList.toggle('is-active', isNowActive);
-                document.body.style.overflow = isNowActive ? 'hidden' : '';
-            },
-
-            bindEvents() {
-                document.getElementById('ui-menu-btn').onclick = () => this.toggleMenu();
-            }
-        };
-
-        window.addEventListener('DOMContentLoaded', () => App.init());
+        window.onload = init;
     </script>
 </body>
 </html>
