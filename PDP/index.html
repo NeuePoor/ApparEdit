@@ -49,11 +49,11 @@
             height: var(--nav-h);
             z-index: 2000;
             background: transparent; 
-            mix-blend-mode: difference; /* 全局差值模式 */
+            mix-blend-mode: difference; 
             pointer-events: none;
         }
 
-        /* --- PC Navbar: 12栏对齐系统 --- */
+        /* --- PC Navbar: 12栏系统 --- */
         @media (min-width: 768px) {
             .nav {
                 display: grid;
@@ -98,7 +98,7 @@
             .nav-links-pc { display: none; }
         }
 
-        /* --- Common Nav Links Style --- */
+        /* --- Nav Links --- */
         .nav a {
             position: relative;
             color: var(--nav-diff-color) !important;
@@ -110,30 +110,31 @@
             transition: color 0.15s ease;
         }
 
-        /* PC Hover 修复：白色实底矩形背景 & 文字反色处理 */
+        /* PC Hover: 高度随字号，宽度满格 */
         @media (min-width: 768px) {
             .nav a::before {
                 content: '';
-                position: absolute;
-                /* 略微扩大背景范围以包裹文字 */
-                left: -6px; 
-                right: -6px;
-                height: 1.2em;
+                position: fixed;
+                /* 垂直对齐：居中并匹配字体高度 */
+                top: calc(var(--grid-gap) + (var(--nav-h) / 2));
+                transform: translateY(-50%);
+                height: 1.1em; 
+                
+                /* 水平对齐：跨越 12 栏宽度 */
+                left: var(--grid-gap);
+                right: var(--grid-gap);
+                
                 background: white;
                 opacity: 0;
                 z-index: -1;
                 transition: opacity 0.15s ease;
+                pointer-events: none;
             }
 
-            /* 悬浮时：
-               1. 背景块显示 (由于差值模式，它在黑色背景上显白，白色背景上显黑)
-               2. 文字通过 color 的改变在差值计算中获得清晰的对比色
-            */
             .nav a:hover::before { 
                 opacity: 1; 
             }
             
-            /* 在差值模式下，背景白+文字黑 = 清晰的可见效果 */
             .nav a:hover {
                 color: #000 !important; 
             }
@@ -171,7 +172,7 @@
             .gallery-item img { height: auto; min-height: calc(100vh - 40px); aspect-ratio: auto; }
         }
 
-        /* --- Indicators (Mobile Only) --- */
+        /* --- Indicators --- */
         .indicators {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 8px; z-index: 10;
@@ -180,7 +181,7 @@
         .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
         .dot.active { background: #fff; transform: scale(1.2); }
 
-        /* --- Right Panel Content --- */
+        /* --- Right Panel --- */
         .right-panel { width: 100%; overflow-y: auto; }
         .right-inner { padding: calc(var(--nav-h) + var(--grid-gap)) var(--grid-gap) var(--grid-gap) var(--grid-gap); }
         .rich-text { font-size: 11px; line-height: 1.8; }
@@ -189,7 +190,7 @@
         .media-box { width: 100%; margin-bottom: var(--grid-gap); }
         .media-box img { width: 100%; height: auto; display: block; }
 
-        /* --- Mobile Menu Button: Morphing Icon --- */
+        /* --- Mobile Menu & Overlay --- */
         .menu-btn { 
             background: none; border: none; cursor: pointer; padding: 5px; 
             position: relative; width: 30px; height: 30px; z-index: 2100;
@@ -204,7 +205,6 @@
         .menu-btn.active .line-1 { transform: translateY(4px) rotate(45deg); }
         .menu-btn.active .line-2 { transform: translateY(-4px) rotate(-45deg); }
 
-        /* --- Mobile Overlay: Elastic Feel & Staggered Links --- */
         .overlay {
             position: fixed; inset: 0; 
             background: var(--overlay-bg); 
@@ -234,18 +234,15 @@
 <body>
 
     <nav class="nav">
-        <!-- PC: 第 1 栏 -->
         <div class="nav-logo-zone">
             <a href="https://home.neuepoor.com/" class="logo">PoorLegalGuy®</a>
         </div>
-        <!-- PC: 从第 12 栏往右侧排列 -->
         <div class="nav-links-zone">
             <div class="nav-links-pc">
                 <a href="https://home.neuepoor.com">Category</a>
                 <a href="https://apparedit.neuepoor.com/">ApparEdit</a>
                 <a href="https://apparedit.neuepoor.com/PDP">PDP</a>
             </div>
-            <!-- 仅移动端 -->
             <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">
                 <span class="line-1"></span>
                 <span class="line-2"></span>
@@ -253,7 +250,6 @@
         </div>
     </nav>
 
-    <!-- 手机端 Staggered 菜单 -->
     <div class="overlay" id="mobileMenu">
         <a href="https://home.neuepoor.com" onclick="toggleMenu()">Category</a>
         <a href="https://apparedit.neuepoor.com/" onclick="toggleMenu()">ApparEdit</a>
