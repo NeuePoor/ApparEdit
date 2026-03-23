@@ -10,9 +10,10 @@
         :root {
             --bg: #fff; --text: #000; --border: #efefef;
             --nav-h: 44px; --gap: 2px; --safe: 15px;
-            --f-main: "Arial", sans-serif;
-            /* 差值模式下的文字基础色：必须为白色才能在白色背景上反转为黑色 */
+            --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
             --nav-diff-color: #ffffff; 
+            --fs-nav-logo: 18px;
+            --fs-nav-links: 12px;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -20,67 +21,105 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            font-family: var(--f-main); background: var(--bg); color: var(--text);
-            overflow-x: hidden; -webkit-font-smoothing: antialiased;
+            font-family: var(--f-fallback); 
+            background: var(--bg); 
+            color: var(--text);
+            overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Navbar: 差值模式重设计 */
+        /* Navbar */
         .nav {
             position: fixed; top: 0; width: 100%; height: var(--nav-h);
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 var(--safe); z-index: 2000;
-            
-            /* 核心修改：去掉背景，启用差值混合 */
             background: transparent; 
             mix-blend-mode: difference;
-            pointer-events: none; /* 穿透容器本身 */
+            pointer-events: none;
         }
 
         .nav a, .menu-btn {
-            pointer-events: auto; /* 仅链接和按钮响应点击 */
+            pointer-events: auto;
             color: var(--nav-diff-color) !important;
             text-decoration: none;
-            transition: opacity 0.2s ease;
         }
 
-        .logo { font-size: 18px; letter-spacing: -0.5px; font-weight: 700; }
+        .logo { font-size: var(--fs-nav-logo); letter-spacing: -0.5px; font-weight: 700; }
         .nav-links { display: none; gap: 20px; }
-        .nav-links a { font-weight: 600; font-size: 13px; }
-        
+        .nav-links a { font-weight: 600; font-size: var(--fs-nav-links); }
         @media (min-width: 768px) { .nav-links { display: flex; } }
 
-        /* Layout Engine */
-        .main { display: flex; flex-direction: column; }
+        /* Main Container */
+        .main { display: flex; flex-direction: column; width: 100%; margin: 0; }
         @media (min-width: 768px) {
             .main { flex-direction: row; height: 100vh; overflow: hidden; }
         }
 
-        /* Gallery */
-        .gallery { flex: 1.6; position: relative; background: var(--bg); }
+        /* Left Panel */
+        .left-panel { 
+            position: relative; 
+            width: 100%;
+            background: var(--bg);
+        }
+        @media (min-width: 768px) { .left-panel { flex: 1.6; height: 100vh; } }
+
         .gallery-track {
-            display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory;
-            scrollbar-width: none; -ms-overflow-style: none;
+            display: flex; width: 100%; overflow-x: auto; 
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
         }
         .gallery-track::-webkit-scrollbar { display: none; }
-        .gallery-item { min-width: 100%; scroll-snap-align: start; }
-        .gallery-item img { width: 100%; height: auto; display: block; object-fit: cover; background: var(--border); min-height: 100vh; }
 
-        @media (min-width: 768px) {
-            .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; scroll-snap-type: none; gap: var(--gap); }
-            .gallery-item img { min-height: 100vh; }
+        .gallery-item { 
+            min-width: 100%; 
+            scroll-snap-align: start;
+            position: relative;
+        }
+        
+        /* 手机端图片高度由宽高比决定，杜绝空白 */
+        .gallery-item img { 
+            width: 100%; 
+            display: block; 
+            object-fit: cover; 
+            background: var(--border);
+            aspect-ratio: 4 / 5; /* 设定一个标准比例 */
         }
 
-        /* Sidebar */
-        .sidebar { flex: 1; border-left: var(--gap) solid var(--border); background: var(--bg); overflow-y: auto; }
-        .sidebar-inner { padding: 80px var(--safe) 100px; } /* 增加顶部 padding 避免文字重叠 */
+        @media (min-width: 768px) {
+            .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; scroll-snap-type: none; }
+            .gallery-item img { height: 100vh; aspect-ratio: auto; }
+        }
+
+        /* Indicators (Thumb/Dots) - 仅手机端显示 */
+        .indicators {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; z-index: 10;
+        }
+        @media (min-width: 768px) { .indicators { display: none; } }
+        .dot { 
+            width: 6px; height: 6px; border-radius: 50%; 
+            background: rgba(255,255,255,0.3); transition: all 0.3s; 
+        }
+        .dot.active { background: #fff; transform: scale(1.2); }
+
+        /* Right Panel */
+        .right-panel { width: 100%; background: var(--bg); }
+        @media (min-width: 768px) { 
+            .right-panel { flex: 1; height: 100vh; overflow-y: auto; border-left: var(--gap) solid var(--border); } 
+        }
+
+        .right-inner { padding: 40px var(--safe) 100px; }
+        @media (min-width: 768px) { .right-inner { padding: 80px var(--safe) 100px; } }
+
         .rich-text { font-size: 11px; line-height: 1.8; }
         .rich-text h1 { font-size: 20px; margin-bottom: 20px; font-weight: 700; }
         .rich-text p { margin-bottom: 15px; opacity: 0.9; }
         .media-box { width: 100%; margin: 10px 0 20px; background: var(--border); }
         .media-box img { width: 100%; height: auto; display: block; }
 
-        /* Mobile Menu */
+        /* Menu Button */
         .menu-btn { background: none; border: none; cursor: pointer; display: block; padding: 5px; }
         .menu-btn span { display: block; width: 20px; height: 1.5px; background: var(--nav-diff-color); margin: 4px 0; }
         @media (min-width: 768px) { .menu-btn { display: none; } }
@@ -101,7 +140,7 @@
         <div class="nav-links">
             <a href="https://home.neuepoor.com">Category</a>
             <a href="https://apparedit.neuepoor.com/">ApparEdit</a>
-            <a href="#" style="opacity: 0.3">PDP</a>
+            <a href="https://apparedit.neuepoor.com/PDP">PDP</a>
         </div>
         <button class="menu-btn" onclick="toggleMenu()"><span></span><span></span></button>
     </nav>
@@ -109,16 +148,17 @@
     <div class="overlay" id="mobileMenu">
         <a href="https://home.neuepoor.com" onclick="toggleMenu()">Category</a>
         <a href="https://apparedit.neuepoor.com/" onclick="toggleMenu()">ApparEdit</a>
-        <a href="#" onclick="toggleMenu()">PDP</a>
+        <a href="https://apparedit.neuepoor.com/PDP" onclick="toggleMenu()">PDP</a>
     </div>
 
     <main class="main">
-        <section class="gallery">
-            <div class="gallery-track" id="gallery"></div>
+        <section class="left-panel">
+            <div class="gallery-track" id="ui-left-track"></div>
+            <div class="indicators" id="ui-dots"></div>
         </section>
 
-        <aside class="sidebar">
-            <div class="sidebar-inner" id="sidebar"></div>
+        <aside class="right-panel">
+            <div class="right-inner" id="ui-right-root"></div>
         </aside>
     </main>
 
@@ -126,17 +166,13 @@
         const TARGET_IMG = "https://cdn.neuepoor.com/apparedit/bg1%20%282%29.webp";
 
         const APP_DATA = {
-            gallery: Array(14).fill(TARGET_IMG),
-            sidebarTitle: "ApparEdit™",
-            sidebarBlocks: [
+            leftGallery: Array(5).fill(TARGET_IMG), // 手机端为了演示，减少重复数量
+            rightTitle: "ApparEdit™",
+            rightBlocks: [
                 { t: "p", v: "测试一下的选项，if this support poorlegalguy." },
                 { t: "img", v: TARGET_IMG },
                 { t: "p", v: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。" },
-                { t: "img", v: TARGET_IMG },
-                { t: "img", v: TARGET_IMG },
-                { t: "p", v: "在 ADS 设计系统下，我们确保跨平台的视觉一致性。" },
-                { t: "img", v: TARGET_IMG },
-                { t: "p", v: "感谢您选择 PoorLegalGuy® 的设计服务。我们将持续为您迭代。" }
+                { t: "img", v: TARGET_IMG }
             ]
         };
 
@@ -147,21 +183,37 @@
         }
 
         function init() {
-            // 渲染画廊
-            document.getElementById('gallery').innerHTML = APP_DATA.gallery.map(src => `
-                <div class="gallery-item"><img src="${src}" onerror="this.src='https://placehold.co/800x1200?text=Image+Error'"></div>
+            const track = document.getElementById('ui-left-track');
+            const dotsContainer = document.getElementById('ui-dots');
+
+            // 渲染左侧
+            track.innerHTML = APP_DATA.leftGallery.map(src => `
+                <div class="gallery-item"><img src="${src}"></div>
             `).join('');
 
-            // 渲染侧边栏
-            const sidebarHtml = `
+            // 渲染点 (Dots)
+            dotsContainer.innerHTML = APP_DATA.leftGallery.map((_, i) => `
+                <div class="dot ${i === 0 ? 'active' : ''}"></div>
+            `).join('');
+
+            // 滚动监听更新点状态
+            track.addEventListener('scroll', () => {
+                const index = Math.round(track.scrollLeft / track.offsetWidth);
+                const dots = dotsContainer.querySelectorAll('.dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            });
+
+            // 渲染右侧
+            document.getElementById('ui-right-root').innerHTML = `
                 <div class="rich-text">
-                    <h1>${APP_DATA.sidebarTitle}</h1>
-                    ${APP_DATA.sidebarBlocks.map(b => 
+                    <h1>${APP_DATA.rightTitle}</h1>
+                    ${APP_DATA.rightBlocks.map(b => 
                         b.t === 'p' ? `<p>${b.v}</p>` : `</div><div class="media-box"><img src="${b.v}"></div><div class="rich-text">`
                     ).join('')}
                 </div>
             `;
-            document.getElementById('sidebar').innerHTML = sidebarHtml;
         }
 
         window.onload = init;
