@@ -3,100 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PDP - ApparEdit v1.0.0</title>
+    <title>Template v1.6 - ApparEdit PDP</title>
     
     <link id="dynamic-favicon" rel="icon" type="image/webp" href="">
     <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
 
     <style>
-        /* ApparEdit 核心规范 - 严禁改动 */
+        /* * ADS (ApparEdit Design System) Tokens
+         * -------------------------------------------------- 
+         */
         :root {
-            --bg-color: #ffffff;    
-            --text-color: #000000;  
-            --border-color: #efefef;
-            --muted-color: #999999; 
-            --nav-h: 28px; 
-            --grid-gap: 2px; 
-            --side-padding: 2px; 
-            --nav-footer-padding: 10px; 
-
-            /* 动态配置变量 - 由 UI_CONFIG 注入 */
-            --primary-font: "Arial";
-            --logo-size: 21px;
-            --nav-link-size: 12px;
-            --nav-weight: 600; 
-            --item-title-size: 10px;
+            --ads-bg: #ffffff;
+            --ads-text: #000000;
+            --ads-inverted: #ffffff; 
+            --ads-border: #efefef;
+            --ads-muted: #999999;
+            
+            --ads-nav-h: 28px;
+            --ads-grid-gap: 2px;
+            --ads-safe-area: 10px;
+            
+            --ads-font-main: "Arial";
+            --ads-fs-logo: 21px;
+            --ads-fs-nav: 12px;
+            --ads-fw-bold: 600;
+            --ads-fs-content: 10px;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #000000;
-                --text-color: #ffffff;
-                --border-color: #111111;
-                --muted-color: #666666;
+                --ads-bg: #000000;
+                --ads-text: #ffffff;
+                --ads-border: #111111;
+                --ads-muted: #666666;
             }
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-font-smoothing: antialiased; 
-            -moz-osx-font-smoothing: grayscale;
-            margin: 0; 
-            padding: 0; 
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            font-family: var(--primary-font), -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: var(--ads-font-main), -apple-system, sans-serif;
+            background-color: var(--ads-bg);
+            color: var(--ads-text);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 导航栏层级与混合模式 */
-        nav {
+        /* * Component: Navbar (Difference Mode)
+         * -------------------------------------------------- 
+         */
+        .ads-navbar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: var(--nav-h);
+            height: var(--ads-nav-h);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 var(--nav-footer-padding);
-            z-index: 20001; 
+            padding: 0 var(--ads-safe-area);
+            z-index: 3000;
+            background-color: transparent;
             mix-blend-mode: difference;
             pointer-events: none;
         }
 
-        .brand, .nav-links, #menu-toggle {
+        .ads-navbar__brand, 
+        .ads-navbar__links a,
+        .ads-navbar__toggle {
             pointer-events: auto;
-            color: #ffffff !important; 
+            color: var(--ads-inverted) !important;
             text-decoration: none;
         }
 
-        .brand {
-            font-weight: var(--nav-weight); 
-            font-size: var(--logo-size);
+        .ads-navbar__brand {
+            font-weight: var(--ads-fw-bold);
+            font-size: var(--ads-fs-logo);
             letter-spacing: -0.02em;
         }
 
-        .nav-links { 
-            display: none; 
-            gap: 15px; 
-            font-size: var(--nav-link-size); 
-            font-weight: var(--nav-weight); 
+        .ads-navbar__links {
+            display: none;
+            gap: 15px;
         }
-        @media (min-width: 768px) { .nav-links { display: flex; align-items: center; } }
-
-        .nav-links a {
-            text-decoration: none;
-            color: inherit;
+        
+        .ads-navbar__links a {
+            font-size: var(--ads-fs-nav);
+            font-weight: var(--ads-fw-bold);
+            letter-spacing: -0.01em;
+            transition: opacity 0.2s ease;
         }
 
-        #menu-toggle {
+        @media (min-width: 768px) { .ads-navbar__links { display: flex; } }
+
+        .ads-navbar__toggle {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -106,130 +107,121 @@
             border: none;
             cursor: pointer;
             width: 32px;
-            height: var(--nav-h);
+            height: var(--ads-nav-h);
         }
-        #menu-toggle span { width: 18px; height: 1px; background-color: #ffffff; transition: 0.3s; }
-        @media (min-width: 768px) { #menu-toggle { display: none; } }
+        .ads-navbar__toggle span { width: 18px; height: 1px; background-color: var(--ads-inverted); transition: 0.3s; }
+        @media (min-width: 768px) { .ads-navbar__toggle { display: none; } }
 
-        /* 移动端菜单覆盖层 */
-        .mobile-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background-color: var(--bg-color);
-            z-index: 15000;
+        /* * Layout: Responsive Engine
+         * -------------------------------------------------- 
+         */
+        .ads-main { display: flex; flex-direction: column; width: 100%; }
+        @media (min-width: 768px) { 
+            .ads-main { flex-direction: row; height: 100vh; overflow: hidden; } 
+        }
+
+        /* * Component: Gallery
+         * -------------------------------------------------- 
+         */
+        .ads-gallery { flex: 1.6; background-color: var(--ads-border); position: relative; }
+        .ads-gallery__track {
             display: flex;
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center;
+            width: 100%;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+        .ads-gallery__track::-webkit-scrollbar { display: none; }
+        .ads-gallery__item { min-width: 100%; scroll-snap-align: start; background: var(--ads-bg); }
+        .ads-gallery__item img { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            object-fit: cover; 
             opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
-        .mobile-overlay.active { opacity: 1; visibility: visible; }
-        .mobile-overlay a {
-            font-size: var(--nav-link-size);
-            color: var(--text-color);
-            text-decoration: none;
-            margin: 15px 0;
-            letter-spacing: 0.02em;
+        .ads-gallery__item img.is-loaded { opacity: 1; }
+
+        .ads-gallery__dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
         }
-
-        /* 画廊与侧边栏布局 */
-        main { flex-grow: 1; display: flex; flex-direction: column; }
-        @media (min-width: 768px) { main { flex-direction: row; height: 100vh; overflow: hidden; } }
-
-        .pdp-gallery-container {
-            position: relative;
-            flex: 1.6;
-            background-color: var(--border-color);
-            overflow: hidden;
-        }
-
-        .pdp-gallery { display: flex; width: 100%; height: 100%; }
-
-        @media (max-width: 767px) {
-            .pdp-gallery {
-                overflow-x: auto;
-                scroll-snap-type: x mandatory;
-                scrollbar-width: none;
-            }
-            .pdp-gallery::-webkit-scrollbar { display: none; }
-            .gallery-item { min-width: 100%; scroll-snap-align: start; }
-            .gallery-dots {
-                position: absolute;
-                bottom: 15px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                gap: 8px;
-            }
-            .dot { width: 6px; height: 6px; border-radius: 50%; background-color: rgba(128,128,128,0.2); transition: 0.3s; }
-            .dot.active { background-color: var(--text-color); }
-        }
+        .ads-gallery__dot { width: 6px; height: 6px; border-radius: 50%; background-color: rgba(128,128,128,0.2); transition: 0.3s; }
+        .ads-gallery__dot.is-active { background-color: var(--ads-text); }
 
         @media (min-width: 768px) {
-            .pdp-gallery { flex-direction: column; overflow-y: auto; scrollbar-width: none; gap: var(--grid-gap); }
-            .gallery-item { width: 100%; background: var(--bg-color); }
-            .gallery-dots { display: none; }
+            .ads-gallery { height: 100vh; overflow: hidden; }
+            .ads-gallery__track { 
+                flex-direction: column; 
+                height: 100vh; 
+                overflow-y: auto; 
+                overflow-x: hidden; 
+                gap: var(--ads-grid-gap); 
+                scroll-snap-type: none;
+            }
+            .ads-gallery__item img { min-height: 100vh; }
+            .ads-gallery__dots { display: none; }
         }
 
-        .gallery-item img { width: 100%; height: auto; display: block; object-fit: cover; }
-        @media (min-width: 768px) { .gallery-item img { min-height: 100vh; } }
-
-        .pdp-sidebar {
-            flex: 1.0;
-            background-color: var(--bg-color); 
-            border-left: var(--grid-gap) solid var(--border-color);
-            display: flex;
-            flex-direction: column;
+        /* * Component: Sidebar 
+         * -------------------------------------------------- 
+         */
+        .ads-sidebar { flex: 1.0; background-color: var(--ads-bg); border-left: var(--ads-grid-gap) solid var(--ads-border); }
+        @media (min-width: 768px) {
+            .ads-sidebar { height: 100vh; overflow-y: auto; scrollbar-width: none; }
+            .ads-sidebar::-webkit-scrollbar { display: none; }
         }
-        @media (min-width: 768px) { .pdp-sidebar { overflow-y: auto; scrollbar-width: none; } }
+        .ads-sidebar__inner { padding-top: var(--ads-nav-h); }
+        .ads-sidebar__content { padding: 40px 20px 100px; }
 
-        .sidebar-scroll-container { padding-top: var(--nav-h); }
-        .sidebar-content { padding: 40px 20px 100px; display: flex; flex-direction: column; }
-        
-        /* 侧边栏文字样式 (小白方案 B 核心逻辑) */
-        .sidebar-text { font-size: var(--item-title-size); line-height: 1.8; color: var(--text-color); }
-        .sidebar-text h1 { font-size: 18px; margin-bottom: 16px; font-weight: var(--nav-weight); letter-spacing: -0.01em; }
-        .sidebar-text p { 
-            margin-bottom: 12px; 
-            white-space: pre-wrap; /* 允许在维护区直接敲回车换行 */
-            word-break: break-all; /* 强制乱码或长URL断行 */
+        .ads-rich-text { font-size: var(--ads-fs-content); line-height: 1.8; color: var(--ads-text); }
+        .ads-rich-text h1 { font-size: 18px; margin-bottom: 16px; font-weight: var(--ads-fw-bold); letter-spacing: -0.01em; }
+        .ads-rich-text p { margin-bottom: 12px; white-space: pre-wrap; word-break: break-word; }
+        .ads-media-box { width: 100%; margin: 0 0 12px 0; background: var(--ads-border); }
+        .ads-media-box img { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.4s ease; }
+        .ads-media-box img.is-loaded { opacity: 1; }
+
+        /* * Component: MobileOverlay 
+         * -------------------------------------------------- 
+         */
+        .ads-mobile-overlay {
+            position: fixed; inset: 0; background-color: var(--ads-bg); z-index: 2500;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.3s ease;
         }
-        
-        /* 侧边栏图片样式 */
-        .sidebar-image { width: 100%; margin: 0 0 12px 0; }
-        .sidebar-image img { width: 100%; height: auto; display: block; }
-        
-        ::-webkit-scrollbar { display: none; }
+        .ads-mobile-overlay.is-active { opacity: 1; visibility: visible; }
+        .ads-mobile-overlay a { font-size: 14px; color: var(--ads-text); text-decoration: none; margin: 15px 0; font-weight: var(--ads-fw-bold); }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a href="#" class="brand" id="site-logo"></a>
-        <div class="nav-links" id="desktop-links"></div>
-        <button id="menu-toggle" aria-label="Menu">
-            <span></span>
-            <span></span>
+    <nav class="ads-navbar">
+        <a href="#" class="ads-navbar__brand" id="ui-logo"></a>
+        <div class="ads-navbar__links" id="ui-desktop-nav"></div>
+        <button class="ads-navbar__toggle" id="ui-menu-btn" aria-label="切换菜单">
+            <span></span><span></span>
         </button>
     </nav>
 
-    <div id="mobile-menu" class="mobile-overlay">
-        <div id="mobile-links" style="display: flex; flex-direction: column; align-items: center;"></div>
+    <div class="ads-mobile-overlay" id="ui-mobile-menu">
+        <div id="ui-mobile-nav" style="display: flex; flex-direction: column; align-items: center;"></div>
     </div>
 
-    <main>
-        <div class="pdp-gallery-container">
-            <div id="pdp-gallery" class="pdp-gallery"></div>
-            <div id="gallery-dots" class="gallery-dots"></div>
-        </div>
-        <aside class="pdp-sidebar">
-            <div class="sidebar-scroll-container">
-                <div id="sidebar-content" class="sidebar-content"></div>
+    <main class="ads-main">
+        <section class="ads-gallery">
+            <div class="ads-gallery__track" id="ui-gallery-track"></div>
+            <div class="ads-gallery__dots" id="ui-gallery-dots"></div>
+        </section>
+
+        <aside class="ads-sidebar">
+            <div class="ads-sidebar__inner">
+                <div class="ads-sidebar__content" id="ui-sidebar-root"></div>
             </div>
         </aside>
     </main>
@@ -237,154 +229,180 @@
     <script>
         /**
          * ==========================================
-         * 小白维护区 (ApparEdit v1.0)
+         * ADS CONFIGURATION (原始数据锁定)
          * ==========================================
          */
-        
-        // 1. 字体与文字大小设置
-        const UI_CONFIG = {
-            primaryFont: "Arial",  
-            logoSize: "21px",      
-            navLinksSize: "12px",  
-            navWeight: "600",
-            itemTitleSize: "10px"  
+        const DS_CONFIG = {
+            tokens: {
+                primaryFont: "Arial",
+                logoSize: "21px",
+                navSize: "12px",
+                navWeight: "600",
+                contentSize: "10px"
+            },
+            site: {
+                title: "Template v1.6",
+                logo: "PoorLegalGuy®",
+                logoLink: "https://home.neuepoor.com/",
+                favicon: "https://cdn.neuepoor.com/Favicon.webp",
+                currentUrl: "https://apparedit.neuepoor.com/PDP",
+                navigation: [
+                    { name: "Category", url: "https://home.neuepoor.com" },
+                    { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
+                    { name: "PDP", url: "https://apparedit.neuepoor.com/PDP" }
+                ]
+            }
         };
 
-        // 2. 基础配置
-        const CONFIG = {
-            pageTitle: "PDP", 
-            logoText: "PoorLegalGuy®", 
-            logoUrl: "https://home.neuepoor.com/",
-            faviconUrl: "https://cdn.neuepoor.com/Favicon.webp",
-            currentPageUrl: "https://apparedit.neuepoor.com/PDP", 
-            links: [ 
-                { name: "Category", url: "https://home.neuepoor.com" },
-                { name: "ApparEdit", url: "https://apparedit.neuepoor.com/" },
-                { name: "PDP", url: "https://apparedit.neuepoor.com/PDP" }
-            ]
+        const PAGE_DATA = {
+            gallery: [
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_01.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_02.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_03.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_04.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_05.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_06.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_07.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_08.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_09.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_10.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_11.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_12.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_13.webp" },
+                { src: "https://cdn.neuepoor.com/ApparEdit_PDP_14.webp" }
+            ],
+            sidebar: {
+                title: "ApparEdit™",
+                blocks: [
+                    { type: "text", value: "测试一下的选项，if this support poorlegalguy." },
+                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_01.webp" },
+                    { type: "text", value: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。每一个像素的跳动，都在诉说着极简主义与功能性的完美融合。" },
+                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_02.webp" },
+                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_03.webp" },
+                    { type: "text", value: "在 ADS 设计系统下，我们确保跨平台的视觉一致性。无论是移动端的纵向滑动手感，还是桌面端的全屏分栏体验，都旨在让内容本身成为焦点。" },
+                    { type: "image", value: "https://cdn.neuepoor.com/ApparEdit_PDP_Side_04.webp" },
+                    { type: "text", value: "感谢您选择 PoorLegalGuy® 的设计服务。我们将持续为您迭代，打造更纯粹的数字化体验。" }
+                ]
+            }
         };
 
-        // 3. 画廊图片数据
-        const GALLERY_DATA = [
-            { img: "https://placehold.co/1200x1600/000000/FFFFFF?text=Slide+1" },
-            { img: "https://placehold.co/1200x1600/222222/FFFFFF?text=Slide+2" },
-            { img: "https://placehold.co/1200x1600/444444/FFFFFF?text=Slide+3" },
-            { img: "https://placehold.co/1200x1600/666666/FFFFFF?text=Slide+4" },
-            { img: "https://placehold.co/1200x1600/888888/FFFFFF?text=Slide+5" },
-            { img: "https://placehold.co/1200x1600/AAAAAA/000000?text=Slide+6" },
-            { img: "https://placehold.co/1200x1600/CCCCCC/000000?text=Slide+7" },
-            { img: "https://placehold.co/1200x1600/EEEEEE/000000?text=Slide+8" }
-        ];
+        const App = {
+            init() {
+                this.applyTokens();
+                this.renderMeta();
+                this.renderNavbar();
+                this.renderGallery();
+                this.renderSidebar();
+                this.bindEvents();
+            },
 
-        // 4. 侧边栏内容维护
-        const SIDEBAR_DATA = {
-            title: "this is tittle",
-            content: [
-                { type: "text", value: "测试一下的选项，if thie suppor pooreelaehaed." },
-                { type: "image", value: "https://placehold.co/800x600/FF5733/FFFFFF?text=Sidebar+Image+1" },
-                { type: "text", value: "这是第二段正文。通过增加图片链接，可以实现图文混排的效果。" },
-                { type: "image", value: "https://placehold.co/800x600/33FF57/000000?text=Sidebar+Image+2" },
-                { type: "image", value: "https://placehold.co/800x600/3357FF/FFFFFF?text=Sidebar+Image+3" },
-                { type: "text", value: "这是测试一段完整文字的排版问题asljlajfklajfasfjdalkasjljalkjaflsdjfkdjaklaffadsjjfalkaljfdsk。" },
-                { type: "image", value: "https://placehold.co/800x600/F333FF/FFFFFF?text=Sidebar+Image+4" },
-                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
-                { type: "image", value: "https://placehold.co/800x600/33FFF3/000000?text=Sidebar+Image+5" },
-                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
-                { type: "image", value: "https://placehold.co/800x1200/FFB833/000000?text=Sidebar+Image+6" },
-                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
-                { type: "image", value: "https://placehold.co/800x600/8D33FF/FFFFFF?text=Sidebar+Image+7" },
-                { type: "text", value: "支持连续插入多张图片，形成简单的网格或长图展示。" },
-                { type: "image", value: "https://placehold.co/1200x800/FF3385/FFFFFF?text=Sidebar+Image+8" },
-                { type: "text", value: "页面底部可以作为备注或者版权信息的区域。" }
-            ]
-        };
+            applyTokens() {
+                const s = document.documentElement.style;
+                const t = DS_CONFIG.tokens;
+                s.setProperty('--ads-font-main', t.primaryFont);
+                s.setProperty('--ads-fs-logo', t.logoSize);
+                s.setProperty('--ads-fs-nav', t.navSize);
+                s.setProperty('--ads-fw-bold', t.navWeight);
+                s.setProperty('--ads-fs-content', t.contentSize);
+            },
 
-        /**
-         * ==========================================
-         * 系统核心逻辑 (严禁改动)
-         * ==========================================
-         */
+            renderMeta() {
+                document.title = DS_CONFIG.site.title;
+                const icon = DS_CONFIG.site.favicon;
+                document.getElementById('dynamic-favicon').href = icon;
+                document.getElementById('dynamic-apple-icon').href = icon;
+            },
 
-        function applyDynamicUI() {
-            const root = document.documentElement;
-            root.style.setProperty('--primary-font', UI_CONFIG.primaryFont);
-            root.style.setProperty('--logo-size', UI_CONFIG.logoSize);
-            root.style.setProperty('--nav-link-size', UI_CONFIG.navLinksSize);
-            root.style.setProperty('--nav-weight', UI_CONFIG.navWeight);
-            root.style.setProperty('--item-title-size', UI_CONFIG.itemTitleSize);
-        }
+            // 统一的图片处理逻辑
+            handleImageLoad(img) {
+                img.classList.add('is-loaded');
+            },
 
-        function toggleMenu() {
-            const menu = document.getElementById('mobile-menu');
-            const isActive = menu.classList.toggle('active');
-            document.body.style.overflow = isActive ? 'hidden' : '';
-        }
-
-        function init() {
-            applyDynamicUI();
-            document.title = CONFIG.pageTitle;
-
-            // Favicon 维护
-            const fav = document.getElementById('dynamic-favicon');
-            const appleFav = document.getElementById('dynamic-apple-icon');
-            if(fav) fav.href = CONFIG.faviconUrl;
-            if(appleFav) appleFav.href = CONFIG.faviconUrl;
-
-            // Logo 渲染
-            const logo = document.getElementById('site-logo');
-            logo.innerText = CONFIG.logoText;
-            logo.href = CONFIG.logoUrl;
-
-            // 导航渲染
-            const desktop = document.getElementById('desktop-links');
-            const mobile = document.getElementById('mobile-links');
-            desktop.innerHTML = "";
-            mobile.innerHTML = "";
-            
-            CONFIG.links.forEach(link => {
-                const isCurrent = link.url === CONFIG.currentPageUrl;
-                const a = document.createElement('a');
-                a.href = link.url;
-                a.innerText = link.name;
-                
-                // 还原 ApparEdit v1.0 默认高亮逻辑：低透明度
-                if(isCurrent) a.style.opacity = "0.3";
-                
-                desktop.appendChild(a.cloneNode(true));
-                const mA = a.cloneNode(true);
-                mA.onclick = toggleMenu;
-                mobile.appendChild(mA);
-            });
-
-            document.getElementById('menu-toggle').onclick = toggleMenu;
-
-            // 画廊渲染
-            const gallery = document.getElementById('pdp-gallery');
-            const dotsContainer = document.getElementById('gallery-dots');
-            gallery.innerHTML = GALLERY_DATA.map(i => `<div class="gallery-item"><img src="${i.img}"></div>`).join('');
-            dotsContainer.innerHTML = GALLERY_DATA.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
-
-            gallery.addEventListener('scroll', () => {
-                const index = Math.round(gallery.scrollLeft / gallery.clientWidth);
-                const dots = dotsContainer.querySelectorAll('.dot');
-                dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
-            }, { passive: true });
-
-            // 侧边栏渲染
-            const sidebarContainer = document.getElementById('sidebar-content');
-            let contentHtml = `<div class="sidebar-text"><h1>${SIDEBAR_DATA.title}</h1>`;
-            SIDEBAR_DATA.content.forEach(item => {
-                if (item.type === "text") {
-                    contentHtml += `<p>${item.value}</p>`;
-                } else if (item.type === "image") {
-                    contentHtml += `</div><div class="sidebar-image"><img src="${item.value}"></div><div class="sidebar-text">`;
+            handleImageError(img) {
+                // 如果 CDN 地址失败，切换到基础占位图，确保页面不破裂
+                const fallback = `https://placehold.co/1200x1600/efefef/999999?text=Image+Unavailable`;
+                if (img.src !== fallback) {
+                    img.src = fallback;
+                    img.classList.add('is-loaded');
                 }
-            });
-            contentHtml += `</div>`;
-            sidebarContainer.innerHTML = contentHtml;
-        }
+            },
 
-        window.onload = init;
+            renderNavbar() {
+                const logo = document.getElementById('ui-logo');
+                logo.innerText = DS_CONFIG.site.logo;
+                logo.href = DS_CONFIG.site.logoLink;
+
+                const dNav = document.getElementById('ui-desktop-nav');
+                const mNav = document.getElementById('ui-mobile-nav');
+                
+                DS_CONFIG.site.navigation.forEach(item => {
+                    const a = document.createElement('a');
+                    a.href = item.url;
+                    a.innerText = item.name;
+                    if(item.url === DS_CONFIG.site.currentUrl) a.style.opacity = "0.3";
+                    
+                    dNav.appendChild(a.cloneNode(true));
+                    const ma = a.cloneNode(true);
+                    ma.onclick = () => this.toggleMenu(false);
+                    mNav.appendChild(ma);
+                });
+            },
+
+            renderGallery() {
+                const track = document.getElementById('ui-gallery-track');
+                const dots = document.getElementById('ui-gallery-dots');
+
+                track.innerHTML = PAGE_DATA.gallery.map(img => `
+                    <div class="ads-gallery__item">
+                        <img src="${img.src}" 
+                             onload="App.handleImageLoad(this)" 
+                             onerror="App.handleImageError(this)" 
+                             alt="PDP Image">
+                    </div>
+                `).join('');
+
+                dots.innerHTML = PAGE_DATA.gallery.map((_, i) => `
+                    <div class="ads-gallery__dot ${i===0?'is-active':''}"></div>
+                `).join('');
+
+                track.addEventListener('scroll', () => {
+                    if (window.innerWidth < 768) {
+                        const idx = Math.round(track.scrollLeft / track.clientWidth);
+                        const allDots = dots.querySelectorAll('.ads-gallery__dot');
+                        allDots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
+                    }
+                }, { passive: true });
+            },
+
+            renderSidebar() {
+                const root = document.getElementById('ui-sidebar-root');
+                const data = PAGE_DATA.sidebar;
+
+                let html = `<div class="ads-rich-text"><h1>${data.title}</h1>`;
+                data.blocks.forEach(block => {
+                    if(block.type === 'text') {
+                        html += `<p>${block.value}</p>`;
+                    } else if(block.type === 'image') {
+                        html += `</div><div class="ads-media-box"><img src="${block.value}" onload="App.handleImageLoad(this)" onerror="App.handleImageError(this)"></div><div class="ads-rich-text">`;
+                    }
+                });
+                html += `</div>`;
+                root.innerHTML = html;
+            },
+
+            toggleMenu(force) {
+                const menu = document.getElementById('ui-mobile-menu');
+                const isNowActive = typeof force === 'boolean' ? force : !menu.classList.contains('is-active');
+                menu.classList.toggle('is-active', isNowActive);
+                document.body.style.overflow = isNowActive ? 'hidden' : '';
+            },
+
+            bindEvents() {
+                document.getElementById('ui-menu-btn').onclick = () => this.toggleMenu();
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => App.init());
     </script>
 </body>
 </html>
