@@ -15,9 +15,9 @@
             --grid-gap: 4px; 
             --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             --nav-diff-color: #ffffff; 
-            --fs-nav-logo: 18px;
-            --fs-nav-links: 12px; 
-            --overlay-bg: rgba(255, 255, 255, 0.95);
+            --fs-common: 18px; 
+            /* 调整透明度为 0.65，模糊增强至 60px 以获得更深邃的质感 */
+            --overlay-bg: rgba(255, 255, 255, 0.65); 
             --safe: 15px; 
             --ease: cubic-bezier(0.23, 1, 0.32, 1);
         }
@@ -26,7 +26,7 @@
             :root { 
                 --bg-panel: #000;
                 --text: #fff; 
-                --overlay-bg: rgba(0, 0, 0, 0.95);
+                --overlay-bg: rgba(0, 0, 0, 0.65);
             }
         }
 
@@ -40,7 +40,6 @@
             -webkit-font-smoothing: antialiased;
             padding: var(--grid-gap); 
             background: var(--bg-panel);
-            /* 防止移动端 Chrome 下拉刷新干扰 */
             overscroll-behavior-y: none; 
         }
 
@@ -51,18 +50,17 @@
             gap: var(--grid-gap);
         }
 
-        /* --- Navbar 系统 (核心修复针对 Chrome) --- */
+        /* --- Navbar 系统 --- */
         .nav {
             position: fixed; 
             top: var(--grid-gap); 
             left: var(--grid-gap);
             right: var(--grid-gap);
             height: var(--nav-h);
-            z-index: 9999; /* 极大值确保在最前 */
+            z-index: 9999; 
             background: transparent; 
             mix-blend-mode: difference; 
             pointer-events: none;
-            /* 强制开启硬件加速，修复 Chrome 定位失效 */
             transform: translateZ(0);
             will-change: transform;
         }
@@ -95,17 +93,20 @@
             .nav-links-zone { grid-column: span 6; }
         }
 
-        /* --- 导航动效: PC端 --- */
+        /* --- 导航文字样式 --- */
         .nav a {
             position: relative;
             color: var(--nav-diff-color) !important;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            font-weight: 600;
+            font-weight: 700; 
+            font-size: var(--fs-common); 
             z-index: 5;
             transition: color 0.3s var(--ease);
         }
+
+        .logo { letter-spacing: -0.5px; }
 
         @media (min-width: 768px) {
             .nav a::before {
@@ -126,13 +127,10 @@
             .nav a:hover { color: #000 !important; }
         }
 
-        .logo { font-size: var(--fs-nav-logo); letter-spacing: -0.5px; font-weight: 700; }
-        .nav-links-pc a { font-size: var(--fs-nav-links); }
-
         /* --- 汉堡按钮 --- */
         .menu-btn { 
             background: none; border: none; cursor: pointer; padding: 5px; 
-            position: relative; width: 30px; height: 30px; z-index: 2100;
+            position: relative; width: 30px; height: 30px; z-index: 10000; /* 高于 Overlay */
             pointer-events: auto;
         }
         .menu-btn span { 
@@ -145,31 +143,46 @@
         .menu-btn.active .line-1 { top: 15px; transform: rotate(45deg); }
         .menu-btn.active .line-2 { top: 15px; transform: rotate(-45deg); }
 
-        /* --- 移动端 Overlay --- */
+        /* --- 移动端 Overlay (增强模糊与透明度) --- */
         .overlay {
-            position: fixed; inset: 0; 
+            position: fixed; 
+            inset: 0; 
             background: var(--overlay-bg); 
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            /* 大幅增强模糊感从 30px 到 60px */
+            backdrop-filter: blur(60px); 
+            -webkit-backdrop-filter: blur(60px);
             z-index: 9000; 
-            display: flex; flex-direction: column;
+            display: flex; 
+            flex-direction: column;
             padding-top: calc(var(--nav-h) + 60px); 
-            padding-left: calc(var(--safe) + var(--grid-gap));
-            transform: translateY(-100%); 
-            transition: transform 0.6s var(--ease), visibility 0.6s;
+            padding-left: var(--grid-gap); 
+            opacity: 0;
             visibility: hidden;
+            /* 保持 0 延迟切换背景 */
+            transition: opacity 0.3s linear, visibility 0.3s linear;
         }
-        .overlay.active { transform: translateY(0); visibility: visible; }
+        .overlay.active { 
+            opacity: 1; 
+            visibility: visible; 
+        }
         
         .overlay a { 
-            font-size: var(--fs-nav-links); 
-            margin: 10px 0; font-weight: 700; 
-            color: var(--text) !important; text-decoration: none; 
-            opacity: 0; transform: translateY(15px); 
-            transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+            font-size: var(--fs-common); 
+            margin: 12px 0; 
+            font-weight: 700; 
+            color: var(--text) !important; 
+            text-decoration: none; 
+            opacity: 0; 
+            transform: translateX(-10px); 
+            transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
         }
-        .overlay.active a:nth-child(1) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
-        .overlay.active a:nth-child(2) { transition-delay: 0.25s; opacity: 1; transform: translateY(0); }
-        .overlay.active a:nth-child(3) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
+        .overlay.active a {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .overlay.active a:nth-child(1) { transition-delay: 0.05s; }
+        .overlay.active a:nth-child(2) { transition-delay: 0.1s; }
+        .overlay.active a:nth-child(3) { transition-delay: 0.15s; }
 
         /* --- 主体内容 --- */
         .main { 
@@ -187,7 +200,6 @@
 
         @media (max-width: 767px) {
             .left-panel, .right-panel { grid-column: span 12; }
-            /* 移动端主容器防止 Chrome 滚动冲突 */
             .main { display: block; }
         }
 
@@ -298,7 +310,7 @@
             const btn = document.getElementById('menuBtn');
             const isActive = menu.classList.toggle('active');
             btn.classList.toggle('active');
-            // 彻底禁止 body 滚动以解决 Chrome 渲染冲突
+            
             document.body.style.overflow = isActive ? 'hidden' : '';
             document.documentElement.style.overflow = isActive ? 'hidden' : '';
         }
