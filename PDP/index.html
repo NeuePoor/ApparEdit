@@ -40,6 +40,8 @@
             -webkit-font-smoothing: antialiased;
             padding: var(--grid-gap); 
             background: var(--bg-panel);
+            /* 防止移动端 Chrome 下拉刷新干扰 */
+            overscroll-behavior-y: none; 
         }
 
         /* --- 12栏逻辑网格 --- */
@@ -49,17 +51,20 @@
             gap: var(--grid-gap);
         }
 
-        /* --- Navbar 系统 --- */
+        /* --- Navbar 系统 (核心修复针对 Chrome) --- */
         .nav {
             position: fixed; 
             top: var(--grid-gap); 
             left: var(--grid-gap);
             right: var(--grid-gap);
             height: var(--nav-h);
-            z-index: 2000;
+            z-index: 9999; /* 极大值确保在最前 */
             background: transparent; 
             mix-blend-mode: difference; 
             pointer-events: none;
+            /* 强制开启硬件加速，修复 Chrome 定位失效 */
+            transform: translateZ(0);
+            will-change: transform;
         }
 
         .nav-logo-zone {
@@ -145,7 +150,8 @@
             position: fixed; inset: 0; 
             background: var(--overlay-bg); 
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            z-index: 1500; display: flex; flex-direction: column;
+            z-index: 9000; 
+            display: flex; flex-direction: column;
             padding-top: calc(var(--nav-h) + 60px); 
             padding-left: calc(var(--safe) + var(--grid-gap));
             transform: translateY(-100%); 
@@ -181,11 +187,20 @@
 
         @media (max-width: 767px) {
             .left-panel, .right-panel { grid-column: span 12; }
+            /* 移动端主容器防止 Chrome 滚动冲突 */
+            .main { display: block; }
         }
 
         .left-panel, .right-panel { background: var(--bg-panel); position: relative; padding: 0; }
-        .left-panel { overflow: hidden; }
-        .right-panel { overflow-y: auto; }
+        
+        @media (min-width: 768px) {
+            .left-panel { overflow: hidden; }
+            .right-panel { overflow-y: auto; }
+        }
+
+        @media (max-width: 767px) {
+            .left-panel { margin-bottom: var(--grid-gap); }
+        }
 
         .gallery-track {
             display: flex; width: 100%; overflow-x: auto; 
@@ -260,14 +275,12 @@
 
     <script>
         const APP_DATA = {
-            // 左侧面板替换为 a, b, c
             leftGallery: [
                 "https://cdn.neuepoor.com/apparedit/Template/a.webp",
                 "https://cdn.neuepoor.com/apparedit/Template/b.webp",
                 "https://cdn.neuepoor.com/apparedit/Template/c.jpg"
             ], 
             rightTitle: "ApparEdit™",
-            // 右侧面板依次插入 1, 2, 3, 4
             rightBlocks: [
                 { t: "p", v: "测试一下的选项，if this support poorlegalguy." },
                 { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/1.jpg" },
@@ -285,7 +298,9 @@
             const btn = document.getElementById('menuBtn');
             const isActive = menu.classList.toggle('active');
             btn.classList.toggle('active');
+            // 彻底禁止 body 滚动以解决 Chrome 渲染冲突
             document.body.style.overflow = isActive ? 'hidden' : '';
+            document.documentElement.style.overflow = isActive ? 'hidden' : '';
         }
 
         function init() {
@@ -324,6 +339,7 @@
                 document.getElementById('mobileMenu').classList.remove('active');
                 document.getElementById('menuBtn').classList.remove('active');
                 document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
             }
         };
     </script>
