@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ApparEdit™ - PoorLegalGuy®</title>
-    <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/Favicon.webp">
+    <!-- [SEO & ICON] - [LOCK] 此部分由 CONFIG 驱动，逻辑禁止手动修改 -->
+    <title id="ui-title">Loading...</title>
+    <link rel="icon" id="ui-favicon" type="image/webp" href="">
 
     <style>
-        /* --- 变量定义 --- */
+        /* =============================================================
+           [GLOBAL] 基础变量与全局复位
+           ============================================================= */
         :root {
             --bg-panel: #fff; 
             --text: #000;
@@ -15,11 +18,9 @@
             --grid-gap: 4px; 
             --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             --nav-diff-color: #ffffff; 
-            --fs-common: 18px; 
-            /* 调整透明度为 0.65，模糊增强至 60px 以获得更深邃的质感 */
-            --overlay-bg: rgba(255, 255, 255, 0.65); 
             --safe: 15px; 
             --ease: cubic-bezier(0.23, 1, 0.32, 1);
+            --nav-weight: 700;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -30,7 +31,7 @@
             }
         }
 
-        /* --- 基础复位 --- */
+        .is-windows .nav a { --nav-weight: 600; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
@@ -43,14 +44,15 @@
             overscroll-behavior-y: none; 
         }
 
-        /* --- 12栏逻辑网格 --- */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
             gap: var(--grid-gap);
         }
 
-        /* --- Navbar 系统 --- */
+        /* =============================================================
+           [NAVBAR] - [LOCK]
+           ============================================================= */
         .nav {
             position: fixed; 
             top: var(--grid-gap); 
@@ -93,20 +95,18 @@
             .nav-links-zone { grid-column: span 6; }
         }
 
-        /* --- 导航文字样式 --- */
         .nav a {
             position: relative;
             color: var(--nav-diff-color) !important;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            font-weight: 700; 
-            font-size: var(--fs-common); 
+            font-weight: var(--nav-weight); 
             z-index: 5;
             transition: color 0.3s var(--ease);
         }
 
-        .logo { letter-spacing: -0.5px; }
+        .logo { letter-spacing: -0.5px; white-space: nowrap; }
 
         @media (min-width: 768px) {
             .nav a::before {
@@ -127,10 +127,9 @@
             .nav a:hover { color: #000 !important; }
         }
 
-        /* --- 汉堡按钮 --- */
         .menu-btn { 
             background: none; border: none; cursor: pointer; padding: 5px; 
-            position: relative; width: 30px; height: 30px; z-index: 10000; /* 高于 Overlay */
+            position: relative; width: 30px; height: 30px; z-index: 10000; 
             pointer-events: auto;
         }
         .menu-btn span { 
@@ -143,12 +142,10 @@
         .menu-btn.active .line-1 { top: 15px; transform: rotate(45deg); }
         .menu-btn.active .line-2 { top: 15px; transform: rotate(-45deg); }
 
-        /* --- 移动端 Overlay (增强模糊与透明度) --- */
         .overlay {
             position: fixed; 
             inset: 0; 
-            background: var(--overlay-bg); 
-            /* 大幅增强模糊感从 30px 到 60px */
+            background: rgba(255, 255, 255, 0.65); 
             backdrop-filter: blur(60px); 
             -webkit-backdrop-filter: blur(60px);
             z-index: 9000; 
@@ -158,33 +155,16 @@
             padding-left: var(--grid-gap); 
             opacity: 0;
             visibility: hidden;
-            /* 保持 0 延迟切换背景 */
             transition: opacity 0.3s linear, visibility 0.3s linear;
         }
-        .overlay.active { 
-            opacity: 1; 
-            visibility: visible; 
-        }
-        
-        .overlay a { 
-            font-size: var(--fs-common); 
-            margin: 12px 0; 
-            font-weight: 700; 
-            color: var(--text) !important; 
-            text-decoration: none; 
-            opacity: 0; 
-            transform: translateX(-10px); 
-            transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
-        }
-        .overlay.active a {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        .overlay.active a:nth-child(1) { transition-delay: 0.05s; }
-        .overlay.active a:nth-child(2) { transition-delay: 0.1s; }
-        .overlay.active a:nth-child(3) { transition-delay: 0.15s; }
+        @media (prefers-color-scheme: dark) { .overlay { background: rgba(0, 0, 0, 0.65); } }
+        .overlay.active { opacity: 1; visibility: visible; }
+        .overlay a { margin: 12px 0; font-weight: 700; color: var(--text) !important; text-decoration: none; opacity: 0; transform: translateX(-10px); transition: opacity 0.4s var(--ease), transform 0.4s var(--ease); }
+        .overlay.active a { opacity: 1; transform: translateX(0); }
 
-        /* --- 主体内容 --- */
+        /* =============================================================
+           [GALLERY] - [EDITABLE]
+           ============================================================= */
         .main { 
             width: 100%; 
             display: grid;
@@ -210,14 +190,13 @@
             .right-panel { overflow-y: auto; }
         }
 
-        @media (max-width: 767px) {
-            .left-panel { margin-bottom: var(--grid-gap); }
-        }
+        @media (max-width: 767px) { .left-panel { margin-bottom: var(--grid-gap); } }
 
         .gallery-track {
             display: flex; width: 100%; overflow-x: auto; 
             scroll-snap-type: x mandatory; scrollbar-width: none; 
             padding: 0; margin: 0;
+            scroll-behavior: smooth; 
         }
         .gallery-track::-webkit-scrollbar { display: none; }
         .gallery-item { min-width: 100%; scroll-snap-align: start; }
@@ -228,15 +207,10 @@
             .gallery-item img { height: auto; min-height: 100%; aspect-ratio: auto; }
         }
 
-        .right-inner { 
-            padding: calc(var(--nav-h) + 12px) 0 0 0; 
-            margin: 0; display: flex; flex-direction: column;
-        }
-
-        .rich-text { font-size: 11px; line-height: 1.8; margin: 0 var(--grid-gap); }
-        .rich-text h1 { font-size: 20px; margin-bottom: 20px; font-weight: 700; }
+        .right-inner { padding: calc(var(--nav-h) + 12px) 0 0 0; margin: 0; display: flex; flex-direction: column; }
+        .rich-text { line-height: 1.8; margin: 0 var(--grid-gap); }
+        .rich-text h1 { margin-bottom: 20px; font-weight: 700; }
         .rich-text p { margin-bottom: 15px; opacity: 0.9; }
-        
         .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; font-size: 0; }
         .media-box img { width: 100%; height: auto; display: block; vertical-align: middle; }
 
@@ -251,29 +225,20 @@
 </head>
 <body>
 
+    <!-- [NAVBAR] - [LOCK] -->
     <nav class="nav grid-container">
-        <div class="nav-logo-zone">
-            <a href="https://home.neuepoor.com/" class="logo">PoorLegalGuy®</a>
-        </div>
+        <div class="nav-logo-zone" id="ui-nav-logo"></div>
         <div class="nav-links-zone">
-            <div class="nav-links-pc">
-                <a href="https://home.neuepoor.com">Category</a>
-                <a href="https://apparedit.neuepoor.com/">ApparEdit</a>
-                <a href="https://apparedit.neuepoor.com/PDP">PDP</a>
-            </div>
+            <div class="nav-links-pc" id="ui-nav-pc"></div>
             <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">
                 <span class="line-1"></span>
                 <span class="line-2"></span>
             </button>
         </div>
     </nav>
+    <div class="overlay" id="mobileMenu"></div>
 
-    <div class="overlay" id="mobileMenu">
-        <a href="https://home.neuepoor.com" onclick="toggleMenu()">Category</a>
-        <a href="https://apparedit.neuepoor.com/" onclick="toggleMenu()">ApparEdit</a>
-        <a href="https://apparedit.neuepoor.com/PDP" onclick="toggleMenu()">PDP</a>
-    </div>
-
+    <!-- [GALLERY] - [EDITABLE] -->
     <main class="main">
         <section class="left-panel">
             <div class="gallery-track" id="ui-left-track"></div>
@@ -286,63 +251,154 @@
     </main>
 
     <script>
-        const APP_DATA = {
-            leftGallery: [
-                "https://cdn.neuepoor.com/apparedit/Template/a.webp",
-                "https://cdn.neuepoor.com/apparedit/Template/b.webp",
-                "https://cdn.neuepoor.com/apparedit/Template/c.jpg"
-            ], 
-            rightTitle: "ApparEdit™",
-            rightBlocks: [
-                { t: "p", v: "测试一下的选项，if this support poorlegalguy." },
-                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/1.jpg" },
-                { t: "p", v: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。" },
-                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/2.jpg" },
-                { t: "p", v: "通过 12 栏格栅系统，我们构建了数字内容的建筑学。" },
-                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/3.jpg" },
-                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/4.jpg" }
-            ]
+        /**
+         * =============================================================
+         * [CONFIG AREA] - 此区域供非专业人员修改，内容驱动 UI 渲染
+         * =============================================================
+         */
+        const CONFIG = {
+            // 全局站点配置 (标题与图标)
+            site: {
+                pageTitle: "ApparEdit™ - PoorLegalGuy®",
+                favicon: "https://cdn.neuepoor.com/Favicon.webp"
+            },
+            // NAVBAR 配置
+            navbar: {
+                logo: { text: "PoorLegalGuy®", fontSize: "18px", link: "https://home.neuepoor.com/" },
+                links: [
+                    { name: "Category", url: "https://home.neuepoor.com", fontSize: "18px" },
+                    { name: "ApparEdit", url: "https://apparedit.neuepoor.com/", fontSize: "18px" },
+                    { name: "PDP", url: "https://apparedit.neuepoor.com/PDP", fontSize: "18px" }
+                ]
+            },
+            // GALLERY 配置
+            gallery: {
+                leftImages: [
+                    "https://cdn.neuepoor.com/apparedit/Template/a.webp",
+                    "https://cdn.neuepoor.com/apparedit/Template/b.webp",
+                    "https://cdn.neuepoor.com/apparedit/Template/c.jpg"
+                ],
+                rightContent: {
+                    title: "2603001™",
+                    titleSize: "18px",
+                    titleColor: "inherit",
+                    bodyTextSize: "10px",
+                    blocks: [
+                        { type: "p", value: "测试一下的选项，if this support poorlegalguy.", color: "rgba(0,0,0,0.9)" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/1.jpg" },
+                        { type: "p", value: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/2.jpg" },
+                        { type: "p", value: "通过 12 栏格栅系统，我们构建了数字内容的建筑学。" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/3.jpg" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/4.jpg" }
+                    ]
+                }
+            }
         };
 
+        /**
+         * =============================================================
+         * [CORE LOGIC]
+         * =============================================================
+         */
+        let sliderInterval;
+        let isUserInteracting = false;
+
+        function checkSystem() {
+            if (navigator.platform.indexOf('Win') !== -1) {
+                document.body.classList.add('is-windows');
+            }
+        }
+
+        /* [SITE RENDER] - [LOCK] */
+        function renderSiteHead() {
+            document.title = CONFIG.site.pageTitle;
+            document.getElementById('ui-favicon').href = CONFIG.site.favicon;
+        }
+
+        /* [NAVBAR LOGIC] - [LOCK] */
         function toggleMenu() {
             if (window.innerWidth >= 768) return;
             const menu = document.getElementById('mobileMenu');
             const btn = document.getElementById('menuBtn');
             const isActive = menu.classList.toggle('active');
             btn.classList.toggle('active');
-            
             document.body.style.overflow = isActive ? 'hidden' : '';
             document.documentElement.style.overflow = isActive ? 'hidden' : '';
         }
 
-        function init() {
+        function renderNavbar() {
+            const logoArea = document.getElementById('ui-nav-logo');
+            logoArea.innerHTML = `<a href="${CONFIG.navbar.logo.link}" class="logo" style="font-size: ${CONFIG.navbar.logo.fontSize}">${CONFIG.navbar.logo.text}</a>`;
+            
+            const pcLinksArea = document.getElementById('ui-nav-pc');
+            const mobileOverlay = document.getElementById('mobileMenu');
+            
+            pcLinksArea.innerHTML = CONFIG.navbar.links.map(link => 
+                `<a href="${link.url}" style="font-size: ${link.fontSize}">${link.name}</a>`
+            ).join('');
+
+            mobileOverlay.innerHTML = CONFIG.navbar.links.map(link => 
+                `<a href="${link.url}" onclick="toggleMenu()" style="font-size: ${link.fontSize}">${link.name}</a>`
+            ).join('');
+        }
+
+        /* [GALLERY LOGIC] - [EDITABLE] */
+        function startAutoSlider() {
+            if (sliderInterval) clearInterval(sliderInterval);
+            sliderInterval = setInterval(() => {
+                const track = document.getElementById('ui-left-track');
+                if (!track || window.innerWidth >= 768 || isUserInteracting) return;
+                const maxScroll = track.scrollWidth - track.offsetWidth;
+                if (track.scrollLeft >= maxScroll - 5) {
+                    track.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    track.scrollBy({ left: track.offsetWidth, behavior: 'smooth' });
+                }
+            }, 2000); 
+        }
+
+        function renderGallery() {
             const track = document.getElementById('ui-left-track');
             const dotsContainer = document.getElementById('ui-dots');
+            const rightRoot = document.getElementById('ui-right-root');
+            const content = CONFIG.gallery.rightContent;
 
-            track.innerHTML = APP_DATA.leftGallery.map(src => `
+            track.innerHTML = CONFIG.gallery.leftImages.map(src => `
                 <div class="gallery-item"><img src="${src}"></div>
             `).join('');
 
-            dotsContainer.innerHTML = APP_DATA.leftGallery.map((_, i) => `
+            dotsContainer.innerHTML = CONFIG.gallery.leftImages.map((_, i) => `
                 <div class="dot ${i === 0 ? 'active' : ''}"></div>
             `).join('');
 
+            let html = `<div class="rich-text"><h1 style="font-size: ${content.titleSize}; color: ${content.titleColor}">${content.title}</h1></div>`;
+            html += content.blocks.map(b => {
+                if (b.type === 'p') return `<div class="rich-text" style="font-size: ${content.bodyTextSize}; color: ${b.color || 'inherit'}"><p>${b.value}</p></div>`;
+                if (b.type === 'img') return `<div class="media-box"><img src="${b.value}"></div>`;
+                return '';
+            }).join('');
+            rightRoot.innerHTML = html;
+        }
+
+        /* [INIT] */
+        function init() {
+            checkSystem(); 
+            renderSiteHead(); // 渲染站点基础信息
+            renderNavbar();
+            renderGallery();
+
+            const track = document.getElementById('ui-left-track');
             track.addEventListener('scroll', () => {
                 const index = Math.round(track.scrollLeft / track.offsetWidth);
-                const dots = dotsContainer.querySelectorAll('.dot');
-                dots.forEach((dot, i) => {
-                    dot.classList.toggle('active', i === index);
-                });
+                const dots = document.querySelectorAll('.dot');
+                dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); });
             }, { passive: true });
 
-            document.getElementById('ui-right-root').innerHTML = `
-                <div class="rich-text">
-                    <h1>${APP_DATA.rightTitle}</h1>
-                </div>
-                ${APP_DATA.rightBlocks.map(b => 
-                    b.t === 'p' ? `<div class="rich-text"><p>${b.v}</p></div>` : `<div class="media-box"><img src="${b.v}"></div>`
-                ).join('')}
-            `;
+            track.addEventListener('touchstart', () => isUserInteracting = true);
+            track.addEventListener('touchend', () => { setTimeout(() => isUserInteracting = false, 3000); });
+
+            startAutoSlider();
         }
 
         window.onload = init;
@@ -352,7 +408,8 @@
                 document.getElementById('menuBtn').classList.remove('active');
                 document.body.style.overflow = '';
                 document.documentElement.style.overflow = '';
-            }
+                if (sliderInterval) clearInterval(sliderInterval);
+            } else { startAutoSlider(); }
         };
     </script>
 </body>
