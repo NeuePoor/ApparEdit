@@ -7,6 +7,7 @@
     <link rel="icon" type="image/webp" href="https://cdn.neuepoor.com/Favicon.webp">
 
     <style>
+        /* --- 变量定义 --- */
         :root {
             --bg-panel: #fff; 
             --text: #000;
@@ -15,21 +16,21 @@
             --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             --nav-diff-color: #ffffff; 
             --fs-nav-logo: 18px;
-            --fs-nav-links: 12px;
-            --overlay-bg: rgba(255, 255, 255, 0.8);
-            --safe: 15px;
-            --left-ratio: 1.6fr;
-            --right-ratio: 1fr;
+            --fs-nav-links: 12px; 
+            --overlay-bg: rgba(255, 255, 255, 0.95);
+            --safe: 15px; 
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         @media (prefers-color-scheme: dark) {
             :root { 
                 --bg-panel: #000;
                 --text: #fff; 
-                --overlay-bg: rgba(0, 0, 0, 0.8);
+                --overlay-bg: rgba(0, 0, 0, 0.95);
             }
         }
 
+        /* --- 基础复位 --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
@@ -38,9 +39,17 @@
             overflow-x: hidden; 
             -webkit-font-smoothing: antialiased;
             padding: var(--grid-gap); 
+            background: var(--bg-panel);
         }
 
-        /* --- Navbar Base --- */
+        /* --- 12栏逻辑网格 --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--grid-gap);
+        }
+
+        /* --- Navbar 系统 --- */
         .nav {
             position: fixed; 
             top: var(--grid-gap); 
@@ -53,52 +62,35 @@
             pointer-events: none;
         }
 
-        /* --- PC Navbar: 12栏系统 --- */
+        .nav-logo-zone {
+            grid-column: span 3;
+            display: flex;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .nav-links-zone {
+            grid-column: span 9;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; 
+            pointer-events: auto;
+        }
+
         @media (min-width: 768px) {
-            .nav {
-                display: grid;
-                grid-template-columns: repeat(12, 1fr);
-                gap: var(--grid-gap);
-            }
-
-            .nav-logo-zone {
-                grid-column: 1; 
-                display: flex;
-                align-items: center;
-                padding-left: var(--safe);
-                pointer-events: auto;
-            }
-
-            .nav-links-zone {
-                grid-column: 2 / span 11; 
-                display: flex;
-                align-items: center;
-                justify-content: flex-end; 
-                padding-right: var(--safe);
-                pointer-events: auto;
-            }
-
-            .nav-links-pc {
-                display: flex;
-                gap: 30px;
-            }
-            
+            .nav-logo-zone { grid-column: span 1; }
+            .nav-links-zone { grid-column: span 11; }
+            .nav-links-pc { display: flex; gap: 30px; }
             .menu-btn { display: none; }
         }
 
-        /* --- Mobile Navbar Layout --- */
         @media (max-width: 767px) {
-            .nav {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0 var(--safe);
-            }
-            .nav-logo-zone, .nav-links-zone { pointer-events: auto; }
             .nav-links-pc { display: none; }
+            .nav-logo-zone { grid-column: span 6; }
+            .nav-links-zone { grid-column: span 6; }
         }
 
-        /* --- Nav Links --- */
+        /* --- 导航动效: PC端 --- */
         .nav a {
             position: relative;
             color: var(--nav-diff-color) !important;
@@ -106,134 +98,133 @@
             display: inline-flex;
             align-items: center;
             font-weight: 600;
-            z-index: 1;
-            transition: color 0.15s ease;
+            z-index: 5;
+            transition: color 0.3s var(--ease);
         }
 
-        /* PC Hover: 高度随字号，宽度满格 */
         @media (min-width: 768px) {
             .nav a::before {
                 content: '';
                 position: fixed;
-                /* 垂直对齐：居中并匹配字体高度 */
                 top: calc(var(--grid-gap) + (var(--nav-h) / 2));
                 transform: translateY(-50%);
-                height: 1.1em; 
-                
-                /* 水平对齐：跨越 12 栏宽度 */
-                left: var(--grid-gap);
-                right: var(--grid-gap);
-                
-                background: white;
+                height: 1.2em; 
+                left: 0;
+                right: 0;
+                background: #fff;
                 opacity: 0;
                 z-index: -1;
-                transition: opacity 0.15s ease;
+                transition: opacity 0.25s var(--ease);
                 pointer-events: none;
             }
-
-            .nav a:hover::before { 
-                opacity: 1; 
-            }
-            
-            .nav a:hover {
-                color: #000 !important; 
-            }
+            .nav a:hover::before { opacity: 1; }
+            .nav a:hover { color: #000 !important; }
         }
 
         .logo { font-size: var(--fs-nav-logo); letter-spacing: -0.5px; font-weight: 700; }
         .nav-links-pc a { font-size: var(--fs-nav-links); }
 
-        /* --- Main Content --- */
-        .main { display: flex; flex-direction: column; width: 100%; gap: var(--grid-gap); }
-        @media (min-width: 768px) {
-            .main { 
-                display: grid;
-                grid-template-columns: var(--left-ratio) var(--right-ratio);
-                height: calc(100vh - (var(--grid-gap) * 2)); 
-                overflow: hidden; 
-                gap: var(--grid-gap); 
-            }
+        /* --- 汉堡按钮 --- */
+        .menu-btn { 
+            background: none; border: none; cursor: pointer; padding: 5px; 
+            position: relative; width: 30px; height: 30px; z-index: 2100;
+            pointer-events: auto;
+        }
+        .menu-btn span { 
+            display: block; width: 20px; height: 1.5px; background: var(--nav-diff-color); 
+            position: absolute; left: 5px; 
+            transition: transform 0.4s var(--ease), top 0.4s var(--ease), opacity 0.3s;
+        }
+        .line-1 { top: 11px; }
+        .line-2 { top: 19px; }
+        .menu-btn.active .line-1 { top: 15px; transform: rotate(45deg); }
+        .menu-btn.active .line-2 { top: 15px; transform: rotate(-45deg); }
+
+        /* --- 移动端 Overlay --- */
+        .overlay {
+            position: fixed; inset: 0; 
+            background: var(--overlay-bg); 
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            z-index: 1500; display: flex; flex-direction: column;
+            padding-top: calc(var(--nav-h) + 60px); 
+            padding-left: calc(var(--safe) + var(--grid-gap));
+            transform: translateY(-100%); 
+            transition: transform 0.6s var(--ease), visibility 0.6s;
+            visibility: hidden;
+        }
+        .overlay.active { transform: translateY(0); visibility: visible; }
+        
+        .overlay a { 
+            font-size: var(--fs-nav-links); 
+            margin: 10px 0; font-weight: 700; 
+            color: var(--text) !important; text-decoration: none; 
+            opacity: 0; transform: translateY(15px); 
+            transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+        }
+        .overlay.active a:nth-child(1) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
+        .overlay.active a:nth-child(2) { transition-delay: 0.25s; opacity: 1; transform: translateY(0); }
+        .overlay.active a:nth-child(3) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
+
+        /* --- 主体内容 --- */
+        .main { 
+            width: 100%; 
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--grid-gap);
         }
 
-        /* --- Panels --- */
-        .left-panel, .right-panel { background: var(--bg-panel); position: relative; }
-        .left-panel { width: 100%; overflow: hidden; }
+        @media (min-width: 768px) {
+            .main { height: calc(100vh - (var(--grid-gap) * 2)); overflow: hidden; }
+            .left-panel { grid-column: span 7; }
+            .right-panel { grid-column: span 5; }
+        }
+
+        @media (max-width: 767px) {
+            .left-panel, .right-panel { grid-column: span 12; }
+        }
+
+        .left-panel, .right-panel { background: var(--bg-panel); position: relative; padding: 0; }
+        .left-panel { overflow: hidden; }
+        .right-panel { overflow-y: auto; }
+
         .gallery-track {
             display: flex; width: 100%; overflow-x: auto; 
-            scroll-snap-type: x mandatory; scrollbar-width: none; padding: var(--grid-gap);
+            scroll-snap-type: x mandatory; scrollbar-width: none; 
+            padding: 0; margin: 0;
         }
         .gallery-track::-webkit-scrollbar { display: none; }
         .gallery-item { min-width: 100%; scroll-snap-align: start; }
         .gallery-item img { width: 100%; display: block; object-fit: cover; aspect-ratio: 4 / 5; }
 
         @media (min-width: 768px) {
-            .left-panel { height: 100%; }
             .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; scroll-snap-type: none; gap: var(--grid-gap); }
-            .gallery-item img { height: auto; min-height: calc(100vh - 40px); aspect-ratio: auto; }
+            .gallery-item img { height: auto; min-height: 100%; aspect-ratio: auto; }
         }
 
-        /* --- Indicators --- */
+        .right-inner { 
+            padding: calc(var(--nav-h) + 12px) 0 0 0; 
+            margin: 0; display: flex; flex-direction: column;
+        }
+
+        .rich-text { font-size: 11px; line-height: 1.8; margin: 0 var(--grid-gap); }
+        .rich-text h1 { font-size: 20px; margin-bottom: 20px; font-weight: 700; }
+        .rich-text p { margin-bottom: 15px; opacity: 0.9; }
+        
+        .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; font-size: 0; }
+        .media-box img { width: 100%; height: auto; display: block; vertical-align: middle; }
+
         .indicators {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 8px; z-index: 10;
         }
         @media (min-width: 768px) { .indicators { display: none; } }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
-        .dot.active { background: #fff; transform: scale(1.2); }
-
-        /* --- Right Panel --- */
-        .right-panel { width: 100%; overflow-y: auto; }
-        .right-inner { padding: calc(var(--nav-h) + var(--grid-gap)) var(--grid-gap) var(--grid-gap) var(--grid-gap); }
-        .rich-text { font-size: 11px; line-height: 1.8; }
-        .rich-text h1 { font-size: 20px; margin-bottom: 20px; font-weight: 700; }
-        .rich-text p { margin-bottom: 15px; opacity: 0.9; }
-        .media-box { width: 100%; margin-bottom: var(--grid-gap); }
-        .media-box img { width: 100%; height: auto; display: block; }
-
-        /* --- Mobile Menu & Overlay --- */
-        .menu-btn { 
-            background: none; border: none; cursor: pointer; padding: 5px; 
-            position: relative; width: 30px; height: 30px; z-index: 2100;
-        }
-        .menu-btn span { 
-            display: block; width: 20px; height: 1.5px; background: var(--nav-diff-color); 
-            position: absolute; left: 5px; 
-            transition: all 0.4s cubic-bezier(0.32, 1, 0.23, 1);
-        }
-        .line-1 { top: 11px; }
-        .line-2 { top: 19px; }
-        .menu-btn.active .line-1 { transform: translateY(4px) rotate(45deg); }
-        .menu-btn.active .line-2 { transform: translateY(-4px) rotate(-45deg); }
-
-        .overlay {
-            position: fixed; inset: 0; 
-            background: var(--overlay-bg); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            z-index: 1500; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;
-            padding-top: calc(var(--nav-h) + 30px); 
-            padding-left: calc(var(--safe) + var(--grid-gap));
-            transform: translateY(-100%); 
-            transition: transform 0.6s cubic-bezier(0.32, 1, 0.23, 1);
-            visibility: hidden;
-        }
-        .overlay.active { transform: translateY(0); visibility: visible; }
-        
-        .overlay a { 
-            font-size: var(--fs-nav-links); margin: 12px 0; font-weight: 600; 
-            color: var(--text) !important; text-decoration: none; 
-            opacity: 0; 
-            transform: translateY(20px); 
-            transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.32, 1, 0.23, 1);
-        }
-        .overlay.active a { opacity: 1; transform: translateY(0); }
-        .overlay a:nth-child(1) { transition-delay: 0.15s; }
-        .overlay a:nth-child(2) { transition-delay: 0.25s; }
-        .overlay a:nth-child(3) { transition-delay: 0.35s; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.3s; }
+        .dot.active { background: #fff; transform: scale(1.3); }
     </style>
 </head>
 <body>
 
-    <nav class="nav">
+    <nav class="nav grid-container">
         <div class="nav-logo-zone">
             <a href="https://home.neuepoor.com/" class="logo">PoorLegalGuy®</a>
         </div>
@@ -243,7 +234,7 @@
                 <a href="https://apparedit.neuepoor.com/">ApparEdit</a>
                 <a href="https://apparedit.neuepoor.com/PDP">PDP</a>
             </div>
-            <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">
+            <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">
                 <span class="line-1"></span>
                 <span class="line-2"></span>
             </button>
@@ -268,16 +259,23 @@
     </main>
 
     <script>
-        const TARGET_IMG = "https://cdn.neuepoor.com/apparedit/bg1%20%282%29.webp";
-
         const APP_DATA = {
-            leftGallery: Array(5).fill(TARGET_IMG), 
+            // 左侧面板替换为 a, b, c
+            leftGallery: [
+                "https://cdn.neuepoor.com/apparedit/Template/a.webp",
+                "https://cdn.neuepoor.com/apparedit/Template/b.webp",
+                "https://cdn.neuepoor.com/apparedit/Template/c.jpg"
+            ], 
             rightTitle: "ApparEdit™",
+            // 右侧面板依次插入 1, 2, 3, 4
             rightBlocks: [
                 { t: "p", v: "测试一下的选项，if this support poorlegalguy." },
-                { t: "img", v: TARGET_IMG },
+                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/1.jpg" },
                 { t: "p", v: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。" },
-                { t: "img", v: TARGET_IMG }
+                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/2.jpg" },
+                { t: "p", v: "通过 12 栏格栅系统，我们构建了数字内容的建筑学。" },
+                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/3.jpg" },
+                { t: "img", v: "https://cdn.neuepoor.com/apparedit/Template/4.jpg" }
             ]
         };
 
@@ -308,15 +306,15 @@
                 dots.forEach((dot, i) => {
                     dot.classList.toggle('active', i === index);
                 });
-            });
+            }, { passive: true });
 
             document.getElementById('ui-right-root').innerHTML = `
                 <div class="rich-text">
                     <h1>${APP_DATA.rightTitle}</h1>
-                    ${APP_DATA.rightBlocks.map(b => 
-                        b.t === 'p' ? `<p>${b.v}</p>` : `</div><div class="media-box"><img src="${b.v}"></div><div class="rich-text">`
-                    ).join('')}
                 </div>
+                ${APP_DATA.rightBlocks.map(b => 
+                    b.t === 'p' ? `<div class="rich-text"><p>${b.v}</p></div>` : `<div class="media-box"><img src="${b.v}"></div>`
+                ).join('')}
             `;
         }
 
