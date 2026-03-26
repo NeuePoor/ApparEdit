@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- [SEO & ICON] - [LOCK] -->
     <title id="ui-title">Loading...</title>
     <link rel="icon" id="ui-favicon" type="image/webp" href="">
 
@@ -20,13 +21,12 @@
         body { font-family: var(--f-fallback); color: var(--text); overflow-x: hidden; padding: var(--grid-gap); background: var(--bg-panel); height: 100vh; }
         .grid-container { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
 
-        /* [NAVBAR LOCK] - 修复手机端文字叠加问题 */
+        /* [NAVBAR LOCK] */
         .nav { position: fixed; top: var(--grid-gap); left: var(--grid-gap); right: var(--grid-gap); z-index: 9999; mix-blend-mode: difference; pointer-events: none; align-items: flex-start; }
         .nav-logo-zone, .nav-links-zone { pointer-events: auto; line-height: 1; }
         .nav-logo-zone { grid-column: span 6; display: flex; }
         .nav-links-zone { grid-column: span 6; display: flex; justify-content: flex-end; align-items: center; }
 
-        /* 关键修复：默认隐藏 PC 链接，防止手机端叠加 */
         .nav-links-pc { display: none; } 
         
         .nav a { position: relative; color: var(--nav-diff-color) !important; text-decoration: none; font-weight: var(--nav-weight); z-index: 5; }
@@ -34,7 +34,6 @@
         @media (min-width: 768px) {
             .nav-logo-zone { grid-column: span 1; }
             .nav-links-zone { grid-column: span 11; }
-            /* PC 端显示链接，隐藏菜单按钮 */
             .nav-links-pc { display: flex; gap: 30px; }
             .menu-btn { display: none; }
             
@@ -153,11 +152,14 @@
         };
 
         function renderUI() {
+            // 确保 DOM 元素存在再渲染
+            const logoArea = document.getElementById('ui-nav-logo');
+            if (!logoArea) return; 
+
             document.title = CONFIG.site.pageTitle;
             const fav = document.getElementById('ui-favicon');
             if (fav) fav.href = CONFIG.site.favicon;
 
-            const logoArea = document.getElementById('ui-nav-logo');
             logoArea.innerHTML = `<a href="${CONFIG.navbar.logo.link}">${CONFIG.navbar.logo.text}</a>`;
             
             const pcArea = document.getElementById('ui-nav-pc');
@@ -169,7 +171,7 @@
             const leftTrack = document.getElementById('ui-left-track');
             leftTrack.innerHTML = CONFIG.gallery.leftMedia.map(m => `
                 <div class="gallery-item">
-                    ${m.type === 'video' ? `<video src="${m.url}" autoplay loop muted playsinline></video>` : `<img src="${m.url}" loading="lazy" decoding="async" alt="Gallery Image">`}
+                    <img src="${m.url}" loading="lazy" decoding="async" alt="Gallery Image">
                 </div>
             `).join('');
 
@@ -187,6 +189,7 @@
 
         function renderDots(count) {
             const dotsContainer = document.getElementById('ui-dots');
+            if (!dotsContainer) return;
             dotsContainer.innerHTML = Array.from({ length: count }).map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('');
         }
 
@@ -200,13 +203,17 @@
             document.body.style.overflow = isActive ? 'hidden' : '';
         }
 
-        window.addEventListener('DOMContentLoaded', renderUI);
+        // 强力启动：即使 DOMContentLoaded 错过了，立即执行一次渲染
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', renderUI);
+        } else {
+            renderUI();
+        }
         
-        // 增加窗口尺寸监听：拉伸到 PC 时自动重置移动端菜单状态
         window.addEventListener('resize', () => {
             if (window.innerWidth >= 768) {
                 const bg = document.getElementById('mobileMenuBg');
-                if(bg.classList.contains('active')) toggleMenu();
+                if(bg && bg.classList.contains('active')) toggleMenu();
             }
         });
     </script>
