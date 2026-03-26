@@ -3,98 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- [SEO & ICON] - [LOCK] -->
     <title id="ui-title">Loading...</title>
     <link rel="icon" id="ui-favicon" type="image/webp" href="">
 
     <style>
         /* =============================================================
-           [GLOBAL] 基础变量与全局复位
+           [GLOBAL VARIABLES]
            ============================================================= */
         :root {
-            --bg-panel: #fff; --text: #000; --nav-h: 44px; --grid-gap: 4px; 
+            --bg-panel: #fff; 
+            --text: #000; 
+            --nav-h: 32px; 
+            --grid-gap: 4px; 
             --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --nav-diff-color: #ffffff; --ease: cubic-bezier(0.23, 1, 0.32, 1); --nav-weight: 700;
+            --nav-diff-color: #ffffff; 
+            --ease: cubic-bezier(0.23, 1, 0.32, 1); 
+            --nav-weight: 700;
         }
         @media (prefers-color-scheme: dark) { :root { --bg-panel: #000; --text: #fff; } }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--f-fallback); color: var(--text); overflow-x: hidden; padding: var(--grid-gap); background: var(--bg-panel); height: 100vh; }
-        .grid-container { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
+        
+        body { 
+            font-family: var(--f-fallback); 
+            color: var(--text); 
+            overflow-x: hidden; 
+            background: var(--bg-panel); 
+            height: 100vh; 
+        }
 
-        /* [NAVBAR LOCK] - 采用 v3.41 的安全布局 */
-        .nav { position: fixed; top: var(--grid-gap); left: var(--grid-gap); right: var(--grid-gap); z-index: 9999; mix-blend-mode: difference; pointer-events: none; align-items: flex-start; }
-        .nav-logo-zone, .nav-links-zone { pointer-events: auto; line-height: 1; height: var(--nav-h); display: flex; align-items: center; }
-        .nav-logo-zone { grid-column: span 6; }
-        .nav-links-zone { grid-column: span 6; justify-content: flex-end; }
+        /* =============================================================
+           [NAVBAR COMPONENT]
+           ============================================================= */
+        .nav-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            pointer-events: none;
+        }
+
+        .nav { 
+            padding: var(--grid-gap) var(--grid-gap) 0 var(--grid-gap);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo-zone, .nav-links-zone { 
+            pointer-events: auto; 
+            display: flex; 
+            align-items: center; 
+            height: var(--nav-h); 
+        }
+
+        .nav a, .sub-nav-bar a { 
+            color: var(--nav-diff-color) !important; 
+            text-decoration: none; 
+            font-weight: var(--nav-weight); 
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        /* PC 子菜单容器 */
+        .sub-nav-bar {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            display: none;
+            flex-direction: column;
+            pointer-events: auto;
+            width: fit-content;
+        }
+
+        .nav-links-pc > div:hover .sub-nav-bar {
+            display: flex;
+        }
 
         .nav-links-pc { display: none; } 
-        .nav a { position: relative; color: var(--nav-diff-color) !important; text-decoration: none; font-weight: var(--nav-weight); z-index: 5; }
+
+        /* Hamburger Icon */
+        .menu-btn { 
+            background: none; border: none; cursor: pointer; 
+            width: 24px; height: var(--nav-h); 
+            position: relative; display: flex; align-items: center; justify-content: flex-end;
+        }
+        .menu-btn span { display: block; width: 24px; height: 1.5px; background: #fff; position: absolute; transition: all 0.4s var(--ease); }
+        .line-1 { transform: translateY(-4px); }
+        .line-2 { transform: translateY(4px); }
+        .menu-btn.active .line-1 { transform: translateY(0) rotate(45deg); }
+        .menu-btn.active .line-2 { transform: translateY(0) rotate(-45deg); }
 
         @media (min-width: 768px) {
-            .nav-logo-zone { grid-column: span 1; }
-            .nav-links-zone { grid-column: span 11; }
-            .nav-links-pc { display: flex; gap: 30px; }
+            .nav-links-pc { display: flex; gap: 30px; height: 100%; position: relative; }
             .menu-btn { display: none; }
-            .nav a::before { content: ''; position: fixed; left: 0; right: 0; top: calc(var(--grid-gap) + (var(--nav-h) / 2)); transform: translateY(-50%); height: 1.2em; background: #fff; opacity: 0; z-index: -1; transition: opacity 0.25s var(--ease); pointer-events: none; }
-            .nav a:hover::before { opacity: 1; } .nav a:hover { color: #000 !important; }
+            .has-sub { height: 100%; display: flex; align-items: center; position: relative; }
+            
+            /* 全屏 12 栏背景块 */
+            .nav a:hover::before, .sub-nav-bar a:hover::before { 
+                content: ''; 
+                position: fixed; 
+                left: 0; 
+                right: 0; 
+                height: 1.2em; 
+                background: #fff; 
+                z-index: -1; 
+                pointer-events: none;
+            }
+            .nav a:hover::before { top: calc(var(--grid-gap) + (var(--nav-h)/2)); transform: translateY(-50%); }
+            .sub-nav-bar a:hover::before { top: auto; transform: translateY(-5%); height: 1.2em; }
+
+            .nav a:hover, .sub-nav-bar a:hover { color: #000 !important; }
+            .sub-nav-bar a { height: var(--nav-h); padding: 0; }
         }
 
-        /* [GALLERY STYLES] */
+        /* =============================================================
+           [LAYOUT & GALLERY]
+           ============================================================= */
         .main { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
+        
         @media (min-width: 768px) {
-            .main { height: calc(100vh - (var(--grid-gap) * 2)); overflow: hidden; }
+            .main { height: 100vh; overflow: hidden; }
             .left-panel { grid-column: span 7; height: 100%; overflow: hidden; position: relative; }
-            .right-panel { grid-column: span 5; height: 100%; overflow-y: auto; }
+            .right-panel { grid-column: span 5; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+            .indicators { display: none; } /* PC 端隐藏圆点 */
         }
-        @media (max-width: 767px) { .left-panel, .right-panel { grid-column: span 12; } .main { display: block; height: auto; } }
 
-        .gallery-track { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
-        .gallery-track::-webkit-scrollbar { display: none; }
+        @media (max-width: 767px) { 
+            .left-panel, .right-panel { grid-column: span 12; } 
+            .main { display: block; height: auto; } 
+            .indicators { 
+                position: absolute; 
+                bottom: 20px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                display: flex; 
+                gap: 8px; 
+                z-index: 10; 
+            }
+        }
+
+        .gallery-track { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        .gallery-track::-webkit-scrollbar, .right-panel::-webkit-scrollbar { display: none; }
+        .gallery-track, .right-panel { scrollbar-width: none; -ms-overflow-style: none; }
+
         .gallery-item { min-width: 100%; scroll-snap-align: start; }
-        .gallery-item img, .gallery-item video { width: 100%; display: block; object-fit: cover; aspect-ratio: 4 / 5; }
+        .gallery-item img { width: 100%; display: block; object-fit: cover; aspect-ratio: 4 / 5; }
 
         @media (min-width: 768px) {
             .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-snap-type: none; gap: var(--grid-gap); }
-            .gallery-item img, .gallery-item video { height: auto; min-height: 100%; aspect-ratio: auto; }
+            .gallery-item img { height: auto; min-height: 100%; aspect-ratio: auto; }
         }
 
-        .right-inner { padding: calc(var(--nav-h) + 10px) 0 0 0; display: flex; flex-direction: column; }
+        .right-inner { padding: calc(var(--nav-h) + var(--grid-gap) + 40px) 0 0 0; display: flex; flex-direction: column; }
+        @media (max-width: 767px) { .right-inner { padding-top: 60px; } }
         .rich-text { line-height: 1.8; margin: 0 var(--grid-gap) 20px var(--grid-gap); }
         .rich-text h1 { margin-bottom: 20px; font-weight: 700; }
-        .rich-text p { margin-bottom: 15px; opacity: 0.9; }
         
         .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; }
-        .media-box img, .media-box video { width: 100%; height: auto; display: block; }
+        .media-box img { width: 100%; height: auto; display: block; }
 
-        .indicators { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
-        @media (min-width: 768px) { .indicators { display: none; } }
         .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.3s; }
         .dot.active { background: #fff; transform: scale(1.3); }
 
-        /* [MOBILE MENU] */
-        .menu-btn { background: none; border: none; cursor: pointer; width: 24px; height: 18px; position: relative; }
-        .menu-btn span { display: block; width: 24px; height: 1.5px; background: #fff; position: absolute; left: 0; transition: all 0.4s var(--ease); }
-        .line-1 { top: 4px; } .line-2 { top: 12px; }
-        .menu-btn.active .line-1 { top: 8px; transform: rotate(45deg); }
-        .menu-btn.active .line-2 { top: 8px; transform: rotate(-45deg); }
-
+        /* [MOBILE OVERLAY] */
         .overlay-bg { position: fixed; inset: 0; z-index: 9000; opacity: 0; visibility: hidden; transition: 0.3s; background: rgba(255,255,255,0.3); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); }
-        .overlay-content { position: fixed; inset: 0; z-index: 9001; display: flex; flex-direction: column; padding: 80px var(--grid-gap); opacity: 0; visibility: hidden; mix-blend-mode: difference; }
+        .overlay-content { 
+            position: fixed; inset: 0; z-index: 9001; 
+            display: flex; flex-direction: column; 
+            padding: 80px var(--grid-gap); 
+            opacity: 0; visibility: hidden; 
+            mix-blend-mode: difference; 
+            overflow-y: auto; 
+            overflow-x: hidden; 
+            width: 100%;
+            scrollbar-width: none; /* 彻底移除移动端滚动条显示 */
+            -ms-overflow-style: none;
+        }
+        .overlay-content::-webkit-scrollbar { display: none; }
         .overlay-bg.active, .overlay-content.active { opacity: 1; visibility: visible; }
-        .overlay-content a { margin: 15px 0; font-weight: 700; color: #fff !important; text-decoration: none; transition: 0.4s; }
+        
+        .mobile-link-group { margin: 15px 0; border-bottom: 0.5px solid rgba(255,255,255,0.2); padding-bottom: 10px; width: 100%; }
+        .mobile-main-link { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: #fff; 
+            text-decoration: none; 
+            width: 100%;
+        }
+        .mobile-sub-links { display: none; flex-direction: column; padding: 10px 0 0 0; }
+        .mobile-sub-links.active { display: flex; }
+        .mobile-sub-links a { 
+            margin: 12px 0; 
+            font-size: 18px; 
+            color: #fff; 
+            text-decoration: none; 
+        }
+        .plus-icon { 
+            font-size: 20px; 
+            font-weight: 300; 
+            transition: transform 0.3s; 
+            margin-left: 10px;
+            flex-shrink: 0; /* 防止加号被压缩 */
+        }
+        .expanded .plus-icon { transform: rotate(45deg); }
     </style>
 </head>
 <body>
 
-    <nav class="nav grid-container">
-        <div class="nav-logo-zone" id="ui-nav-logo"></div>
-        <div class="nav-links-zone">
-            <div class="nav-links-pc" id="ui-nav-pc"></div>
-            <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">
-                <span class="line-1"></span><span class="line-2"></span>
-            </button>
-        </div>
-    </nav>
+    <div class="nav-wrapper">
+        <nav class="nav">
+            <div class="nav-logo-zone" id="ui-nav-logo"></div>
+            <div class="nav-links-zone">
+                <div class="nav-links-pc" id="ui-nav-pc"></div>
+                <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">
+                    <span class="line-1"></span><span class="line-2"></span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
     <div class="overlay-bg" id="mobileMenuBg"></div>
     <div class="overlay-content" id="mobileMenuContent"></div>
 
@@ -110,22 +244,31 @@
     </main>
 
     <script>
-        /**
-         * =============================================================
-         * [静态配置区域]
-         * =============================================================
-         */
         const CONFIG = {
-            site: {
-                pageTitle: "ApparEdit™ - NeuePoor",
-                favicon: "https://cdn.neuepoor.com/Favicon.webp"
-            },
+            site: { pageTitle: "ApparEdit™ - NeuePoor", favicon: "https://cdn.neuepoor.com/Favicon.webp" },
             navbar: {
                 logo: { text: "PoorLegalGuy®", fontSize: "18px", link: "https://home.neuepoor.com/" },
                 links: [
-                    { name: "Category", url: "https://home.neuepoor.com", fontSize: "18px" },
-                    { name: "ApparEdit", url: "https://apparedit.neuepoor.com/", fontSize: "18px" },
-                    { name: "PDP", url: "https://apparedit.neuepoor.com/PDP/", fontSize: "18px" }
+                    { 
+                        name: "Category", 
+                        url: "#", 
+                        fontSize: "18px",
+                        children: [
+                            { name: "Apparedit", url: "https://apparedit.neuepoor.com/" },
+                            { name: "inspo", url: "#" },
+                            { name: "Tone", url: "#" },
+                            { name: "Raw", url: "#" },
+                            { name: "Lab", url: "#" }
+                        ]
+                    },
+                    { 
+                        name: "ApparEdit", 
+                        url: "#", 
+                        fontSize: "18px",
+                        children: [
+                            { name: "Archive", url: "#" }
+                        ]
+                    }
                 ]
             },
             gallery: {
@@ -138,137 +281,94 @@
                     title: "2603001™",
                     titleSize: "18px",
                     bodyTextSize: "10px",
-                    description: "Bug 已修复。代码结构已回退至 v3.28 稳健版，同时保留 v3.41 的 UI 修复成果。"
+                    description: "已修复：1. 彻底移除移动端菜单滚动条。2. 修正加号图标错位 Bug。3. 指示点圆点仅在移动端显示，且锁定在左侧区域。"
                 },
                 rightMedia: [
                     { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
                     { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/006.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/007.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/008.jpg' }
+                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/006.jpg' }
                 ]
             }
         };
 
-        let sliderInterval;
-        let isUserInteracting = false;
-
-        /**
-         * [UI 渲染逻辑]
-         */
         function renderUI() {
             const logoArea = document.getElementById('ui-nav-logo');
-            if (!logoArea) return; 
-
-            document.title = CONFIG.site.pageTitle;
-            const fav = document.getElementById('ui-favicon');
-            if (fav) fav.href = CONFIG.site.favicon;
-
             logoArea.innerHTML = `<a href="${CONFIG.navbar.logo.link}" style="font-size: ${CONFIG.navbar.logo.fontSize}">${CONFIG.navbar.logo.text}</a>`;
             
             const pcArea = document.getElementById('ui-nav-pc');
-            pcArea.innerHTML = CONFIG.navbar.links.map(l => `<a href="${l.url}" style="font-size: ${l.fontSize}">${l.name}</a>`).join('');
+            pcArea.innerHTML = CONFIG.navbar.links.map(link => `
+                <div class="${link.children ? 'has-sub' : ''}">
+                    <a href="${link.url}" style="font-size: ${link.fontSize}">${link.name}</a>
+                    ${link.children ? `
+                        <div class="sub-nav-bar">
+                            ${link.children.map(child => `<a href="${child.url}" style="font-size: ${link.fontSize}">${child.name}</a>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
             
             const mobileArea = document.getElementById('mobileMenuContent');
-            mobileArea.innerHTML = CONFIG.navbar.links.map(l => `<a href="${l.url}" onclick="toggleMenu()" style="font-size: ${l.fontSize}">${l.name}</a>`).join('');
+            mobileArea.innerHTML = CONFIG.navbar.links.map((link, idx) => `
+                <div class="mobile-link-group" id="m-group-${idx}">
+                    <a href="${link.children ? 'javascript:void(0)' : link.url}" 
+                       class="mobile-main-link" 
+                       onclick="${link.children ? `toggleSubMenu(${idx})` : 'toggleMenu()'}">
+                        <span>${link.name}</span>
+                        ${link.children ? `<span class="plus-icon">+</span>` : ''}
+                    </a>
+                    ${link.children ? `
+                        <div class="mobile-sub-links" id="m-sub-${idx}">
+                            ${link.children.map(child => `<a href="${child.url}" onclick="toggleMenu()">${child.name}</a>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
 
             const leftTrack = document.getElementById('ui-left-track');
             leftTrack.innerHTML = CONFIG.gallery.leftMedia.map(m => `
-                <div class="gallery-item">
-                    <img src="${m.url}" loading="lazy" decoding="async" alt="Gallery Image">
-                </div>
+                <div class="gallery-item"><img src="${m.url}" loading="lazy" decoding="async"></div>
             `).join('');
 
             const rightRoot = document.getElementById('ui-right-root');
-            const rc = CONFIG.gallery.rightContent;
-            rightRoot.innerHTML = `
-                <div class="rich-text">
-                    <h1 style="font-size: ${rc.titleSize}">${rc.title}</h1>
-                    <p style="font-size: ${rc.bodyTextSize}">${rc.description}</p>
-                </div>
-            `;
+            rightRoot.innerHTML = `<div class="rich-text"><h1 style="font-size: ${CONFIG.gallery.rightContent.titleSize}">${CONFIG.gallery.rightContent.title}</h1><p style="font-size: ${CONFIG.gallery.rightContent.bodyTextSize}">${CONFIG.gallery.rightContent.description}</p></div>`;
 
             const rightMediaArea = document.getElementById('ui-right-media');
-            rightMediaArea.innerHTML = CONFIG.gallery.rightMedia.map(m => `
-                <div class="media-box"><img src="${m.url}" loading="lazy" decoding="async" alt="Work Detail"></div>
-            `).join('');
+            rightMediaArea.innerHTML = CONFIG.gallery.rightMedia.map(m => `<div class="media-box"><img src="${m.url}" loading="lazy" decoding="async"></div>`).join('');
 
             renderDots(CONFIG.gallery.leftMedia.length);
             bindEvents();
-            startAutoSlider();
+        }
+
+        function toggleSubMenu(index) {
+            const group = document.getElementById(`m-group-${index}`);
+            const sub = document.getElementById(`m-sub-${index}`);
+            group.classList.toggle('expanded');
+            sub.classList.toggle('active');
         }
 
         function renderDots(count) {
             const dotsContainer = document.getElementById('ui-dots');
-            if (!dotsContainer) return;
-            dotsContainer.innerHTML = Array.from({ length: count }).map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('');
+            if (dotsContainer) dotsContainer.innerHTML = Array.from({ length: count }).map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('');
         }
 
-        /**
-         * [核心交互绑定]
-         */
         function bindEvents() {
             const track = document.getElementById('ui-left-track');
             if (!track) return;
-
             track.addEventListener('scroll', () => {
                 const index = Math.round(track.scrollLeft / track.offsetWidth);
                 const dots = document.querySelectorAll('.dot');
-                dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); });
+                dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
             }, { passive: true });
-
-            track.addEventListener('touchstart', () => isUserInteracting = true);
-            track.addEventListener('touchend', () => { setTimeout(() => isUserInteracting = false, 3000); });
-        }
-
-        function startAutoSlider() {
-            if (sliderInterval) clearInterval(sliderInterval);
-            sliderInterval = setInterval(() => {
-                const track = document.getElementById('ui-left-track');
-                if (!track || window.innerWidth >= 768 || isUserInteracting) return;
-                const maxScroll = track.scrollWidth - track.offsetWidth;
-                if (track.scrollLeft >= maxScroll - 5) {
-                    track.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    track.scrollBy({ left: track.offsetWidth, behavior: 'smooth' });
-                }
-            }, 3000);
         }
 
         function toggleMenu() {
-            const bg = document.getElementById('mobileMenuBg');
-            const content = document.getElementById('mobileMenuContent');
-            const btn = document.getElementById('menuBtn');
-            const isActive = bg.classList.toggle('active');
-            content.classList.toggle('active');
-            btn.classList.toggle('active');
-            document.body.style.overflow = isActive ? 'hidden' : '';
+            document.getElementById('mobileMenuBg').classList.toggle('active');
+            document.getElementById('mobileMenuContent').classList.toggle('active');
+            document.getElementById('menuBtn').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('mobileMenuBg').classList.contains('active') ? 'hidden' : '';
         }
 
-        /**
-         * [稳健启动逻辑]
-         */
-        function init() {
-            renderUI();
-        }
-
-        // 兼容所有环境的加载启动
-        if (document.readyState === 'complete') {
-            init();
-        } else {
-            window.addEventListener('load', init);
-            document.addEventListener('DOMContentLoaded', init);
-        }
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth >= 768) {
-                const bg = document.getElementById('mobileMenuBg');
-                if(bg && bg.classList.contains('active')) toggleMenu();
-                if (sliderInterval) clearInterval(sliderInterval);
-            } else {
-                startAutoSlider();
-            }
-        });
+        window.onload = renderUI;
     </script>
 </body>
 </html>
