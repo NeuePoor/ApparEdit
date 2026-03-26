@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- [SEO & ICON] - [LOCK] -->
+    <!-- [SEO & ICON] - [LOCK] 此部分由 CONFIG 驱动，逻辑禁止手动修改 -->
     <title id="ui-title">Loading...</title>
     <link rel="icon" id="ui-favicon" type="image/webp" href="">
 
@@ -12,210 +12,405 @@
            [GLOBAL] 基础变量与全局复位
            ============================================================= */
         :root {
-            --bg-panel: #fff; --text: #000; --nav-h: auto; --grid-gap: 4px; 
+            --bg-panel: #fff; 
+            --text: #000;
+            --nav-h: 44px; 
+            --grid-gap: 4px; 
             --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --nav-diff-color: #ffffff; --ease: cubic-bezier(0.23, 1, 0.32, 1); --nav-weight: 700;
+            --nav-diff-color: #ffffff; 
+            --safe: 15px; 
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
+            --nav-weight: 700;
         }
-        @media (prefers-color-scheme: dark) { :root { --bg-panel: #000; --text: #fff; } }
+
+        @media (prefers-color-scheme: dark) {
+            :root { 
+                --bg-panel: #000;
+                --text: #fff; 
+                --overlay-bg: rgba(0, 0, 0, 0.65);
+            }
+        }
+
+        .is-windows .nav a { --nav-weight: 600; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--f-fallback); color: var(--text); overflow-x: hidden; padding: var(--grid-gap); background: var(--bg-panel); height: 100vh; }
-        .grid-container { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
-
-        /* [NAVBAR LOCK] */
-        .nav { position: fixed; top: var(--grid-gap); left: var(--grid-gap); right: var(--grid-gap); z-index: 9999; mix-blend-mode: difference; pointer-events: none; align-items: flex-start; }
-        .nav-logo-zone, .nav-links-zone { pointer-events: auto; line-height: 1; }
-        .nav-logo-zone { grid-column: span 6; display: flex; }
-        .nav-links-zone { grid-column: span 6; display: flex; justify-content: flex-end; align-items: center; }
-
-        .nav-links-pc { display: none; } 
         
-        .nav a { position: relative; color: var(--nav-diff-color) !important; text-decoration: none; font-weight: var(--nav-weight); z-index: 5; }
+        body {
+            font-family: var(--f-fallback); 
+            color: var(--text);
+            overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased;
+            padding: var(--grid-gap); 
+            background: var(--bg-panel);
+            overscroll-behavior-y: none; 
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--grid-gap);
+        }
+
+        /* =============================================================
+           [NAVBAR] - [LOCK]
+           ============================================================= */
+        .nav {
+            position: fixed; 
+            top: var(--grid-gap); 
+            left: var(--grid-gap);
+            right: var(--grid-gap);
+            height: var(--nav-h);
+            z-index: 9999; 
+            background: transparent; 
+            mix-blend-mode: difference; 
+            pointer-events: none;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .nav-logo-zone {
+            grid-column: span 3;
+            display: flex;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .nav-links-zone {
+            grid-column: span 9;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; 
+            pointer-events: auto;
+        }
 
         @media (min-width: 768px) {
             .nav-logo-zone { grid-column: span 1; }
             .nav-links-zone { grid-column: span 11; }
             .nav-links-pc { display: flex; gap: 30px; }
             .menu-btn { display: none; }
-            
-            .nav a::before { content: ''; position: fixed; left: 0; right: 0; top: calc(var(--grid-gap) + 0.5em); transform: translateY(-50%); height: 1.2em; background: #fff; opacity: 0; z-index: -1; transition: opacity 0.25s var(--ease); pointer-events: none; }
-            .nav a:hover::before { opacity: 1; } .nav a:hover { color: #000 !important; }
         }
 
-        /* [GALLERY STYLES] */
-        .main { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
+        @media (max-width: 767px) {
+            .nav-links-pc { display: none; }
+            .nav-logo-zone { grid-column: span 6; }
+            .nav-links-zone { grid-column: span 6; }
+        }
+
+        .nav a {
+            position: relative;
+            color: var(--nav-diff-color) !important;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            font-weight: var(--nav-weight); 
+            z-index: 5;
+            transition: color 0.3s var(--ease);
+        }
+
+        .logo { letter-spacing: -0.5px; white-space: nowrap; }
+
+        @media (min-width: 768px) {
+            .nav a::before {
+                content: '';
+                position: fixed;
+                top: calc(var(--grid-gap) + (var(--nav-h) / 2));
+                transform: translateY(-50%);
+                height: 1.2em; 
+                left: 0;
+                right: 0;
+                background: #fff;
+                opacity: 0;
+                z-index: -1;
+                transition: opacity 0.25s var(--ease);
+                pointer-events: none;
+            }
+            .nav a:hover::before { opacity: 1; }
+            .nav a:hover { color: #000 !important; }
+        }
+
+        .menu-btn { 
+            background: none; border: none; cursor: pointer; padding: 5px; 
+            position: relative; width: 30px; height: 30px; z-index: 10000; 
+            pointer-events: auto;
+        }
+        .menu-btn span { 
+            display: block; width: 20px; height: 1.5px; background: var(--nav-diff-color); 
+            position: absolute; left: 5px; 
+            transition: transform 0.4s var(--ease), top 0.4s var(--ease), opacity 0.3s;
+        }
+        .line-1 { top: 11px; }
+        .line-2 { top: 19px; }
+        .menu-btn.active .line-1 { top: 15px; transform: rotate(45deg); }
+        .menu-btn.active .line-2 { top: 15px; transform: rotate(-45deg); }
+
+        .overlay {
+            position: fixed; 
+            inset: 0; 
+            background: rgba(255, 255, 255, 0.65); 
+            backdrop-filter: blur(60px); 
+            -webkit-backdrop-filter: blur(60px);
+            z-index: 9000; 
+            display: flex; 
+            flex-direction: column;
+            padding-top: calc(var(--nav-h) + 60px); 
+            padding-left: var(--grid-gap); 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s linear, visibility 0.3s linear;
+        }
+        @media (prefers-color-scheme: dark) { .overlay { background: rgba(0, 0, 0, 0.65); } }
+        .overlay.active { opacity: 1; visibility: visible; }
+        .overlay a { margin: 12px 0; font-weight: 700; color: var(--text) !important; text-decoration: none; opacity: 0; transform: translateX(-10px); transition: opacity 0.4s var(--ease), transform 0.4s var(--ease); }
+        .overlay.active a { opacity: 1; transform: translateX(0); }
+
+        /* =============================================================
+           [GALLERY] - [EDITABLE]
+           ============================================================= */
+        .main { 
+            width: 100%; 
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--grid-gap);
+        }
+
         @media (min-width: 768px) {
             .main { height: calc(100vh - (var(--grid-gap) * 2)); overflow: hidden; }
-            .left-panel { grid-column: span 7; height: 100%; overflow: hidden; position: relative; }
-            .right-panel { grid-column: span 5; height: 100%; overflow-y: auto; }
+            .left-panel { grid-column: span 7; }
+            .right-panel { grid-column: span 5; }
         }
-        @media (max-width: 767px) { .left-panel, .right-panel { grid-column: span 12; } .main { display: block; height: auto; } }
 
-        .gallery-track { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
+        @media (max-width: 767px) {
+            .left-panel, .right-panel { grid-column: span 12; }
+            .main { display: block; }
+        }
+
+        .left-panel, .right-panel { background: var(--bg-panel); position: relative; padding: 0; }
+        
+        @media (min-width: 768px) {
+            .left-panel { overflow: hidden; }
+            .right-panel { overflow-y: auto; }
+        }
+
+        @media (max-width: 767px) { .left-panel { margin-bottom: var(--grid-gap); } }
+
+        .gallery-track {
+            display: flex; width: 100%; overflow-x: auto; 
+            scroll-snap-type: x mandatory; scrollbar-width: none; 
+            padding: 0; margin: 0;
+            scroll-behavior: smooth; 
+        }
         .gallery-track::-webkit-scrollbar { display: none; }
         .gallery-item { min-width: 100%; scroll-snap-align: start; }
-        .gallery-item img, .gallery-item video { width: 100%; display: block; object-fit: cover; aspect-ratio: 4 / 5; }
+        .gallery-item img { width: 100%; display: block; object-fit: cover; aspect-ratio: 4 / 5; }
 
         @media (min-width: 768px) {
-            .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-snap-type: none; gap: var(--grid-gap); }
-            .gallery-item img, .gallery-item video { height: auto; min-height: 100%; aspect-ratio: auto; }
+            .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; scroll-snap-type: none; gap: var(--grid-gap); }
+            .gallery-item img { height: auto; min-height: 100%; aspect-ratio: auto; }
         }
 
-        .right-inner { padding: 40px 0 0 0; display: flex; flex-direction: column; }
-        .rich-text { line-height: 1.8; margin: 0 var(--grid-gap) 20px var(--grid-gap); }
+        .right-inner { padding: calc(var(--nav-h) + 12px) 0 0 0; margin: 0; display: flex; flex-direction: column; }
+        .rich-text { line-height: 1.8; margin: 0 var(--grid-gap); }
         .rich-text h1 { margin-bottom: 20px; font-weight: 700; }
         .rich-text p { margin-bottom: 15px; opacity: 0.9; }
-        
-        .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; }
-        .media-box img, .media-box video { width: 100%; height: auto; display: block; }
+        .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; font-size: 0; }
+        .media-box img { width: 100%; height: auto; display: block; vertical-align: middle; }
 
-        .indicators { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+        .indicators {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; z-index: 10;
+        }
         @media (min-width: 768px) { .indicators { display: none; } }
         .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.3s; }
         .dot.active { background: #fff; transform: scale(1.3); }
-
-        /* [MOBILE MENU] */
-        .menu-btn { background: none; border: none; cursor: pointer; width: 24px; height: 18px; position: relative; }
-        .menu-btn span { display: block; width: 24px; height: 1.5px; background: #fff; position: absolute; left: 0; transition: all 0.4s var(--ease); }
-        .line-1 { top: 4px; } .line-2 { top: 12px; }
-        .menu-btn.active .line-1 { top: 8px; transform: rotate(45deg); }
-        .menu-btn.active .line-2 { top: 8px; transform: rotate(-45deg); }
-
-        .overlay-bg { position: fixed; inset: 0; z-index: 9000; opacity: 0; visibility: hidden; transition: 0.3s; background: rgba(255,255,255,0.3); backdrop-filter: blur(40px); }
-        .overlay-content { position: fixed; inset: 0; z-index: 9001; display: flex; flex-direction: column; padding: 80px var(--grid-gap); opacity: 0; visibility: hidden; mix-blend-mode: difference; }
-        .overlay-bg.active, .overlay-content.active { opacity: 1; visibility: visible; }
-        .overlay-content a { margin: 15px 0; font-weight: 700; color: #fff !important; text-decoration: none; transition: 0.4s; }
     </style>
 </head>
 <body>
 
+    <!-- [NAVBAR] - [LOCK] -->
     <nav class="nav grid-container">
         <div class="nav-logo-zone" id="ui-nav-logo"></div>
         <div class="nav-links-zone">
             <div class="nav-links-pc" id="ui-nav-pc"></div>
             <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">
-                <span class="line-1"></span><span class="line-2"></span>
+                <span class="line-1"></span>
+                <span class="line-2"></span>
             </button>
         </div>
     </nav>
-    <div class="overlay-bg" id="mobileMenuBg"></div>
-    <div class="overlay-content" id="mobileMenuContent"></div>
+    <div class="overlay" id="mobileMenu"></div>
 
+    <!-- [GALLERY] - [EDITABLE] -->
     <main class="main">
         <section class="left-panel">
             <div class="gallery-track" id="ui-left-track"></div>
             <div class="indicators" id="ui-dots"></div>
         </section>
+
         <aside class="right-panel">
             <div class="right-inner" id="ui-right-root"></div>
-            <div id="ui-right-media"></div>
         </aside>
     </main>
 
     <script>
         /**
          * =============================================================
-         * [静态配置区域]
+         * [CONFIG AREA] - 此区域供非专业人员修改，内容驱动 UI 渲染
          * =============================================================
          */
         const CONFIG = {
+            // 全局站点配置 (标题与图标)
             site: {
-                pageTitle: "ApparEdit™ - NeuePoor",
+                pageTitle: "ApparEdit™ - PoorLegalGuy®",
                 favicon: "https://cdn.neuepoor.com/Favicon.webp"
             },
+            // NAVBAR 配置
             navbar: {
                 logo: { text: "PoorLegalGuy®", fontSize: "18px", link: "https://home.neuepoor.com/" },
                 links: [
                     { name: "Category", url: "https://home.neuepoor.com", fontSize: "18px" },
-                    { name: "ApparEdit", url: "https://apparedit.neuepoor.com/", fontSize: "18px" }
+                    { name: "ApparEdit", url: "https://apparedit.neuepoor.com/", fontSize: "18px" },
+                    { name: "PDP", url: "https://apparedit.neuepoor.com/PDP", fontSize: "18px" }
                 ]
             },
+            // GALLERY 配置
             gallery: {
-                leftMedia: [
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/001.webp' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/002.webp' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/003.jpg' }
+                leftImages: [
+                    "https://cdn.neuepoor.com/apparedit/Template/a.webp",
+                    "https://cdn.neuepoor.com/apparedit/Template/b.webp",
+                    "https://cdn.neuepoor.com/apparedit/Template/c.jpg"
                 ],
                 rightContent: {
                     title: "2603001™",
                     titleSize: "18px",
+                    titleColor: "inherit",
                     bodyTextSize: "10px",
-                    description: "Bug 已修复。现在手机端不会再出现文字链接与菜单图标叠加的问题。"
-                },
-                rightMedia: [
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/006.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/007.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/008.jpg' }
-                ]
+                    blocks: [
+                        { type: "p", value: "测试一下的选项，if this support poorlegalguy.", color: "rgba(0,0,0,0.9)" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/1.jpg" },
+                        { type: "p", value: "这不仅仅是一个编辑器，它代表了我们对内容创作边界的重新思考。" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/2.jpg" },
+                        { type: "p", value: "通过 12 栏格栅系统，我们构建了数字内容的建筑学。" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/3.jpg" },
+                        { type: "img", value: "https://cdn.neuepoor.com/apparedit/Template/4.jpg" }
+                    ]
+                }
             }
         };
 
-        function renderUI() {
-            // 确保 DOM 元素存在再渲染
-            const logoArea = document.getElementById('ui-nav-logo');
-            if (!logoArea) return; 
+        /**
+         * =============================================================
+         * [CORE LOGIC]
+         * =============================================================
+         */
+        let sliderInterval;
+        let isUserInteracting = false;
 
+        function checkSystem() {
+            if (navigator.platform.indexOf('Win') !== -1) {
+                document.body.classList.add('is-windows');
+            }
+        }
+
+        /* [SITE RENDER] - [LOCK] */
+        function renderSiteHead() {
             document.title = CONFIG.site.pageTitle;
-            const fav = document.getElementById('ui-favicon');
-            if (fav) fav.href = CONFIG.site.favicon;
-
-            logoArea.innerHTML = `<a href="${CONFIG.navbar.logo.link}">${CONFIG.navbar.logo.text}</a>`;
-            
-            const pcArea = document.getElementById('ui-nav-pc');
-            pcArea.innerHTML = CONFIG.navbar.links.map(l => `<a href="${l.url}">${l.name}</a>`).join('');
-            
-            const mobileArea = document.getElementById('mobileMenuContent');
-            mobileArea.innerHTML = CONFIG.navbar.links.map(l => `<a href="${l.url}">${l.name}</a>`).join('');
-
-            const leftTrack = document.getElementById('ui-left-track');
-            leftTrack.innerHTML = CONFIG.gallery.leftMedia.map(m => `
-                <div class="gallery-item">
-                    <img src="${m.url}" loading="lazy" decoding="async" alt="Gallery Image">
-                </div>
-            `).join('');
-
-            const rightRoot = document.getElementById('ui-right-root');
-            const rc = CONFIG.gallery.rightContent;
-            rightRoot.innerHTML = `<div class="rich-text"><h1 style="font-size: ${rc.titleSize}">${rc.title}</h1><p style="font-size: ${rc.bodyTextSize}">${rc.description}</p></div>`;
-
-            const rightMediaArea = document.getElementById('ui-right-media');
-            rightMediaArea.innerHTML = CONFIG.gallery.rightMedia.map(m => `
-                <div class="media-box"><img src="${m.url}" loading="lazy" decoding="async" alt="Work Detail"></div>
-            `).join('');
-
-            renderDots(CONFIG.gallery.leftMedia.length);
+            document.getElementById('ui-favicon').href = CONFIG.site.favicon;
         }
 
-        function renderDots(count) {
-            const dotsContainer = document.getElementById('ui-dots');
-            if (!dotsContainer) return;
-            dotsContainer.innerHTML = Array.from({ length: count }).map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('');
-        }
-
+        /* [NAVBAR LOGIC] - [LOCK] */
         function toggleMenu() {
-            const bg = document.getElementById('mobileMenuBg');
-            const content = document.getElementById('mobileMenuContent');
+            if (window.innerWidth >= 768) return;
+            const menu = document.getElementById('mobileMenu');
             const btn = document.getElementById('menuBtn');
-            const isActive = bg.classList.toggle('active');
-            content.classList.toggle('active');
+            const isActive = menu.classList.toggle('active');
             btn.classList.toggle('active');
             document.body.style.overflow = isActive ? 'hidden' : '';
+            document.documentElement.style.overflow = isActive ? 'hidden' : '';
         }
 
-        // 强力启动：即使 DOMContentLoaded 错过了，立即执行一次渲染
-        if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', renderUI);
-        } else {
-            renderUI();
+        function renderNavbar() {
+            const logoArea = document.getElementById('ui-nav-logo');
+            logoArea.innerHTML = `<a href="${CONFIG.navbar.logo.link}" class="logo" style="font-size: ${CONFIG.navbar.logo.fontSize}">${CONFIG.navbar.logo.text}</a>`;
+            
+            const pcLinksArea = document.getElementById('ui-nav-pc');
+            const mobileOverlay = document.getElementById('mobileMenu');
+            
+            pcLinksArea.innerHTML = CONFIG.navbar.links.map(link => 
+                `<a href="${link.url}" style="font-size: ${link.fontSize}">${link.name}</a>`
+            ).join('');
+
+            mobileOverlay.innerHTML = CONFIG.navbar.links.map(link => 
+                `<a href="${link.url}" onclick="toggleMenu()" style="font-size: ${link.fontSize}">${link.name}</a>`
+            ).join('');
         }
-        
-        window.addEventListener('resize', () => {
+
+        /* [GALLERY LOGIC] - [EDITABLE] */
+        function startAutoSlider() {
+            if (sliderInterval) clearInterval(sliderInterval);
+            sliderInterval = setInterval(() => {
+                const track = document.getElementById('ui-left-track');
+                if (!track || window.innerWidth >= 768 || isUserInteracting) return;
+                const maxScroll = track.scrollWidth - track.offsetWidth;
+                if (track.scrollLeft >= maxScroll - 5) {
+                    track.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    track.scrollBy({ left: track.offsetWidth, behavior: 'smooth' });
+                }
+            }, 2000); 
+        }
+
+        function renderGallery() {
+            const track = document.getElementById('ui-left-track');
+            const dotsContainer = document.getElementById('ui-dots');
+            const rightRoot = document.getElementById('ui-right-root');
+            const content = CONFIG.gallery.rightContent;
+
+            track.innerHTML = CONFIG.gallery.leftImages.map(src => `
+                <div class="gallery-item"><img src="${src}"></div>
+            `).join('');
+
+            dotsContainer.innerHTML = CONFIG.gallery.leftImages.map((_, i) => `
+                <div class="dot ${i === 0 ? 'active' : ''}"></div>
+            `).join('');
+
+            let html = `<div class="rich-text"><h1 style="font-size: ${content.titleSize}; color: ${content.titleColor}">${content.title}</h1></div>`;
+            html += content.blocks.map(b => {
+                if (b.type === 'p') return `<div class="rich-text" style="font-size: ${content.bodyTextSize}; color: ${b.color || 'inherit'}"><p>${b.value}</p></div>`;
+                if (b.type === 'img') return `<div class="media-box"><img src="${b.value}"></div>`;
+                return '';
+            }).join('');
+            rightRoot.innerHTML = html;
+        }
+
+        /* [INIT] */
+        function init() {
+            checkSystem(); 
+            renderSiteHead(); // 渲染站点基础信息
+            renderNavbar();
+            renderGallery();
+
+            const track = document.getElementById('ui-left-track');
+            track.addEventListener('scroll', () => {
+                const index = Math.round(track.scrollLeft / track.offsetWidth);
+                const dots = document.querySelectorAll('.dot');
+                dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); });
+            }, { passive: true });
+
+            track.addEventListener('touchstart', () => isUserInteracting = true);
+            track.addEventListener('touchend', () => { setTimeout(() => isUserInteracting = false, 3000); });
+
+            startAutoSlider();
+        }
+
+        window.onload = init;
+        window.onresize = () => {
             if (window.innerWidth >= 768) {
-                const bg = document.getElementById('mobileMenuBg');
-                if(bg && bg.classList.contains('active')) toggleMenu();
-            }
-        });
+                document.getElementById('mobileMenu').classList.remove('active');
+                document.getElementById('menuBtn').classList.remove('active');
+                document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
+                if (sliderInterval) clearInterval(sliderInterval);
+            } else { startAutoSlider(); }
+        };
     </script>
 </body>
 </html>
