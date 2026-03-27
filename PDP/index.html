@@ -19,77 +19,37 @@
             --nav-diff-color: #ffffff; 
             --ease: cubic-bezier(0.23, 1, 0.32, 1); 
             --nav-weight: 700;
+            --skeleton-bg: #f0f0f0; 
         }
-        @media (prefers-color-scheme: dark) { :root { --bg-panel: #000; --text: #fff; } }
+        @media (prefers-color-scheme: dark) { 
+            :root { --bg-panel: #000; --text: #fff; --skeleton-bg: #1a1a1a; } 
+        }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-touch-callout: none; }
         
         body { 
             font-family: var(--f-fallback); 
             color: var(--text); 
             overflow-x: hidden; 
             background: var(--bg-panel); 
-            /* 使用 dvh 确保 body 初始高度适配动态视口 */
             min-height: 100dvh; 
         }
 
         /* =============================================================
-           [NAVBAR COMPONENT]
+           [NAVBAR]
            ============================================================= */
-        .nav-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 9999;
-            mix-blend-mode: difference;
-            pointer-events: none;
-        }
-
-        .nav { 
-            padding: var(--grid-gap) var(--grid-gap) 0 var(--grid-gap);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-logo-zone, .nav-links-zone { 
-            pointer-events: auto; 
-            display: flex; 
-            align-items: center; 
-            height: var(--nav-h); 
-        }
-
-        .nav a, .sub-nav-bar a { 
-            color: var(--nav-diff-color) !important; 
-            text-decoration: none; 
-            font-weight: var(--nav-weight); 
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
-        }
-
-        .sub-nav-bar {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            display: none;
-            flex-direction: column;
-            pointer-events: auto;
-            width: fit-content;
-        }
-
+        .nav-wrapper { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; mix-blend-mode: difference; pointer-events: none; }
+        .nav { padding: var(--grid-gap) var(--grid-gap) 0 var(--grid-gap); display: flex; justify-content: space-between; align-items: center; }
+        .nav-logo-zone, .nav-links-zone { pointer-events: auto; display: flex; align-items: center; height: var(--nav-h); }
+        .nav a, .sub-nav-bar a { color: var(--nav-diff-color) !important; text-decoration: none; font-weight: var(--nav-weight); display: flex; align-items: center; white-space: nowrap; }
+        
+        .sub-nav-bar { position: absolute; top: 100%; left: 0; display: none; flex-direction: column; pointer-events: auto; width: fit-content; }
         .nav-links-pc > div:hover .sub-nav-bar { display: flex; }
         .nav-links-pc { display: none; } 
 
-        .menu-btn { 
-            background: none; border: none; cursor: pointer; 
-            width: 24px; height: var(--nav-h); 
-            position: relative; display: flex; align-items: center; justify-content: flex-end;
-        }
+        .menu-btn { background: none; border: none; cursor: pointer; width: 24px; height: var(--nav-h); position: relative; display: flex; align-items: center; justify-content: flex-end; }
         .menu-btn span { display: block; width: 24px; height: 1.5px; background: #fff; position: absolute; transition: all 0.4s var(--ease); }
-        .line-1 { transform: translateY(-4px); }
-        .line-2 { transform: translateY(4px); }
+        .line-1 { transform: translateY(-4px); } .line-2 { transform: translateY(4px); }
         .menu-btn.active .line-1 { transform: translateY(0) rotate(45deg); }
         .menu-btn.active .line-2 { transform: translateY(0) rotate(-45deg); }
 
@@ -97,26 +57,35 @@
             .nav-links-pc { display: flex; gap: 30px; height: 100%; position: relative; }
             .menu-btn { display: none; }
             .has-sub { height: 100%; display: flex; align-items: center; position: relative; }
-            
-            .nav a:hover::before, .sub-nav-bar a:hover::before { 
-                content: ''; 
-                position: fixed; 
-                left: 0; 
-                right: 0; 
-                height: 1.2em; 
-                background: #fff; 
-                z-index: -1; 
-                pointer-events: none;
-            }
+            .nav a:hover::before, .sub-nav-bar a:hover::before { content: ''; position: fixed; left: 0; right: 0; height: 1.2em; background: #fff; z-index: -1; pointer-events: none; }
             .nav a:hover::before { top: calc(var(--grid-gap) + (var(--nav-h)/2)); transform: translateY(-50%); }
             .sub-nav-bar a:hover::before { top: auto; transform: translateY(-5%); height: 1.2em; }
-
             .nav a:hover, .sub-nav-bar a:hover { color: #000 !important; }
             .sub-nav-bar a { height: var(--nav-h); padding: 0; }
         }
 
         /* =============================================================
-           [LAYOUT & GALLERY]
+           [MEDIA ENGINE]
+           ============================================================= */
+        .media-container { 
+            position: relative; 
+            width: 100%; 
+            background: var(--skeleton-bg); 
+            overflow: hidden; 
+            line-height: 0; 
+            transition: background 0.3s ease;
+        }
+        .media-container.is-loaded { background: transparent; }
+
+        .media-shield { position: absolute; inset: 0; z-index: 5; background: transparent; cursor: default; }
+        .media-item { width: 100%; height: auto; display: block; transition: opacity 0.6s var(--ease); opacity: 0; }
+        .media-item.loaded { opacity: 1; }
+        
+        .ratio-box { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+        .ratio-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+
+        /* =============================================================
+           [LAYOUT]
            ============================================================= */
         .main { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
         
@@ -131,106 +100,43 @@
             .left-panel { grid-column: span 12; position: relative; } 
             .right-panel { grid-column: span 12; } 
             .main { display: block; height: auto; } 
-            .indicators { 
-                position: absolute; 
-                bottom: 15px; 
-                left: 50%; 
-                transform: translateX(-50%); 
-                display: flex; 
-                gap: 8px; 
-                z-index: 10; 
-                pointer-events: none;
-            }
+            .indicators { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; pointer-events: none; }
         }
 
-        .gallery-track { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        .gallery-track { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .gallery-track::-webkit-scrollbar, .right-panel::-webkit-scrollbar { display: none; }
-        .gallery-track, .right-panel { scrollbar-width: none; -ms-overflow-style: none; }
 
         .gallery-item { min-width: 100%; scroll-snap-align: start; }
-        .gallery-item img { width: 100%; display: block; object-fit: cover; aspect-ratio: 4 / 5; }
+        .gallery-item .media-container img { aspect-ratio: 4 / 5; object-fit: cover; }
 
         @media (min-width: 768px) {
             .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-snap-type: none; gap: var(--grid-gap); }
-            .gallery-item img { height: auto; min-height: 100%; aspect-ratio: auto; }
+            .gallery-item .media-container img { height: auto; min-height: 100%; aspect-ratio: auto; }
         }
 
         .right-inner { padding: calc(var(--nav-h) + var(--grid-gap) + 40px) 0 0 0; display: flex; flex-direction: column; }
         @media (max-width: 767px) { .right-inner { padding-top: 60px; } }
         .rich-text { line-height: 1.8; margin: 0 var(--grid-gap) 20px var(--grid-gap); }
         .rich-text h1 { margin-bottom: 20px; font-weight: 700; }
-        
         .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; }
-        .media-box img { width: 100%; height: auto; display: block; }
 
         .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.3s; }
         .dot.active { background: #fff; transform: scale(1.3); }
 
-        /* [MOBILE OVERLAY] - 针对 Safari dvh 优化 */
-        .overlay-bg { 
-            position: fixed; 
-            inset: 0; /* 强制覆盖 top/bottom/left/right: 0 */
-            z-index: 9000; 
-            opacity: 0; 
-            visibility: hidden; 
-            transition: 0.3s; 
-            background: rgba(255,255,255,0.3); 
-            backdrop-filter: blur(40px); 
-            -webkit-backdrop-filter: blur(40px); 
-            height: 100dvh; /* 动态视口高度，解决 Safari 地址栏收缩黑边问题 */
-        }
-
-        .overlay-content { 
-            position: fixed; 
-            inset: 0; 
-            z-index: 9001; 
-            display: flex; 
-            flex-direction: column; 
-            padding: 80px var(--grid-gap) calc(env(safe-area-inset-bottom) + 20px) var(--grid-gap); 
-            opacity: 0; 
-            visibility: hidden; 
-            mix-blend-mode: difference; 
-            overflow-y: auto; 
-            overflow-x: hidden; 
-            width: 100%;
-            height: 100dvh; /* 同样使用 dvh */
-            scrollbar-width: none; 
-            -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch;
-        }
-        .overlay-content::-webkit-scrollbar { display: none; }
+        .overlay-bg { position: fixed; inset: 0; z-index: 9000; opacity: 0; visibility: hidden; transition: 0.3s; background: rgba(255,255,255,0.3); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); height: 100dvh; }
+        .overlay-content { position: fixed; inset: 0; z-index: 9001; display: flex; flex-direction: column; padding: 80px var(--grid-gap) calc(env(safe-area-inset-bottom) + 20px) var(--grid-gap); opacity: 0; visibility: hidden; mix-blend-mode: difference; overflow-y: auto; overflow-x: hidden; width: 100%; height: 100dvh; scrollbar-width: none; }
         .overlay-bg.active, .overlay-content.active { opacity: 1; visibility: visible; }
         
         .mobile-link-group { margin: 15px 0; border-bottom: 0.5px solid rgba(255,255,255,0.2); padding-bottom: 10px; width: 100%; }
-        .mobile-main-link { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            font-size: 18px; 
-            font-weight: 700; 
-            color: #fff; 
-            text-decoration: none; 
-            width: 100%;
-        }
+        .mobile-main-link { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700; color: #fff; text-decoration: none; width: 100%; }
         .mobile-sub-links { display: none; flex-direction: column; padding: 10px 0 0 0; }
         .mobile-sub-links.active { display: flex; }
-        .mobile-sub-links a { 
-            margin: 12px 0; 
-            font-size: 18px; 
-            color: #fff; 
-            text-decoration: none; 
-        }
-        .plus-icon { 
-            font-size: 20px; 
-            font-weight: 300; 
-            transition: transform 0.3s; 
-            margin-left: 10px;
-            flex-shrink: 0; 
-        }
+        .mobile-sub-links a { margin: 12px 0; font-size: 18px; color: #fff; text-decoration: none; }
+        .plus-icon { font-size: 20px; transition: transform 0.3s; margin-left: 10px; flex-shrink: 0; }
         .expanded .plus-icon { transform: rotate(45deg); }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;" ondragstart="return false;">
 
     <div class="nav-wrapper">
         <nav class="nav">
@@ -253,14 +159,22 @@
             <div class="indicators" id="ui-dots"></div>
         </section>
         <aside class="right-panel">
-            <div class="right-inner" id="ui-right-root"></div>
-            <div id="ui-right-media"></div>
+            <div class="right-inner" id="ui-right-root">
+                <!-- 这里由脚本根据顺序填充文字和媒体 -->
+            </div>
         </aside>
     </main>
 
     <script>
+        /**
+         * 1. 核心配置区域
+         */
         const CONFIG = {
-            site: { pageTitle: "ApparEdit™ - NeuePoor", favicon: "https://cdn.neuepoor.com/Favicon.webp" },
+            site: { 
+                pageTitle: "ApparEdit™ - NeuePoor", 
+                favicon: "https://cdn.neuepoor.com/apparedit/template/favicon.webp",
+                placeholder: "https://via.placeholder.com/800x1000?text=Asset+Unavailable" 
+            },
             navbar: {
                 logo: { text: "PoorLegalGuy®", fontSize: "18px", link: "https://home.neuepoor.com/" },
                 links: [
@@ -287,26 +201,71 @@
                 ]
             },
             gallery: {
+                // 左侧滚动媒体库
                 leftMedia: [
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/001.webp' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/002.webp' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/003.jpg' }
+                    { url: 'https://cdn.neuepoor.com/apparedit/template/001.webp' },
+                    { url: 'https://cdn.neuepoor.com/apparedit/template/002.webp' },
+                    { url: 'https://cdn.neuepoor.com/apparedit/template/003.jpg' }
                 ],
-                rightContent: {
-                    title: "2603001™",
-                    titleSize: "18px",
-                    bodyTextSize: "10px",
-                    description: "已针对 Safari 优化：使用 dvh 单位定义菜单高度，确保在地址栏动态收缩时依然能保持全屏模糊覆盖，解决了上下黑边或未对齐的问题。"
-                },
-                rightMedia: [
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
-                    { type: 'image', url: 'https://cdn.neuepoor.com/apparedit/template/006.jpg' }
+                // 右侧栏混合流水线 (按数组顺序排列渲染)
+                rightSidebar: [
+                    { 
+                        type: 'text', 
+                        title: "2603001™", 
+                        titleSize: "18px",
+                        bodyTextSize: "10px",
+                        description: "已修复：透明 PNG 的背景穿透问题。加载完成后会自动移除容器背景色。配置项已优化，site.pageTitle 自动同步至 DOM，rightSidebar 支持流水线式混排。"
+                    },
+                    { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
+                    { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
+                    { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/006.jpg' }
                 ]
             }
         };
 
-        function renderUI() {
+        /**
+         * 2. 引擎逻辑
+         */
+        function handleMediaLoad(el) {
+            el.classList.add('loaded');
+            const container = el.closest('.media-container');
+            if (container) container.classList.add('is-loaded');
+        }
+
+        function renderMedia(url) {
+            const ext = url.split('.').pop().toLowerCase();
+            const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
+            const isIframe = url.includes('youtube.com') || url.includes('vimeo.com') || ext === 'html';
+
+            let mediaHtml = '';
+            if (isVideo) {
+                mediaHtml = `<video class="media-item" src="${url}" muted loop playsinline autoplay preload="metadata" oncanplay="handleMediaLoad(this)"></video>`;
+            } else if (isIframe) {
+                mediaHtml = `<div class="ratio-box"><iframe src="${url}" allowfullscreen onload="handleMediaLoad(this.nextElementSibling)"></iframe><div class="media-item"></div></div>`;
+            } else {
+                mediaHtml = `<img class="media-item" src="${url}" loading="lazy" decoding="async" draggable="false" 
+                              onload="handleMediaLoad(this)" 
+                              onerror="this.src='${CONFIG.site.placeholder}'; handleMediaLoad(this)">`;
+            }
+
+            return `
+                <div class="media-container">
+                    <div class="media-shield"></div>
+                    ${mediaHtml}
+                </div>
+            `;
+        }
+
+        /**
+         * 3. 初始化渲染
+         */
+        function init() {
+            // Site Meta
+            document.title = CONFIG.site.pageTitle;
+            const favicon = document.getElementById('ui-favicon');
+            if(favicon) favicon.href = CONFIG.site.favicon;
+
+            // Navbar
             const logoArea = document.getElementById('ui-nav-logo');
             logoArea.innerHTML = `<a href="${CONFIG.navbar.logo.link}" style="font-size: ${CONFIG.navbar.logo.fontSize}">${CONFIG.navbar.logo.text}</a>`;
             
@@ -339,16 +298,25 @@
                 </div>
             `).join('');
 
-            const leftTrack = document.getElementById('ui-left-track');
-            leftTrack.innerHTML = CONFIG.gallery.leftMedia.map(m => `
-                <div class="gallery-item"><img src="${m.url}" loading="lazy" decoding="async"></div>
+            // Left Gallery
+            document.getElementById('ui-left-track').innerHTML = CONFIG.gallery.leftMedia.map(m => `
+                <div class="gallery-item">${renderMedia(m.url)}</div>
             `).join('');
 
-            const rightRoot = document.getElementById('ui-right-root');
-            rightRoot.innerHTML = `<div class="rich-text"><h1 style="font-size: ${CONFIG.gallery.rightContent.titleSize}">${CONFIG.gallery.rightContent.title}</h1><p style="font-size: ${CONFIG.gallery.rightContent.bodyTextSize}">${CONFIG.gallery.rightContent.description}</p></div>`;
-
-            const rightMediaArea = document.getElementById('ui-right-media');
-            rightMediaArea.innerHTML = CONFIG.gallery.rightMedia.map(m => `<div class="media-box"><img src="${m.url}" loading="lazy" decoding="async"></div>`).join('');
+            // Right Sidebar Pipeline (统一顺序排列渲染)
+            const rightContainer = document.getElementById('ui-right-root');
+            rightContainer.innerHTML = CONFIG.gallery.rightSidebar.map(item => {
+                if (item.type === 'text') {
+                    return `
+                        <div class="rich-text">
+                            <h1 style="font-size: ${item.titleSize}">${item.title}</h1>
+                            <p style="font-size: ${item.bodyTextSize}">${item.description}</p>
+                        </div>`;
+                } else if (item.type === 'media') {
+                    return `<div class="media-box">${renderMedia(item.url)}</div>`;
+                }
+                return '';
+            }).join('');
 
             renderDots(CONFIG.gallery.leftMedia.length);
             bindEvents();
@@ -361,18 +329,16 @@
             sub.classList.toggle('active');
         }
 
-        function renderDots(count) {
-            const dotsContainer = document.getElementById('ui-dots');
-            if (dotsContainer) dotsContainer.innerHTML = Array.from({ length: count }).map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('');
+        function renderDots(n) {
+            const container = document.getElementById('ui-dots');
+            if (container) container.innerHTML = Array.from({length:n}).map((_,i)=>`<div class="dot ${i===0?'active':''}"></div>`).join('');
         }
 
         function bindEvents() {
             const track = document.getElementById('ui-left-track');
-            if (!track) return;
             track.addEventListener('scroll', () => {
-                const index = Math.round(track.scrollLeft / track.offsetWidth);
-                const dots = document.querySelectorAll('.dot');
-                dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+                const idx = Math.round(track.scrollLeft / track.offsetWidth);
+                document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
             }, { passive: true });
         }
 
@@ -380,30 +346,20 @@
             const bg = document.getElementById('mobileMenuBg');
             const content = document.getElementById('mobileMenuContent');
             const btn = document.getElementById('menuBtn');
-            const isActive = bg.classList.toggle('active');
-            
+            bg.classList.toggle('active');
             content.classList.toggle('active');
             btn.classList.toggle('active');
-            
-            // 锁定 body 滚动
-            if (isActive) {
-                document.body.style.overflow = 'hidden';
-                // 针对旧版 iOS 的额外保障
-                document.addEventListener('touchmove', preventDefaultScroll, { passive: false });
-            } else {
-                document.body.style.overflow = '';
-                document.removeEventListener('touchmove', preventDefaultScroll);
-            }
+            const isActive = bg.classList.contains('active');
+            document.body.style.overflow = isActive ? 'hidden' : '';
+            if (isActive) document.addEventListener('touchmove', preventDefaultScroll, { passive: false });
+            else document.removeEventListener('touchmove', preventDefaultScroll);
         }
 
         function preventDefaultScroll(e) {
-            // 如果是在菜单内部滚动则允许，背景则拦截
-            if (!e.target.closest('.overlay-content')) {
-                e.preventDefault();
-            }
+            if (!e.target.closest('.overlay-content')) e.preventDefault();
         }
 
-        window.onload = renderUI;
+        window.onload = init;
     </script>
 </body>
 </html>
