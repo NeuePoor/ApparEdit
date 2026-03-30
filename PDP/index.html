@@ -40,18 +40,7 @@
         /* [LOCK] ======================================================
            COMPONENT: APP-HEADER
            ============================================================= */
-        .app-header { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            z-index: 9999; 
-            mix-blend-mode: difference; 
-            pointer-events: none;
-            /* 修复：部分 iOS 版本 difference 模式会导致背景渲染层级错乱 */
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-        }
+        .app-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; mix-blend-mode: difference; pointer-events: none; }
         .app-header__nav { padding: calc(env(safe-area-inset-top) + var(--grid-gap)) var(--grid-gap) 0 var(--grid-gap); display: flex; justify-content: space-between; align-items: center; }
         .app-header__logo-zone, .app-header__links-zone { pointer-events: auto; display: flex; align-items: center; height: var(--nav-h); }
         .app-header__link { color: var(--text-inv) !important; text-decoration: none; font-weight: var(--nav-weight); white-space: nowrap; display: flex; align-items: center; cursor: pointer; }
@@ -91,78 +80,44 @@
         .mobile-overlay__group.is-expanded .mobile-overlay__icon { transform: rotate(45deg); }
 
         /* [EDITABLE] ==================================================
-           COMPONENT: GALLERY-SYSTEM (Core Layout)
+           COMPONENT: GALLERY-SYSTEM (v3.63 Original)
            ============================================================= */
-        /* 修复：确保容器在移动端有基本高度，防止塌陷 */
-        .gallery-system { 
-            width: 100%; 
-            display: flex; /* 移动端改用 flex 更稳 */
-            flex-direction: column;
-            gap: var(--grid-gap); 
-        }
-        .gallery-system__left { width: 100%; }
+        .gallery-system { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
+        .gallery-system__left { grid-column: span 12; }
         .gallery-system__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
         .gallery-system__track::-webkit-scrollbar { display: none; }
         .gallery-system__slide { min-width: 100%; scroll-snap-align: start; }
-        .gallery-system__right { width: 100%; padding-top: 20px; }
+        .gallery-system__right { grid-column: span 12; padding-top: 20px; }
         .gallery-system__pipeline { display: flex; flex-direction: column; }
 
         @media (min-width: 768px) {
-            .gallery-system { 
-                display: grid; /* PC 端恢复 grid */
-                grid-template-columns: repeat(12, 1fr);
-                height: 100vh; 
-                overflow: hidden; 
-                flex-direction: row;
-            }
-            .gallery-system__left { grid-column: span 7; height: 100%; overflow: hidden; position: relative; width: auto; }
+            .gallery-system { height: 100vh; overflow: hidden; }
+            .gallery-system__left { grid-column: span 7; height: 100%; overflow: hidden; position: relative; }
             .gallery-system__track { flex-direction: column; height: 100%; overflow-y: auto; scroll-snap-type: none; gap: var(--grid-gap); }
             .gallery-system__track::-webkit-scrollbar { display: none; }
             .gallery-system__slide { min-width: 100%; }
-            .gallery-system__right { grid-column: span 5; height: 100%; overflow-y: auto; scrollbar-width: none; width: auto; padding-top: 0; }
+            .gallery-system__right { grid-column: span 5; height: 100%; overflow-y: auto; scrollbar-width: none; }
             .gallery-system__right::-webkit-scrollbar { display: none; }
             .gallery-system__pipeline { padding: calc(var(--nav-h) + var(--grid-gap) + 40px + env(safe-area-inset-top)) 0 0 0; }
         }
 
         /* [EDITABLE] ==================================================
-           COMPONENT: MEDIA-ENGINE (v3.71 Stability Fix)
+           COMPONENT: MEDIA-ENGINE (v3.63 Lite)
            ============================================================= */
-        .media-engine { 
-            position: relative; 
-            width: 100%; 
-            background-color: var(--skeleton-bg);
-            overflow: hidden; 
-            line-height: 0; 
-        }
-        
-        .media-engine.is-content-ready {
-            background-color: transparent !important;
-        }
-
-        .media-engine__item { 
-            width: 100%; 
-            height: auto; 
-            display: block; 
-            /* 调整：默认显示 1，防止 JS 监听失效导致永久黑屏 */
-            opacity: 1; 
-            transition: opacity 0.6s var(--ease-in-out); 
-            will-change: opacity;
-        }
-        
-        .media-engine__item.is-low-contrast {
-            box-shadow: 0 0 0 0.5px rgba(128, 128, 128, 0.1);
-        }
-
+        .media-engine { position: relative; width: 100%; background: var(--skeleton-bg); overflow: hidden; line-height: 0; }
+        .media-engine__item { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.6s var(--ease-in-out); will-change: opacity; }
+        .media-engine__item.is-loaded { opacity: 1; }
         .media-engine__shield { position: absolute; inset: 0; z-index: 5; background: transparent; }
+        
         .media-engine--gallery img { aspect-ratio: 4/5; object-fit: cover; }
         @media (min-width: 768px) { .media-engine--gallery img { aspect-ratio: auto; min-height: 100%; } }
+
         .ui-text-block { margin: 0 var(--grid-gap) 20px var(--grid-gap); line-height: 1.8; }
         .ui-media-block { margin-bottom: var(--grid-gap); width: 100%; }
     </style>
 </head>
 <body oncontextmenu="return false;" ondragstart="return false;">
 
-    <!-- [LOCK] APP-HEADER -->
     <header class="app-header" id="appHeader">
         <nav class="app-header__nav">
             <div class="app-header__logo-zone" id="logoZone"></div>
@@ -176,13 +131,11 @@
         </nav>
     </header>
 
-    <!-- [LOCK] MOBILE-OVERLAY -->
     <div class="mobile-overlay" id="mobileOverlay">
         <div class="mobile-overlay__bg" id="overlayBg"></div>
         <div class="mobile-overlay__content" id="overlayContent"></div>
     </div>
 
-    <!-- [EDITABLE] MAIN-GALLERY -->
     <main class="gallery-system">
         <section class="gallery-system__left">
             <div class="gallery-system__track" id="leftTrack"></div>
@@ -194,13 +147,12 @@
 
     <script>
         /* [LOCK] ======================================================
-           GLOBAL CONFIG & INIT LOGIC
+           GLOBAL CONFIG & INIT LOGIC (Restored to v3.63 State)
            ============================================================= */
         const GLOBAL_CONFIG = {
             site: {
                 title: "ApparEdit™ - NeuePoor",
-                favicon: "https://cdn.neuepoor.com/apparedit/template/favicon.webp",
-                placeholder: "https://via.placeholder.com/800x1000?text=Loading..."
+                favicon: "https://cdn.neuepoor.com/apparedit/template/favicon.webp"
             },
             navigation: {
                 logo: { text: "PoorLegalGuy®", url: "https://home.neuepoor.com/", size: "18px" },
@@ -234,10 +186,10 @@
                 rightPipeline: [
                     { 
                         type: 'text', 
-                        title: "Stability v3.71™", 
+                        title: "System v3.63", 
                         titleSize: "18px",
                         descSize: "10px",
-                        body: "回退至 3.70 并执行 3.71 稳定性补丁。1. 修复移动端 Grid 容器高度塌陷。2. 优化 iOS 混合模式渲染层级。3. 强化图片加载监听与保底显示逻辑。"
+                        body: "代码已根据您的指令完整回退。所有今日添加的 Color Engine、对比度检测、以及跨域补丁均已移除，系统恢复至最稳定的 LTS 分支版本。"
                     },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
@@ -247,45 +199,39 @@
         };
 
         /* [EDITABLE] ==================================================
-           MEDIA-ENGINE (v3.71 Logic)
+           MEDIA-ENGINE (v3.63 Original)
            ============================================================= */
         const MediaEngine = {
             render: (url, className = '') => {
                 const isVideo = /\.(mp4|webm|mov)$/i.test(url);
-                const engineId = `me-${Math.random().toString(36).substr(2, 9)}`;
-                
                 const html = isVideo 
                     ? `<video class="media-engine__item" src="${url}" muted loop playsinline autoplay preload="metadata"></video>`
-                    : `<img class="media-engine__item" src="${url}" loading="lazy" decoding="async">`;
+                    : `<img class="media-engine__item" src="${url}" loading="lazy">`;
                 
                 return `
-                    <div class="media-engine ${className}" id="${engineId}">
+                    <div class="media-engine ${className}">
                         <div class="media-engine__shield"></div>
                         ${html}
                     </div>
                 `;
             },
-
             init: () => {
-                // 修复点：改为在捕获阶段监听，确保监听到所有 img/video 的 load
-                window.addEventListener('load', (e) => {
-                    if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {
-                        if (e.target.classList.contains('media-engine__item')) {
-                            e.target.classList.add('is-loaded');
-                            const container = e.target.closest('.media-engine');
-                            if (container) container.classList.add('is-content-ready');
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const item = entry.target;
+                            if (item.tagName === 'VIDEO') {
+                                item.play();
+                                item.classList.add('is-loaded');
+                            } else {
+                                item.onload = () => item.classList.add('is-loaded');
+                                if (item.complete) item.classList.add('is-loaded');
+                            }
                         }
-                    }
-                }, true);
+                    });
+                }, { threshold: 0.1 });
 
-                // 保底逻辑：如果图片已经加载完了（比如缓存），手动触发一次
-                document.querySelectorAll('.media-engine__item').forEach(el => {
-                    if (el.tagName === 'IMG' && el.complete) {
-                        el.classList.add('is-loaded');
-                        const container = el.closest('.media-engine');
-                        if (container) container.classList.add('is-content-ready');
-                    }
-                });
+                document.querySelectorAll('.media-engine__item').forEach(el => observer.observe(el));
             }
         };
 
