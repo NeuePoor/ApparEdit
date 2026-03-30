@@ -101,18 +101,21 @@
             .gallery-system__pipeline { padding: calc(var(--nav-h) + var(--grid-gap) + 40px + env(safe-area-inset-top)) 0 0 0; }
         }
 
-        /* [RESTRUCTURED v3.76] =========================================
-           COMPONENT: MEDIA-ENGINE (Alpha Fix & Contrast Intelligence)
+        /* [RESTRUCTURED v3.75] =========================================
+           COMPONENT: MEDIA-ENGINE (Alpha Fix & LQIP Optimize)
            ============================================================= */
         .media-engine { 
             position: relative; 
             width: 100%; 
+            /* 1. 占位方案：注入 --main-color 或回退至 skeleton-bg */
             background-color: var(--main-color, var(--skeleton-bg));
             overflow: hidden; 
             line-height: 0; 
+            /* 3. 动画同步：背景色切换时长设为 0.4s */
             transition: background-color 0.4s var(--ease-in-out);
         }
         
+        /* 核心修复：加载完成后强制抽离背景色，确保透明 PNG 不透出底色 */
         .media-engine.is-content-ready {
             background-color: transparent !important;
         }
@@ -122,15 +125,10 @@
             height: auto; 
             display: block; 
             opacity: 0; 
+            /* 3. 动画同步：渐现时长同步为 0.4s */
             transition: opacity 0.4s var(--ease-in-out); 
             will-change: opacity;
         }
-        
-        /* 核心修复：当对比度不足时，添加极细微的边界感，防止撞色 */
-        .media-engine__item.is-low-contrast {
-            box-shadow: 0 0 0 0.5px rgba(128, 128, 128, 0.1);
-        }
-
         .media-engine__item.is-loaded { 
             opacity: 1; 
         }
@@ -216,10 +214,10 @@
                 rightPipeline: [
                     { 
                         type: 'text', 
-                        title: "MediaEngine v3.77™", 
+                        title: "MediaEngine v3.75™", 
                         titleSize: "18px",
                         descSize: "10px",
-                        body: "紧急修复 CORS 跨域安全死锁与移动端渲染稳定性。1. 强制小写 anonymous 跨域声明。2. Try-Catch 像素保护，防止 Canvas 污染报错卡死渲染脚本。3. 异步逻辑解耦，确保图层加载优先权。"
+                        body: "根据“第一性原则”完成重构：1. 引入状态机监听，加载完成后同步释放背景色（background-color: transparent），完美适配透明 PNG。2. 异步 Canvas 1x1 采样模拟 Cloudflare LQIP 占位感。3. 0.4s 动效对焦过渡，严禁 Reflow。"
                     },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
@@ -228,60 +226,36 @@
             }
         };
 
-        /* [RESTRUCTURED v3.77] MediaEngine: Emergency Fix for Mobile White-Screen */
+        /* [RESTRUCTURED v3.75] MediaEngine: Async 1x1 Extraction & State Machine */
         const MediaEngine = {
-            getPanelLuminance: () => {
-                const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-panel').trim();
-                // 增加对 rgb 格式的判断，移动端常返回 rgb(255, 255, 255)
-                if (bg.includes('255') || bg === '#fff' || bg === 'white') return 255;
-                if (bg.includes('0') || bg === '#000' || bg === 'black') return 0;
-                return 255;
-            },
-
-            processContrast: (r, g, b, item) => {
-                const itemLuminance = 0.299 * r + 0.587 * g + 0.114 * b;
-                const panelLuminance = MediaEngine.getPanelLuminance();
-                const delta = Math.abs(itemLuminance - panelLuminance);
-
-                const task = () => {
-                    if (delta < 30) {
-                        item.classList.add('is-low-contrast');
-                    }
-                };
-
-                if ('requestIdleCallback' in window) {
-                    window.requestIdleCallback(task);
-                } else {
-                    setTimeout(task, 10);
-                }
-            },
-
-            // 修复点：增加极其严格的 Try-Catch 和跨域处理，防止卡死
-            extractMainColor: (url, container, item) => {
+            // 基于指令 2: 1x1 像素采样方案
+            extractMainColor: async (url, container) => {
                 if (!url || /\.(mp4|webm|mov)$/i.test(url)) return;
 
-                const img = new Image();
-                img.crossOrigin = "anonymous"; // 必须小写
-                img.src = url;
+                try {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    // 模拟 Cloudflare Workers 接口请求 1x1 缩略图
+                    // 实际应用可替换为 `${url}?width=1&height=1`
+                    img.src = url;
 
-                img.onload = () => {
-                    try {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d', { willReadFrequently: true }); // 优化像素读取性能
-                        canvas.width = 1;
-                        canvas.height = 1;
-                        ctx.drawImage(img, 0, 0, 1, 1);
-                        const data = ctx.getImageData(0, 0, 1, 1).data;
-                        const [r, g, b] = data;
-                        
-                        container.style.setProperty('--main-color', `rgb(${r}, ${g}, ${b})`);
-                        MediaEngine.processContrast(r, g, b, item);
-                    } catch (e) {
-                        // 如果因 CORS 失败，至少能通过 CSS 降级逻辑，不会卡死 JS 渲染
-                        console.warn("Color extraction failed due to CORS or Canvas error.");
-                    }
-                };
-                img.onerror = () => { /* 静默失败，不阻塞 */ };
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { alpha: false }); // 优化性能，不处理透明度
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    ctx.drawImage(img, 0, 0, 1, 1);
+                    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+                    
+                    // 变量注入
+                    container.style.setProperty('--main-color', `rgb(${r}, ${g}, ${b})`);
+                } catch (e) {
+                    // 视觉降级：取色失败回退到 var(--skeleton-bg)
+                }
             },
 
             render: (url, className = '') => {
@@ -292,13 +266,14 @@
                     ? `<video class="media-engine__item" src="${url}" muted loop playsinline autoplay preload="metadata"></video>`
                     : `<img class="media-engine__item" src="${url}" loading="lazy" decoding="async">`;
                 
-                // 修复点：将取色逻辑移出渲染主线，确保即使失败也能看到图
+                // 性能准则：取色逻辑全部异步处理，不得阻塞滑动帧率
                 if (!isVideo) {
-                    setTimeout(() => {
-                        const container = document.getElementById(engineId);
-                        const item = container?.querySelector('.media-engine__item');
-                        if (container && item) MediaEngine.extractMainColor(url, container, item);
-                    }, 100); 
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            const container = document.getElementById(engineId);
+                            if (container) MediaEngine.extractMainColor(url, container);
+                        }, 50);
+                    });
                 }
 
                 return `
@@ -310,12 +285,16 @@
             },
 
             init: () => {
-                // 修正点：load 事件在捕获阶段监听，确保早于其他逻辑执行
-                document.addEventListener('load', (e) => {
-                    if (e.target && e.target.classList && e.target.classList.contains('media-engine__item')) {
+                // 基于指令 1: 背景自动化释放逻辑
+                document.body.addEventListener('load', (e) => {
+                    if (e.target.classList.contains('media-engine__item')) {
                         const item = e.target;
                         const container = item.closest('.media-engine');
+                        
+                        // 动画同步：触发 .is-loaded
                         item.classList.add('is-loaded');
+                        
+                        // 状态机监听：同步添加 .is-content-ready 类以抽离背景
                         if (container) {
                             container.classList.add('is-content-ready');
                         }
