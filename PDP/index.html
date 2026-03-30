@@ -28,11 +28,8 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-touch-callout: none; }
         
-        html, body { background: var(--bg-panel); width: 100%; }
-        body { font-family: var(--f-fallback); color: var(--text); overflow-x: hidden; min-height: 100dvh; }
-
-        /* 锁定背景：解决 iOS 滚动穿透 */
-        .lock-scroll { overflow: hidden !important; height: 100% !important; position: fixed !important; width: 100% !important; }
+        html, body { background: var(--bg-panel); width: 100%; height: 100%; }
+        body { font-family: var(--f-fallback); color: var(--text); overflow-x: hidden; }
 
         /* =============================================================
            [NAVBAR]
@@ -76,6 +73,8 @@
            [LAYOUT]
            ============================================================= */
         .main { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
+        .main.is-hidden { display: none !important; } /* 菜单开启时彻底隐藏主界面，防止穿透 */
+
         @media (min-width: 768px) {
             .main { height: 100vh; overflow: hidden; }
             .left-panel { grid-column: span 7; height: 100%; overflow: hidden; position: relative; }
@@ -97,27 +96,32 @@
         .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; }
 
         /* =============================================================
-           [OVERLAY MODAL]
+           [OVERLAY MODAL - ROOT LEVEL]
            ============================================================= */
+        .overlay-wrapper {
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            display: none;
+            background: var(--bg-panel); /* 同步底层背景色 */
+        }
+        .overlay-wrapper.active { display: block; }
+
         .overlay-bg { 
-            position: fixed; top: -20vh; left: 0; width: 100vw; height: 140vh; z-index: 9000; 
-            opacity: 0; visibility: hidden; transition: 0.4s var(--ease); 
+            position: absolute; top: -10vh; left: 0; width: 100vw; height: 120vh;
             background: rgba(255, 255, 255, 0.4); 
             backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
         }
         .overlay-content { 
-            position: fixed; inset: 0; z-index: 9001; 
+            position: absolute; inset: 0; 
             display: flex; flex-direction: column; 
             padding: calc(80px + env(safe-area-inset-top)) var(--grid-gap) calc(env(safe-area-inset-bottom) + 40px) var(--grid-gap); 
-            opacity: 0; visibility: hidden; 
-            mix-blend-mode: difference; /* 保持与导航栏一致的反色逻辑 */
+            mix-blend-mode: difference; 
             overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
         }
-        .overlay-bg.active, .overlay-content.active { opacity: 1; visibility: visible; }
-        
-        /* 响应式断点：在大屏下强制关闭手机菜单 UI */
+
         @media (min-width: 768px) {
-            .overlay-bg, .overlay-content { display: none !important; }
+            .overlay-wrapper { display: none !important; }
         }
 
         .mobile-link-group { margin: 15px 0; border-bottom: 0.5px solid rgba(255,255,255,0.2); padding-bottom: 12px; width: 100%; }
@@ -143,10 +147,13 @@
         </nav>
     </div>
 
-    <div class="overlay-bg" id="mobileMenuBg" onclick="toggleMenu()"></div>
-    <div class="overlay-content" id="mobileMenuContent"></div>
+    <!-- 将 Overlay 整合到一个独立 Wrapper 中 -->
+    <div class="overlay-wrapper" id="menuWrapper">
+        <div class="overlay-bg" onclick="toggleMenu()"></div>
+        <div class="overlay-content" id="mobileMenuContent"></div>
+    </div>
 
-    <main class="main">
+    <main class="main" id="mainContent">
         <section class="left-panel">
             <div class="gallery-track" id="ui-left-track"></div>
         </section>
@@ -199,7 +206,7 @@
                         title: "2603001™", 
                         titleSize: "18px",
                         bodyTextSize: "10px",
-                        description: "已修复：v3.65 恢复了模糊透明样式与 mix-blend-mode。解决了 PC 端拉伸时的重叠问题。菜单开启时背景完全锁定，状态栏视觉效果已根据 iOS 26 环境优化。"
+                        description: "v3.66 测试版：采用了“根级互斥”方案。开启菜单时，Gallery 内容会彻底隐藏，由 Overlay 接管视口。这能 100% 解决背景断层问题，因为此时没有背景。"
                     },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
@@ -224,32 +231,27 @@
         }
 
         function toggleMenu() {
-            const bg = document.getElementById('mobileMenuBg');
-            const content = document.getElementById('mobileMenuContent');
+            const wrapper = document.getElementById('menuWrapper');
+            const main = document.getElementById('mainContent');
             const btn = document.getElementById('menuBtn');
             const meta = document.getElementById('theme-meta');
-            const html = document.documentElement;
             const body = document.body;
 
-            const isOpen = bg.classList.toggle('active');
-            content.classList.toggle('active');
+            const isOpen = wrapper.classList.toggle('active');
+            main.classList.toggle('is-hidden', isOpen);
             btn.classList.toggle('active');
 
-            // 动态 Theme Color，适应白色模糊背景下的电量图标
+            // 同步状态栏
             meta.setAttribute('content', isOpen ? "#efefef" : "#ffffff");
 
             if (isOpen) {
-                const scrollY = window.scrollY;
-                body.dataset.scrollY = scrollY;
-                body.style.top = `-${scrollY}px`;
-                html.classList.add('lock-scroll');
-                body.classList.add('lock-scroll');
+                // 记录当前滚动位置
+                body.dataset.scrollY = window.scrollY;
+                window.scrollTo(0, 0);
             } else {
+                // 恢复之前的滚动位置
                 const scrollY = parseInt(body.dataset.scrollY || '0');
-                html.classList.remove('lock-scroll');
-                body.classList.remove('lock-scroll');
-                body.style.top = '';
-                window.scrollTo(0, scrollY);
+                setTimeout(() => window.scrollTo(0, scrollY), 0);
             }
         }
 
