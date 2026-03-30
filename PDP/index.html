@@ -8,91 +8,79 @@
 
     <style>
         /* =============================================================
-           [DESIGN SYSTEM TOKENS - v1.1.5] [LOCK]
+           [DESIGN SYSTEM TOKENS - v1.1.9] [LOCK]
            ============================================================= 
         */
         :root {
-            /* 颜色系统 */
             --bg-panel: #fff; 
             --text: #000; 
             --skeleton-bg: #f0f0f0; 
             --nav-diff-color: #ffffff; 
-
-            /* 布局系统 */
+            --nav-active-color: #ffffff; 
             --nav-h: 32px; 
             --grid-gap: 4px; 
-            
-            /* 字体系统 */
             --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
             --nav-weight: 700;
             --nav-font-size: 18px;
-
-            /* 动效系统 */
             --ease: cubic-bezier(0.23, 1, 0.32, 1); 
             --transition-slow: 0.6s var(--ease);
             --transition-fast: 0.3s ease;
+            
+            /* v1.1.9 线宽标准化 */
+            --icon-stroke: 1.5px;
         }
 
-        /* 350px 窄屏适配 */
-        @media (max-width: 350px) {
-            :root { --nav-font-size: 14px; }
-        }
-
-        @media (prefers-color-scheme: dark) { 
-            :root { --bg-panel: #000; --text: #fff; --skeleton-bg: #1a1a1a; } 
-        }
+        @media (max-width: 350px) { :root { --nav-font-size: 14px; } }
+        @media (prefers-color-scheme: dark) { :root { --bg-panel: #000; --text: #fff; --skeleton-bg: #1a1a1a; } }
         
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            -webkit-touch-callout: none; 
-            scrollbar-width: none; 
-        }
-
-        ::-webkit-scrollbar {
-            display: none;
-            width: 0 !important;
-            height: 0 !important;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-touch-callout: none; scrollbar-width: none; }
+        ::-webkit-scrollbar { display: none; width: 0 !important; height: 0 !important; }
 
         body { 
-            font-family: var(--f-fallback); 
-            color: var(--text); 
-            background: var(--bg-panel); 
-            min-height: 100dvh; 
-            overflow-x: hidden; 
-            -webkit-font-smoothing: antialiased; 
+            font-family: var(--f-fallback); color: var(--text); background: var(--bg-panel); 
+            min-height: 100dvh; overflow-x: hidden; -webkit-font-smoothing: antialiased; 
         }
-
-        /* 滚动消除补丁 */
-        body.menu-open { touch-action: none; overflow: hidden; }
+        body.menu-open { 
+            touch-action: none; 
+            overflow: hidden; 
+            --nav-active-color: #000000; 
+        }
 
         /* =============================================================
            [SECTION: HEAD] [LOCK]
            ============================================================= 
         */
-        .nav-wrapper { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; mix-blend-mode: difference; pointer-events: none; }
+        .nav-wrapper { 
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9999; 
+            mix-blend-mode: difference; pointer-events: none; 
+            transition: mix-blend-mode 0.3s var(--ease); 
+        }
+        .nav-wrapper.no-blend { mix-blend-mode: normal; }
+
         .nav { padding: var(--grid-gap) var(--grid-gap) 0 var(--grid-gap); display: flex; justify-content: space-between; align-items: center; }
         .nav-logo-zone, .nav-links-zone { pointer-events: auto; display: flex; align-items: center; height: var(--nav-h); }
         
-        .nav a, .sub-nav-bar a { 
-            color: var(--nav-diff-color) !important; 
-            text-decoration: none; 
-            font-weight: var(--nav-weight); 
-            font-size: var(--nav-font-size); 
-            display: flex; 
-            align-items: center; 
-            white-space: nowrap; 
-            font-family: var(--f-fallback); 
+        .nav a, .sub-nav-bar a, .mobile-link-group a { 
+            color: var(--nav-active-color) !important; 
+            text-decoration: none; font-weight: var(--nav-weight); 
+            font-size: var(--nav-font-size); display: flex; align-items: center; white-space: nowrap; 
+            -webkit-tap-highlight-color: transparent;
+            transition: color 0.3s var(--ease);
         }
         
         .sub-nav-bar { position: absolute; top: 100%; left: 0; display: none; flex-direction: column; pointer-events: auto; width: fit-content; }
         .nav-links-pc > div:hover .sub-nav-bar { display: flex; }
         .nav-links-pc { display: none; }
 
-        .menu-btn { background: none; border: none; cursor: pointer; width: 24px; height: var(--nav-h); position: relative; display: flex; align-items: center; justify-content: flex-end; pointer-events: auto; }
-        .menu-btn span { display: block; width: 24px; height: 1.5px; background: #fff; position: absolute; transition: all 0.4s var(--ease); }
+        /* v1.1.9 汉堡包重构 */
+        .menu-btn { background: none; border: none; cursor: pointer; width: 24px; height: var(--nav-h); position: relative; display: flex; align-items: center; justify-content: flex-end; pointer-events: auto; -webkit-tap-highlight-color: transparent; }
+        .menu-btn span { 
+            display: block; width: 24px; height: var(--icon-stroke); 
+            background: var(--nav-active-color); 
+            position: absolute; border-radius: 10px;
+            transition: all 0.4s var(--ease), background 0.3s; 
+            will-change: transform;
+        }
         .line-1 { transform: translateY(-4px); } .line-2 { transform: translateY(4px); }
         .menu-btn.active .line-1 { transform: translateY(0) rotate(45deg); }
         .menu-btn.active .line-2 { transform: translateY(0) rotate(-45deg); }
@@ -100,32 +88,46 @@
         /* iOS 26 质感 Overlay */
         .overlay-bg { 
             position: fixed; inset: 0; z-index: 9000; opacity: 0; visibility: hidden; 
-            transition: 0.4s var(--ease); 
-            background: rgba(255,255,255,0.25); 
-            backdrop-filter: blur(25px) saturate(180%); 
-            -webkit-backdrop-filter: blur(25px) saturate(180%); 
-            height: 100dvh; 
-            will-change: opacity;
+            transition: 0.4s var(--ease); background: rgba(255,255,255,0.25); 
+            backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); 
+            height: 100dvh; will-change: opacity;
         }
         
         .overlay-content { 
             position: fixed; inset: 0; z-index: 9001; display: flex; flex-direction: column; 
             padding: 80px var(--grid-gap) calc(env(safe-area-inset-bottom) + 20px) var(--grid-gap); 
             opacity: 0; visibility: hidden; 
-            mix-blend-mode: difference; 
-            overflow-y: auto; overflow-x: hidden; 
-            width: 100%; height: 100dvh; 
-            will-change: transform, opacity;
+            overflow-y: auto; overflow-x: hidden; width: 100%; height: 100dvh; 
+            transform: scale(1.05) translateY(-10px); transition: 0.5s var(--ease); will-change: transform, opacity;
         }
-        .overlay-bg.active, .overlay-content.active { opacity: 1; visibility: visible; }
+        .overlay-bg.active { opacity: 1; visibility: visible; }
+        .overlay-content.active { opacity: 1; visibility: visible; transform: scale(1) translateY(0); }
         
-        .mobile-link-group { margin: 15px 0; border-bottom: 0.5px solid rgba(255,255,255,0.2); padding-bottom: 10px; width: 100%; }
-        .mobile-main-link { display: flex; justify-content: space-between; align-items: center; font-size: var(--nav-font-size); font-weight: 700; color: #fff; text-decoration: none; width: 100%; font-family: var(--f-fallback); }
+        .mobile-link-group { margin: 15px 0; border-bottom: 0.5px solid rgba(0,0,0,0.1); padding-bottom: 10px; width: 100%; }
+        .mobile-main-link { display: flex; justify-content: space-between; align-items: center; font-size: var(--nav-font-size); font-weight: 700; color: var(--nav-active-color); width: 100%; }
+        
+        /* v1.1.9 Plus 图标重塑 */
+        .plus-icon { 
+            position: relative; width: 18px; height: 18px; 
+            transition: transform 0.4s var(--ease); 
+            margin-left: 10px; flex-shrink: 0;
+            will-change: transform;
+        }
+        .plus-icon::before, .plus-icon::after {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            background: var(--nav-active-color); border-radius: 10px;
+            transition: background 0.3s;
+        }
+        /* 横线 */
+        .plus-icon::before { width: 14px; height: var(--icon-stroke); transform: translate(-50%, -50%); }
+        /* 竖线 */
+        .plus-icon::after { width: var(--icon-stroke); height: 14px; transform: translate(-50%, -50%); }
+        
+        .expanded .plus-icon { transform: rotate(45deg); }
+
         .mobile-sub-links { display: none; flex-direction: column; padding: 10px 0 0 0; }
         .mobile-sub-links.active { display: flex; }
-        .mobile-sub-links a { margin: 12px 0; font-size: var(--nav-font-size); color: #fff; text-decoration: none; font-family: var(--f-fallback); }
-        .plus-icon { font-size: 20px; transition: transform 0.3s; margin-left: 10px; flex-shrink: 0; }
-        .expanded .plus-icon { transform: rotate(45deg); }
+        .mobile-sub-links a { margin: 12px 0; font-size: var(--nav-font-size); color: var(--nav-active-color); }
 
         @media (min-width: 768px) {
             .nav-links-pc { display: flex; gap: 30px; height: 100%; position: relative; }
@@ -135,44 +137,35 @@
             .nav a:hover::before { top: calc(var(--grid-gap) + (var(--nav-h)/2)); transform: translateY(-50%); }
             .sub-nav-bar a:hover::before { top: auto; transform: translateY(-5%); height: 1.2em; }
             .nav a:hover, .sub-nav-bar a:hover { color: #000 !important; }
-            .sub-nav-bar a { height: var(--nav-h); padding: 0; }
         }
 
         /* =============================================================
-           [SECTION: GALLERY] [LOCK - 回溯 1.1.3 逻辑]
+           [SECTION: GALLERY] [LOCK - v1.1.7 物理隔离方案]
            ============================================================= 
         */
         @keyframes skeleton-pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        
         .main { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
-        
-        .media-container { 
-            position: relative; width: 100%; background: var(--skeleton-bg); overflow: hidden; line-height: 0; 
-            transition: background 0.3s ease; 
-        }
+        .media-container { position: relative; width: 100%; background: var(--skeleton-bg); overflow: hidden; line-height: 0; transition: background 0.3s ease; }
         .media-container:not(.is-loaded) { animation: skeleton-pulse 1.5s infinite ease-in-out; }
         .media-container.is-loaded { background: transparent; animation: none; }
-
         .fl-cdn-shield { position: absolute; inset: 0; z-index: 10; background: transparent; cursor: default; }
-        @media (max-width: 767px) { .fl-cdn-shield { pointer-events: none; } }
 
         .media-item { width: 100%; height: auto; display: block; transition: opacity 0.6s var(--ease); opacity: 0; }
         .media-item.loaded { opacity: 1; }
         
-        audio.media-item { height: 40px; padding: 5px; opacity: 1; }
-
-        /* Left Panel 逻辑回溯 */
         .left-panel { grid-column: span 7; position: relative; height: 100dvh; overflow: hidden; }
-        .gallery-track { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .gallery-item { min-width: 100%; scroll-snap-align: start; }
-        .indicators { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20; pointer-events: none; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.3s; }
-        .dot.active { background: #fff; transform: scale(1.3); }
         
-        /* Right Panel 逻辑回溯 */
+        .gallery-track { display: flex; width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        .gallery-item { min-width: 100%; scroll-snap-align: start; }
+        
+        .indicators { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20; pointer-events: none; }
+        
+        .dot { width: 6px; height: 6px; border-radius: 6px; background: rgba(255,255,255,0.3); transition: width 0.4s var(--ease), background 0.3s; }
+        .dot.active { width: 18px; background: #fff; }
+        
         .right-panel { grid-column: span 5; height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .right-inner { padding: calc(var(--nav-h) + var(--grid-gap) + 40px) 0 0 0; display: flex; flex-direction: column; }
-        .rich-text { line-height: 1.8; margin: 0 var(--grid-gap) 20px var(--grid-gap); font-family: var(--f-fallback); }
+        .rich-text { line-height: 1.8; margin: 0 var(--grid-gap) 20px var(--grid-gap); }
         .rich-text h1 { margin-bottom: 20px; font-weight: 700; }
         .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; }
 
@@ -181,25 +174,19 @@
             .left-panel, .right-panel { width: 100%; height: auto; }
             .gallery-item img { aspect-ratio: 4 / 5; object-fit: cover; }
             .right-inner { padding-top: 60px; }
+            .fl-cdn-shield { pointer-events: none; }
         }
         @media (min-width: 768px) {
             .main { height: 100dvh; overflow: hidden; }
-            .gallery-track { 
-                flex-direction: column; 
-                height: 100%; 
-                overflow-y: auto; 
-                overflow-x: hidden; 
-                scroll-snap-type: none; 
-                gap: var(--grid-gap); 
-            }
+            .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-snap-type: none; gap: var(--grid-gap); }
             .gallery-item img { height: auto; min-height: 100%; aspect-ratio: auto; }
-            .indicators { display: none; }
+            .indicators { display: none !important; }
         }
     </style>
 </head>
 <body oncontextmenu="return false;" ondragstart="return false;">
 
-    <div class="nav-wrapper">
+    <div class="nav-wrapper" id="ui-nav-wrapper">
         <nav class="nav">
             <div class="nav-logo-zone" id="ui-nav-logo"></div>
             <div class="nav-links-zone">
@@ -219,20 +206,14 @@
             <div class="gallery-track" id="ui-left-track"></div>
             <div class="indicators" id="ui-dots"></div>
         </section>
-
         <aside class="right-panel">
             <div class="right-inner" id="ui-right-root"></div>
         </aside>
     </main>
 
     <script>
-        /**
-         * =============================================================
-         * [CONFIG AREA] [LOCK]
-         * =============================================================
-         */
         const CONFIG = {
-            version: "1.1.5", 
+            version: "1.1.9", 
             site: {
                 pageTitle: "ApparEdit™ - NeuePoor",
                 favicon: "https://cdn.neuepoor.com/apparedit/template/favicon.webp",
@@ -241,24 +222,12 @@
             navbar: {
                 logo: { text: "PoorLegalGuy®", link: "https://home.neuepoor.com/" },
                 links: [
-                    { 
-                        name: "Category", 
-                        url: "#", 
-                        children: [
-                            { name: "Apparedit", url: "https://apparedit.neuepoor.com/" },
-                            { name: "inspo", url: "#" },
-                            { name: "Tone", url: "#" },
-                            { name: "Raw", url: "#" },
-                            { name: "Lab", url: "#" }
-                        ]
-                    },
-                    { 
-                        name: "ApparEdit", 
-                        url: "#", 
-                        children: [
-                            { name: "Archive", url: "#" }
-                        ]
-                    }
+                    { name: "Category", url: "#", children: [
+                        { name: "Apparedit", url: "https://apparedit.neuepoor.com/" },
+                        { name: "inspo", url: "#" }, { name: "Tone", url: "#" },
+                        { name: "Raw", url: "#" }, { name: "Lab", url: "#" }
+                    ]},
+                    { name: "ApparEdit", url: "#", children: [{ name: "Archive", url: "#" }]}
                 ]
             },
             gallery: {
@@ -268,13 +237,7 @@
                     { url: 'https://cdn.neuepoor.com/apparedit/template/003.jpg' }
                 ],
                 rightSidebar: [
-                    { 
-                        type: 'text', 
-                        title: "2603001™", 
-                        titleSize: "18px",
-                        bodyTextSize: "10px",
-                        description: "DS v1.1.5 逻辑回溯版。已完全找回 v1.1.3 中丢失的 Gallery Panel 核心布局逻辑、Skeleton 脉冲动画及 Rich-text 样式约束，并集成了 v1.1.4 的 iOS 26 质感 Overlay。"
-                    },
+                    { type: 'text', title: "2603001™", titleSize: "18px", bodyTextSize: "10px", description: "DS v1.1.9 图标绘图化重构。实现了基于伪元素的 Plus 图标，并统一了 --icon-stroke 线宽标准。同步支持 v1.1.8 的三态隔离颜色联动。" },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/006.jpg' }
@@ -282,133 +245,77 @@
             }
         };
 
-        /**
-         * =============================================================
-         * [DESIGN SYSTEM ENGINE - v1.1.5] [LOCK]
-         * =============================================================
-         */
         const DS = {
-            scrollTicking: false, 
-            observer: null,      
-
+            scrollTicking: false, observer: null,      
             init() {
-                this.initIntersectionObserver();
-                this.renderMeta();
-                this.renderNav();
-                this.renderGallery();
-                this.renderPipeline();
-                this.bindEvents();
+                this.initIntersectionObserver(); this.renderMeta(); this.renderNav();
+                this.renderGallery(); this.renderPipeline(); this.bindEvents();
             },
-
             initIntersectionObserver() {
                 this.observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         const video = entry.target;
-                        if (entry.isIntersecting) {
-                            video.play().catch(() => {});
-                        } else {
-                            video.pause();
-                        }
+                        if (entry.isIntersecting) video.play().catch(() => {}); else video.pause();
                     });
                 }, { threshold: 0.1 });
             },
-
             renderMeta() {
                 document.title = CONFIG.site.pageTitle;
-                const uiTitleEl = document.getElementById('ui-title');
-                if(uiTitleEl) uiTitleEl.textContent = CONFIG.site.pageTitle;
                 const favicon = document.getElementById('ui-favicon');
                 if(favicon) favicon.href = CONFIG.site.favicon;
             },
-
             renderNav() {
                 document.getElementById('ui-nav-logo').innerHTML = `<a href="${CONFIG.navbar.logo.link}">${CONFIG.navbar.logo.text}</a>`;
                 const pcArea = document.getElementById('ui-nav-pc');
                 pcArea.innerHTML = CONFIG.navbar.links.map(link => `
-                    <div class="${link.children ? 'has-sub' : ''}">
-                        <a href="${link.url}">${link.name}</a>
-                        ${link.children ? `
-                            <div class="sub-nav-bar">
-                                ${link.children.map(child => `<a href="${child.url}">${child.name}</a>`).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `).join('');
-                
+                    <div class="${link.children ? 'has-sub' : ''}"><a href="${link.url}">${link.name}</a>
+                        ${link.children ? `<div class="sub-nav-bar">${link.children.map(child => `<a href="${child.url}">${child.name}</a>`).join('')}</div>` : ''}
+                    </div>`).join('');
                 const mobileArea = document.getElementById('mobileMenuContent');
                 mobileArea.innerHTML = CONFIG.navbar.links.map((link, idx) => `
                     <div class="mobile-link-group" id="m-group-${idx}">
-                        <a href="${link.children ? 'javascript:void(0)' : link.url}" 
-                           class="mobile-main-link" 
-                           onclick="${link.children ? `DS.toggleSubMenu(${idx})` : 'toggleMenu()'}">
-                            <span>${link.name}</span>
-                            ${link.children ? `<span class="plus-icon">+</span>` : ''}
+                        <a href="${link.children ? 'javascript:void(0)' : link.url}" class="mobile-main-link" onclick="${link.children ? `DS.toggleSubMenu(${idx})` : 'toggleMenu()'}">
+                            <span>${link.name}</span>${link.children ? `<span class="plus-icon"></span>` : ''}
                         </a>
-                        ${link.children ? `
-                            <div class="mobile-sub-links" id="m-sub-${idx}">
-                                ${link.children.map(child => `<a href="${child.url}" onclick="toggleMenu()">${child.name}</a>`).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `).join('');
+                        ${link.children ? `<div class="mobile-sub-links" id="m-sub-${idx}">${link.children.map(child => `<a href="${child.url}" onclick="toggleMenu()">${child.name}</a>`).join('')}</div>` : ''}
+                    </div>`).join('');
             },
-
             renderGallery() {
-                document.getElementById('ui-left-track').innerHTML = CONFIG.gallery.leftMedia.map(m => `
-                    <div class="gallery-item">${this.compMedia(m.url)}</div>
-                `).join('');
+                document.getElementById('ui-left-track').innerHTML = CONFIG.gallery.leftMedia.map(m => `<div class="gallery-item">${this.compMedia(m.url)}</div>`).join('');
                 const dots = document.getElementById('ui-dots');
                 if (dots) dots.innerHTML = CONFIG.gallery.leftMedia.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
             },
-
             renderPipeline() {
                 const pipe = document.getElementById('ui-right-root');
-                pipe.innerHTML = CONFIG.gallery.rightSidebar.map(item => {
-                    if (item.type === 'text') return this.compText(item);
-                    if (item.type === 'media') return `<div class="media-box">${this.compMedia(item.url)}</div>`;
-                    return '';
-                }).join('');
+                pipe.innerHTML = CONFIG.gallery.rightSidebar.map(item => item.type === 'text' ? this.compText(item) : `<div class="media-box">${this.compMedia(item.url)}</div>`).join('');
             },
-
             compMedia(url) {
                 const ext = url.split('.').pop().toLowerCase();
                 const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
                 const isAudio = ['mp3', 'wav', 'ogg'].includes(ext);
-                
-                let mediaHtml = '';
-                if (isVideo) {
-                    mediaHtml = `<video class="media-item js-fl-cdn-video" src="${url}" muted loop playsinline webkit-playsinline preload="metadata" x5-video-player-type="h5" oncanplay="DS.handleLoad(this)"></video>`;
-                } else if (isAudio) {
-                    mediaHtml = `<audio class="media-item" src="${url}" controls preload="metadata" oncanplay="DS.handleLoad(this)"></audio>`;
-                } else {
-                    mediaHtml = `<img class="media-item" src="${url}" loading="lazy" decoding="async" draggable="false" onload="DS.handleLoad(this)" onerror="this.src='${CONFIG.site.placeholder}';DS.handleLoad(this)">`;
-                }
+                let mediaHtml = isVideo ? `<video class="media-item js-fl-cdn-video" src="${url}" muted loop playsinline preload="metadata" oncanplay="DS.handleLoad(this)"></video>` :
+                    (isAudio ? `<audio class="media-item" src="${url}" controls oncanplay="DS.handleLoad(this)"></audio>` :
+                    `<img class="media-item" src="${url}" loading="lazy" onload="DS.handleLoad(this)" onerror="this.src='${CONFIG.site.placeholder}';DS.handleLoad(this)">`);
                 return `<div class="media-container"><div class="fl-cdn-shield"></div>${mediaHtml}</div>`;
             },
-
             compText(data) {
                 return `<div class="rich-text" style="font-family: var(--f-fallback)">
-                    <h1 style="font-size: ${data.titleSize}; font-family: var(--f-fallback)">${data.title}</h1>
-                    <p style="font-size: ${data.bodyTextSize}; font-family: var(--f-fallback)">${data.description}</p>
+                    <h1 style="font-size: ${data.titleSize}">${data.title}</h1><p style="font-size: ${data.bodyTextSize}">${data.description}</p>
                 </div>`;
             },
-
             handleLoad(el) {
                 el.classList.add('loaded');
                 el.closest('.media-container').classList.add('is-loaded');
-                if (el.tagName === 'VIDEO' && this.observer) {
-                    this.observer.observe(el);
-                }
+                if (el.tagName === 'VIDEO' && this.observer) this.observer.observe(el);
             },
-
             toggleSubMenu(idx) {
                 document.getElementById(`m-group-${idx}`).classList.toggle('expanded');
                 document.getElementById(`m-sub-${idx}`).classList.toggle('active');
             },
-
             bindEvents() {
                 const track = document.getElementById('ui-left-track');
                 track.addEventListener('scroll', () => {
+                    if (window.innerWidth >= 768) return;
                     if (!this.scrollTicking) {
                         requestAnimationFrame(() => {
                             const idx = Math.round(track.scrollLeft / track.offsetWidth);
@@ -420,9 +327,7 @@
                 }, { passive: true });
 
                 window.addEventListener('resize', () => {
-                    if (window.innerWidth >= 768 && document.body.classList.contains('menu-open')) {
-                        toggleMenu();
-                    }
+                    if (window.innerWidth >= 768 && document.body.classList.contains('menu-open')) toggleMenu();
                 }, { passive: true });
             }
         };
@@ -431,13 +336,28 @@
             const bg = document.getElementById('mobileMenuBg');
             const content = document.getElementById('mobileMenuContent');
             const btn = document.getElementById('menuBtn');
+            const navWrapper = document.getElementById('ui-nav-wrapper');
             const body = document.body;
             
-            const isActive = bg.classList.toggle('active');
-            content.classList.toggle('active');
-            btn.classList.toggle('active');
+            const isOpening = !body.classList.contains('menu-open');
             
-            body.classList.toggle('menu-open', isActive);
+            if (isOpening) {
+                body.classList.add('menu-open');
+                navWrapper.classList.add('no-blend');
+                bg.classList.add('active');
+                content.classList.add('active');
+                btn.classList.add('active');
+            } else {
+                bg.classList.remove('active');
+                content.classList.remove('active');
+                btn.classList.remove('active');
+                body.classList.remove('menu-open');
+                setTimeout(() => {
+                    if (!body.classList.contains('menu-open')) {
+                        navWrapper.classList.remove('no-blend');
+                    }
+                }, 400);
+            }
         }
 
         window.onload = () => DS.init();
