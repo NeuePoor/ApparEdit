@@ -3,186 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title id="ui-title">Loading...</title>
+    <meta name="theme-color" content="#ffffff" id="theme-meta">
+    <title>Loading...</title>
     <link rel="icon" id="ui-favicon" type="image/webp" href="">
 
     <style>
-        /* =============================================================
-           [GLOBAL VARIABLES]
+        /* [LOCK] ======================================================
+           DESIGN TOKENS & SYSTEM BASE
            ============================================================= */
         :root {
-            --bg-panel: #fff; 
-            --text: #000; 
-            --nav-h: 32px; 
-            --grid-gap: 4px; 
-            --f-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --nav-diff-color: #ffffff; 
-            --ease: cubic-bezier(0.23, 1, 0.32, 1); 
+            --bg-panel: #fff;
+            --text-main: #000;
+            --text-inv: #fff;
+            --nav-h: 32px;
+            --grid-gap: 4px;
+            --f-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --ease-in-out: cubic-bezier(0.23, 1, 0.32, 1);
+            --skeleton-bg: #f0f0f0;
             --nav-weight: 700;
-            --skeleton-bg: #f0f0f0; 
+            --overlay-bg: rgba(255, 255, 255, 0.85); 
+            --overlay-blur: 30px;
         }
-        @media (prefers-color-scheme: dark) { 
-            :root { --bg-panel: #000; --text: #fff; --skeleton-bg: #1a1a1a; } 
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-panel: #000;
+                --text-main: #fff;
+                --skeleton-bg: #1a1a1a;
+                --overlay-bg: rgba(0, 0, 0, 0.85);
+            }
         }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-touch-callout: none; }
-        
-        body { 
-            font-family: var(--f-fallback); 
-            color: var(--text); 
-            overflow-x: hidden; 
-            background: var(--bg-panel); 
-            min-height: 100dvh; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { width: 100%; background: var(--bg-panel); color: var(--text-main); font-family: var(--f-sans); }
+        body { min-height: 100dvh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body.is-locked { position: fixed; width: 100%; overflow: hidden; }
 
-        /* =============================================================
-           [NAVBAR]
+        /* [LOCK] ======================================================
+           COMPONENT: APP-HEADER
            ============================================================= */
-        .nav-wrapper { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; mix-blend-mode: difference; pointer-events: none; }
-        .nav { padding: var(--grid-gap) var(--grid-gap) 0 var(--grid-gap); display: flex; justify-content: space-between; align-items: center; }
-        .nav-logo-zone, .nav-links-zone { pointer-events: auto; display: flex; align-items: center; height: var(--nav-h); }
-        .nav a, .sub-nav-bar a { color: var(--nav-diff-color) !important; text-decoration: none; font-weight: var(--nav-weight); display: flex; align-items: center; white-space: nowrap; }
-        
-        .sub-nav-bar { position: absolute; top: 100%; left: 0; display: none; flex-direction: column; pointer-events: auto; width: fit-content; }
-        .nav-links-pc > div:hover .sub-nav-bar { display: flex; }
-        .nav-links-pc { display: none; } 
-
-        .menu-btn { background: none; border: none; cursor: pointer; width: 24px; height: var(--nav-h); position: relative; display: flex; align-items: center; justify-content: flex-end; }
-        .menu-btn span { display: block; width: 24px; height: 1.5px; background: #fff; position: absolute; transition: all 0.4s var(--ease); }
-        .line-1 { transform: translateY(-4px); } .line-2 { transform: translateY(4px); }
-        .menu-btn.active .line-1 { transform: translateY(0) rotate(45deg); }
-        .menu-btn.active .line-2 { transform: translateY(0) rotate(-45deg); }
+        .app-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; mix-blend-mode: difference; pointer-events: none; }
+        .app-header__nav { padding: calc(env(safe-area-inset-top) + var(--grid-gap)) var(--grid-gap) 0 var(--grid-gap); display: flex; justify-content: space-between; align-items: center; }
+        .app-header__logo-zone, .app-header__links-zone { pointer-events: auto; display: flex; align-items: center; height: var(--nav-h); }
+        .app-header__link { color: var(--text-inv) !important; text-decoration: none; font-weight: var(--nav-weight); white-space: nowrap; display: flex; align-items: center; cursor: pointer; }
+        .app-header__pc-links { display: none; }
+        .app-header__dropdown { position: absolute; top: 100%; left: 0; display: none; flex-direction: column; width: max-content; }
+        .app-header__item--has-sub:hover .app-header__dropdown { display: flex; }
+        .app-header__menu-btn { background: none; border: none; cursor: pointer; width: 24px; height: var(--nav-h); position: relative; display: flex; align-items: center; justify-content: flex-end; }
+        .app-header__menu-btn span { display: block; width: 24px; height: 1.5px; background: #fff; position: absolute; transition: all 0.4s var(--ease-in-out); }
+        .app-header__menu-btn--line1 { transform: translateY(-4px); }
+        .app-header__menu-btn--line2 { transform: translateY(4px); }
+        .app-header__menu-btn.is-active .app-header__menu-btn--line1 { transform: translateY(0) rotate(45deg); }
+        .app-header__menu-btn.is-active .app-header__menu-btn--line2 { transform: translateY(0) rotate(-45deg); }
 
         @media (min-width: 768px) {
-            .nav-links-pc { display: flex; gap: 30px; height: 100%; position: relative; }
-            .menu-btn { display: none; }
-            .has-sub { height: 100%; display: flex; align-items: center; position: relative; }
-            .nav a:hover::before, .sub-nav-bar a:hover::before { content: ''; position: fixed; left: 0; right: 0; height: 1.2em; background: #fff; z-index: -1; pointer-events: none; }
-            .nav a:hover::before { top: calc(var(--grid-gap) + (var(--nav-h)/2)); transform: translateY(-50%); }
-            .sub-nav-bar a:hover::before { top: auto; transform: translateY(-5%); height: 1.2em; }
-            .nav a:hover, .sub-nav-bar a:hover { color: #000 !important; }
-            .sub-nav-bar a { height: var(--nav-h); padding: 0; }
+            .app-header__pc-links { display: flex; gap: 30px; height: 100%; }
+            .app-header__menu-btn { display: none !important; }
+            .app-header__item--has-sub { position: relative; height: 100%; display: flex; align-items: center; }
+            .app-header__link:hover::before { content: ''; position: fixed; left: 0; right: 0; height: 1.2em; background: #fff; z-index: -1; pointer-events: none; top: calc(var(--grid-gap) + (var(--nav-h)/2) + env(safe-area-inset-top)); transform: translateY(-50%); }
+            .app-header__dropdown .app-header__link:hover::before { top: auto; transform: translateY(-5%); }
+            .app-header__link:hover { color: #000 !important; }
         }
 
-        /* =============================================================
-           [MEDIA ENGINE]
+        /* [LOCK] ======================================================
+           COMPONENT: MOBILE-OVERLAY
            ============================================================= */
-        .media-container { 
+        .mobile-overlay { position: fixed; inset: 0; z-index: 9000; visibility: hidden; opacity: 0; transition: 0.4s var(--ease-in-out); }
+        .mobile-overlay.is-active { visibility: visible; opacity: 1; }
+        .mobile-overlay__bg { position: absolute; top: -20vh; left: 0; width: 100vw; height: 140vh; background: var(--overlay-bg); backdrop-filter: blur(var(--overlay-blur)); -webkit-backdrop-filter: blur(var(--overlay-blur)); }
+        .mobile-overlay__content { position: absolute; inset: 0; mix-blend-mode: difference; padding: calc(80px + env(safe-area-inset-top)) var(--grid-gap) calc(40px + env(safe-area-inset-bottom)); overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .mobile-overlay__content::-webkit-scrollbar { display: none; }
+        .mobile-overlay__group { border-bottom: 0.5px solid rgba(255,255,255,0.15); margin-bottom: 15px; padding-bottom: 12px; }
+        .mobile-overlay__main-link { display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: 700; color: #fff; text-decoration: none; padding: 5px 0; }
+        .mobile-overlay__sub-links { display: none; flex-direction: column; padding-top: 10px; }
+        .mobile-overlay__sub-links.is-open { display: flex; }
+        .mobile-overlay__sub-links a { margin: 8px 0; font-size: 18px; color: #fff; text-decoration: none; opacity: 0.8; }
+        .mobile-overlay__icon { font-size: 22px; transition: transform 0.3s var(--ease-in-out); display: inline-block; }
+        .mobile-overlay__group.is-expanded .mobile-overlay__icon { transform: rotate(45deg); }
+
+        /* [EDITABLE] ==================================================
+           COMPONENT: GALLERY-SYSTEM (Core Layout)
+           ============================================================= */
+        .gallery-system { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
+        .gallery-system__left { grid-column: span 12; }
+        .gallery-system__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+        .gallery-system__track::-webkit-scrollbar { display: none; }
+        .gallery-system__slide { min-width: 100%; scroll-snap-align: start; }
+        .gallery-system__right { grid-column: span 12; padding-top: 20px; }
+        .gallery-system__pipeline { display: flex; flex-direction: column; }
+
+        @media (min-width: 768px) {
+            .gallery-system { height: 100vh; overflow: hidden; }
+            .gallery-system__left { grid-column: span 7; height: 100%; overflow: hidden; position: relative; }
+            .gallery-system__track { flex-direction: column; height: 100%; overflow-y: auto; scroll-snap-type: none; gap: var(--grid-gap); }
+            .gallery-system__track::-webkit-scrollbar { display: none; }
+            .gallery-system__slide { min-width: 100%; }
+            .gallery-system__right { grid-column: span 5; height: 100%; overflow-y: auto; scrollbar-width: none; }
+            .gallery-system__right::-webkit-scrollbar { display: none; }
+            .gallery-system__pipeline { padding: calc(var(--nav-h) + var(--grid-gap) + 40px + env(safe-area-inset-top)) 0 0 0; }
+        }
+
+        /* [RESTRUCTURED v3.76] =========================================
+           COMPONENT: MEDIA-ENGINE (Alpha Fix & Contrast Intelligence)
+           ============================================================= */
+        .media-engine { 
             position: relative; 
             width: 100%; 
-            background: var(--skeleton-bg); 
+            background-color: var(--main-color, var(--skeleton-bg));
             overflow: hidden; 
             line-height: 0; 
-            transition: background 0.3s ease;
+            transition: background-color 0.4s var(--ease-in-out);
         }
-        .media-container.is-loaded { background: transparent; }
-
-        .media-shield { position: absolute; inset: 0; z-index: 5; background: transparent; cursor: default; }
-        .media-item { width: 100%; height: auto; display: block; transition: opacity 0.6s var(--ease); opacity: 0; }
-        .media-item.loaded { opacity: 1; }
         
-        .ratio-box { position: relative; width: 100%; aspect-ratio: 16 / 9; }
-        .ratio-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+        .media-engine.is-content-ready {
+            background-color: transparent !important;
+        }
 
-        /* =============================================================
-           [LAYOUT]
-           ============================================================= */
-        .main { width: 100%; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap); }
+        .media-engine__item { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            opacity: 0; 
+            transition: opacity 0.4s var(--ease-in-out); 
+            will-change: opacity;
+        }
         
-        @media (min-width: 768px) {
-            .main { height: 100vh; overflow: hidden; }
-            .left-panel { grid-column: span 7; height: 100%; overflow: hidden; position: relative; }
-            .right-panel { grid-column: span 5; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-            .indicators { display: none; }
+        /* 核心修复：当对比度不足时，添加极细微的边界感，防止撞色 */
+        .media-engine__item.is-low-contrast {
+            box-shadow: 0 0 0 0.5px rgba(128, 128, 128, 0.1);
         }
 
-        @media (max-width: 767px) { 
-            .left-panel { grid-column: span 12; position: relative; } 
-            .right-panel { grid-column: span 12; } 
-            .main { display: block; height: auto; } 
-            .indicators { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; pointer-events: none; }
+        .media-engine__item.is-loaded { 
+            opacity: 1; 
         }
 
-        .gallery-track { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .gallery-track::-webkit-scrollbar, .right-panel::-webkit-scrollbar { display: none; }
-
-        .gallery-item { min-width: 100%; scroll-snap-align: start; }
-        .gallery-item .media-container img { aspect-ratio: 4 / 5; object-fit: cover; }
-
-        @media (min-width: 768px) {
-            .gallery-track { flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-snap-type: none; gap: var(--grid-gap); }
-            .gallery-item .media-container img { height: auto; min-height: 100%; aspect-ratio: auto; }
-        }
-
-        .right-inner { padding: calc(var(--nav-h) + var(--grid-gap) + 40px) 0 0 0; display: flex; flex-direction: column; }
-        @media (max-width: 767px) { .right-inner { padding-top: 60px; } }
-        .rich-text { line-height: 1.8; margin: 0 var(--grid-gap) 20px var(--grid-gap); }
-        .rich-text h1 { margin-bottom: 20px; font-weight: 700; }
-        .media-box { width: 100%; margin-bottom: var(--grid-gap); line-height: 0; }
-
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: 0.3s; }
-        .dot.active { background: #fff; transform: scale(1.3); }
-
-        .overlay-bg { position: fixed; inset: 0; z-index: 9000; opacity: 0; visibility: hidden; transition: 0.3s; background: rgba(255,255,255,0.3); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); height: 100dvh; }
-        .overlay-content { position: fixed; inset: 0; z-index: 9001; display: flex; flex-direction: column; padding: 80px var(--grid-gap) calc(env(safe-area-inset-bottom) + 20px) var(--grid-gap); opacity: 0; visibility: hidden; mix-blend-mode: difference; overflow-y: auto; overflow-x: hidden; width: 100%; height: 100dvh; scrollbar-width: none; }
-        .overlay-bg.active, .overlay-content.active { opacity: 1; visibility: visible; }
-        
-        .mobile-link-group { margin: 15px 0; border-bottom: 0.5px solid rgba(255,255,255,0.2); padding-bottom: 10px; width: 100%; }
-        .mobile-main-link { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700; color: #fff; text-decoration: none; width: 100%; }
-        .mobile-sub-links { display: none; flex-direction: column; padding: 10px 0 0 0; }
-        .mobile-sub-links.active { display: flex; }
-        .mobile-sub-links a { margin: 12px 0; font-size: 18px; color: #fff; text-decoration: none; }
-        .plus-icon { font-size: 20px; transition: transform 0.3s; margin-left: 10px; flex-shrink: 0; }
-        .expanded .plus-icon { transform: rotate(45deg); }
+        .media-engine__shield { position: absolute; inset: 0; z-index: 5; background: transparent; }
+        .media-engine--gallery img { aspect-ratio: 4/5; object-fit: cover; }
+        @media (min-width: 768px) { .media-engine--gallery img { aspect-ratio: auto; min-height: 100%; } }
+        .ui-text-block { margin: 0 var(--grid-gap) 20px var(--grid-gap); line-height: 1.8; }
+        .ui-media-block { margin-bottom: var(--grid-gap); width: 100%; }
     </style>
 </head>
 <body oncontextmenu="return false;" ondragstart="return false;">
 
-    <div class="nav-wrapper">
-        <nav class="nav">
-            <div class="nav-logo-zone" id="ui-nav-logo"></div>
-            <div class="nav-links-zone">
-                <div class="nav-links-pc" id="ui-nav-pc"></div>
-                <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">
-                    <span class="line-1"></span><span class="line-2"></span>
+    <!-- [LOCK] APP-HEADER -->
+    <header class="app-header" id="appHeader">
+        <nav class="app-header__nav">
+            <div class="app-header__logo-zone" id="logoZone"></div>
+            <div class="app-header__links-zone">
+                <div class="app-header__pc-links" id="pcNavLinks"></div>
+                <button class="app-header__menu-btn" id="menuToggle" aria-label="Toggle Menu">
+                    <span class="app-header__menu-btn--line1"></span>
+                    <span class="app-header__menu-btn--line2"></span>
                 </button>
             </div>
         </nav>
+    </header>
+
+    <!-- [LOCK] MOBILE-OVERLAY -->
+    <div class="mobile-overlay" id="mobileOverlay">
+        <div class="mobile-overlay__bg" id="overlayBg"></div>
+        <div class="mobile-overlay__content" id="overlayContent"></div>
     </div>
 
-    <div class="overlay-bg" id="mobileMenuBg"></div>
-    <div class="overlay-content" id="mobileMenuContent"></div>
-
-    <main class="main">
-        <section class="left-panel">
-            <div class="gallery-track" id="ui-left-track"></div>
-            <div class="indicators" id="ui-dots"></div>
+    <!-- [EDITABLE] MAIN-GALLERY -->
+    <main class="gallery-system">
+        <section class="gallery-system__left">
+            <div class="gallery-system__track" id="leftTrack"></div>
         </section>
-        <aside class="right-panel">
-            <div class="right-inner" id="ui-right-root"></div>
+        <aside class="gallery-system__right">
+            <div class="gallery-system__pipeline" id="rightPipeline"></div>
         </aside>
     </main>
 
     <script>
-        /**
-         * 1. 核心配置区域
-         */
-        const CONFIG = {
-            site: { 
-                pageTitle: "ApparEdit™ - NeuePoor", 
+        /* [LOCK] ======================================================
+           GLOBAL CONFIG & INIT LOGIC
+           ============================================================= */
+        const GLOBAL_CONFIG = {
+            site: {
+                title: "ApparEdit™ - NeuePoor",
                 favicon: "https://cdn.neuepoor.com/apparedit/template/favicon.webp",
-                placeholder: "https://via.placeholder.com/800x1000?text=Asset+Unavailable" 
+                placeholder: "https://via.placeholder.com/800x1000?text=Loading..."
             },
-            navbar: {
-                logo: { text: "PoorLegalGuy®", fontSize: "18px", link: "https://home.neuepoor.com/" },
-                links: [
+            navigation: {
+                logo: { text: "PoorLegalGuy®", url: "https://home.neuepoor.com/", size: "18px" },
+                items: [
                     { 
                         name: "Category", 
                         url: "#", 
-                        fontSize: "18px",
                         children: [
                             { name: "Apparedit", url: "https://apparedit.neuepoor.com/" },
-                            { name: "inspo", url: "#" },
+                            { name: "Inspo", url: "#" },
                             { name: "Tone", url: "#" },
                             { name: "Raw", url: "#" },
                             { name: "Lab", url: "#" }
@@ -191,28 +201,25 @@
                     { 
                         name: "ApparEdit", 
                         url: "#", 
-                        fontSize: "18px",
                         children: [
                             { name: "Archive", url: "#" }
                         ]
                     }
                 ]
             },
-            gallery: {
-                // 左侧滚动媒体库
-                leftMedia: [
+            content: {
+                leftGallery: [
                     { url: 'https://cdn.neuepoor.com/apparedit/template/001.webp' },
                     { url: 'https://cdn.neuepoor.com/apparedit/template/002.webp' },
                     { url: 'https://cdn.neuepoor.com/apparedit/template/003.jpg' }
                 ],
-                // 右侧栏混合流水线 (按数组顺序排列渲染)
-                rightSidebar: [
+                rightPipeline: [
                     { 
                         type: 'text', 
-                        title: "2603001™", 
+                        title: "MediaEngine v3.76™", 
                         titleSize: "18px",
-                        bodyTextSize: "10px",
-                        description: "已修复：预览已重新打开。透明 PNG 背景穿透问题已解决。配置项已优化，site.pageTitle 自动同步至 DOM，rightSidebar 支持按顺序排列文字与媒体。"
+                        descSize: "10px",
+                        body: "智能对比度干预模块已上线。1. 亮度公式 L=0.299R+0.587G+0.114B 实时采样。2. 动态对比度阈值差 Delta < 30 自动触发 .is-low-contrast。3. 逻辑运行在 requestIdleCallback 中，确保极致滑动流畅度。"
                     },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/004.jpg' },
                     { type: 'media', url: 'https://cdn.neuepoor.com/apparedit/template/005.jpg' },
@@ -221,143 +228,185 @@
             }
         };
 
-        /**
-         * 2. 引擎逻辑
-         */
-        function handleMediaLoad(el) {
-            el.classList.add('loaded');
-            const container = el.closest('.media-container');
-            if (container) container.classList.add('is-loaded');
-        }
+        /* [RESTRUCTURED v3.76] MediaEngine: Contrast Intelligence & 1x1 Sampling */
+        const MediaEngine = {
+            // 获取当前页面背景的亮度（考虑暗色模式适配）
+            getPanelLuminance: () => {
+                const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-panel').trim();
+                if (bg === '#fff' || bg === 'white') return 255;
+                if (bg === '#000' || bg === 'black') return 0;
+                // 若为其他复杂颜色，回退至中性亮度
+                return 255;
+            },
 
-        function renderMedia(url) {
-            const ext = url.split('.').pop().toLowerCase();
-            const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
-            const isIframe = url.includes('youtube.com') || url.includes('vimeo.com') || ext === 'html';
+            // 核心逻辑：亮度计算与智能对比度干预
+            processContrast: (r, g, b, item) => {
+                const itemLuminance = 0.299 * r + 0.587 * g + 0.114 * b;
+                const panelLuminance = MediaEngine.getPanelLuminance();
+                const delta = Math.abs(itemLuminance - panelLuminance);
 
-            let mediaHtml = '';
-            if (isVideo) {
-                mediaHtml = `<video class="media-item" src="${url}" muted loop playsinline autoplay preload="metadata" oncanplay="handleMediaLoad(this)"></video>`;
-            } else if (isIframe) {
-                mediaHtml = `<div class="ratio-box"><iframe src="${url}" allowfullscreen onload="handleMediaLoad(this.nextElementSibling)"></iframe><div class="media-item"></div></div>`;
-            } else {
-                mediaHtml = `<img class="media-item" src="${url}" loading="lazy" decoding="async" draggable="false" 
-                              onload="handleMediaLoad(this)" 
-                              onerror="this.src='${CONFIG.site.placeholder}'; handleMediaLoad(this)">`;
-            }
+                // 性能约束：在空闲时间执行 DOM 更新，防止阻塞滑动
+                const task = () => {
+                    if (delta < 30) {
+                        item.classList.add('is-low-contrast');
+                    }
+                };
 
-            return `
-                <div class="media-container">
-                    <div class="media-shield"></div>
-                    ${mediaHtml}
-                </div>
-            `;
-        }
-
-        /**
-         * 3. 初始化渲染
-         */
-        function init() {
-            // Site Meta
-            document.title = CONFIG.site.pageTitle;
-            const favicon = document.getElementById('ui-favicon');
-            if(favicon) favicon.href = CONFIG.site.favicon;
-
-            // Navbar
-            const logoArea = document.getElementById('ui-nav-logo');
-            logoArea.innerHTML = `<a href="${CONFIG.navbar.logo.link}" style="font-size: ${CONFIG.navbar.logo.fontSize}">${CONFIG.navbar.logo.text}</a>`;
-            
-            const pcArea = document.getElementById('ui-nav-pc');
-            pcArea.innerHTML = CONFIG.navbar.links.map(link => `
-                <div class="${link.children ? 'has-sub' : ''}">
-                    <a href="${link.url}" style="font-size: ${link.fontSize}">${link.name}</a>
-                    ${link.children ? `
-                        <div class="sub-nav-bar">
-                            ${link.children.map(child => `<a href="${child.url}" style="font-size: ${link.fontSize}">${child.name}</a>`).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
-            
-            const mobileArea = document.getElementById('mobileMenuContent');
-            mobileArea.innerHTML = CONFIG.navbar.links.map((link, idx) => `
-                <div class="mobile-link-group" id="m-group-${idx}">
-                    <a href="${link.children ? 'javascript:void(0)' : link.url}" 
-                       class="mobile-main-link" 
-                       onclick="${link.children ? `toggleSubMenu(${idx})` : 'toggleMenu()'}">
-                        <span>${link.name}</span>
-                        ${link.children ? `<span class="plus-icon">+</span>` : ''}
-                    </a>
-                    ${link.children ? `
-                        <div class="mobile-sub-links" id="m-sub-${idx}">
-                            ${link.children.map(child => `<a href="${child.url}" onclick="toggleMenu()">${child.name}</a>`).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
-
-            // Left Gallery
-            document.getElementById('ui-left-track').innerHTML = CONFIG.gallery.leftMedia.map(m => `
-                <div class="gallery-item">${renderMedia(m.url)}</div>
-            `).join('');
-
-            // Right Sidebar Pipeline
-            const rightContainer = document.getElementById('ui-right-root');
-            rightContainer.innerHTML = CONFIG.gallery.rightSidebar.map(item => {
-                if (item.type === 'text') {
-                    return `
-                        <div class="rich-text">
-                            <h1 style="font-size: ${item.titleSize}">${item.title}</h1>
-                            <p style="font-size: ${item.bodyTextSize}">${item.description}</p>
-                        </div>`;
-                } else if (item.type === 'media') {
-                    return `<div class="media-box">${renderMedia(item.url)}</div>`;
+                if ('requestIdleCallback' in window) {
+                    window.requestIdleCallback(task);
+                } else {
+                    setTimeout(task, 1);
                 }
+            },
+
+            extractMainColor: async (url, container, item) => {
+                if (!url || /\.(mp4|webm|mov)$/i.test(url)) return;
+
+                try {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    img.src = url;
+
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { alpha: false });
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    ctx.drawImage(img, 0, 0, 1, 1);
+                    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+                    
+                    container.style.setProperty('--main-color', `rgb(${r}, ${g}, ${b})`);
+                    
+                    // 注入亮度检测逻辑
+                    MediaEngine.processContrast(r, g, b, item);
+                } catch (e) {
+                    // Fail gracefully
+                }
+            },
+
+            render: (url, className = '') => {
+                const isVideo = /\.(mp4|webm|mov)$/i.test(url);
+                const engineId = `me-${Math.random().toString(36).substr(2, 9)}`;
+                
+                const html = isVideo 
+                    ? `<video class="media-engine__item" src="${url}" muted loop playsinline autoplay preload="metadata"></video>`
+                    : `<img class="media-engine__item" src="${url}" loading="lazy" decoding="async">`;
+                
+                if (!isVideo) {
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            const container = document.getElementById(engineId);
+                            const item = container?.querySelector('.media-engine__item');
+                            if (container && item) MediaEngine.extractMainColor(url, container, item);
+                        }, 50);
+                    });
+                }
+
+                return `
+                    <div class="media-engine ${className}" id="${engineId}">
+                        <div class="media-engine__shield"></div>
+                        ${html}
+                    </div>
+                `;
+            },
+
+            init: () => {
+                document.body.addEventListener('load', (e) => {
+                    if (e.target.classList.contains('media-engine__item')) {
+                        const item = e.target;
+                        const container = item.closest('.media-engine');
+                        item.classList.add('is-loaded');
+                        if (container) {
+                            container.classList.add('is-content-ready');
+                        }
+                    }
+                }, true);
+            }
+        };
+
+        /* [LOCK] APP-HEADER Logic */
+        const AppHeader = {
+            init: () => {
+                const btn = document.getElementById('menuToggle');
+                const overlay = document.getElementById('mobileOverlay');
+                const bg = document.getElementById('overlayBg');
+                const toggle = () => {
+                    const isOpen = btn.classList.toggle('is-active');
+                    overlay.classList.toggle('is-active', isOpen);
+                    if (isOpen) {
+                        const scrollY = window.scrollY;
+                        document.body.style.top = `-${scrollY}px`;
+                        document.body.classList.add('is-locked');
+                    } else {
+                        const scrollY = parseInt(document.body.style.top || '0') * -1;
+                        document.body.classList.remove('is-locked');
+                        document.body.style.top = '';
+                        window.scrollTo(0, scrollY);
+                    }
+                };
+                btn.addEventListener('click', toggle);
+                bg.addEventListener('click', toggle);
+            }
+        };
+
+        /* [LOCK] Rendering Engine */
+        function renderUI() {
+            document.title = GLOBAL_CONFIG.site.title;
+            const fav = document.getElementById('ui-favicon');
+            if(fav) fav.href = GLOBAL_CONFIG.site.favicon;
+
+            document.getElementById('logoZone').innerHTML = `<a href="${GLOBAL_CONFIG.navigation.logo.url}" class="app-header__link" style="font-size: ${GLOBAL_CONFIG.navigation.logo.size}">${GLOBAL_CONFIG.navigation.logo.text}</a>`;
+
+            const pcNav = document.getElementById('pcNavLinks');
+            pcNav.innerHTML = GLOBAL_CONFIG.navigation.items.map(item => `
+                <div class="app-header__item ${item.children ? 'app-header__item--has-sub' : ''}">
+                    <a href="${item.url}" class="app-header__link">${item.name}</a>
+                    ${item.children ? `<div class="app-header__dropdown">${item.children.map(child => `<a href="${child.url}" class="app-header__link">${child.name}</a>`).join('')}</div>` : ''}
+                </div>
+            `).join('');
+
+            const mobileContent = document.getElementById('overlayContent');
+            mobileContent.innerHTML = GLOBAL_CONFIG.navigation.items.map((item, idx) => `
+                <div class="mobile-overlay__group" id="group-${idx}">
+                    <a href="${item.children ? 'javascript:void(0)' : item.url}" class="mobile-overlay__main-link" data-idx="${idx}">
+                        <span>${item.name}</span>
+                        ${item.children ? `<span class="mobile-overlay__icon">+</span>` : ''}
+                    </a>
+                    ${item.children ? `<div class="mobile-overlay__sub-links" id="sub-${idx}">${item.children.map(child => `<a href="${child.url}">${child.name}</a>`).join('')}</div>` : ''}
+                </div>
+            `).join('');
+
+            mobileContent.addEventListener('click', (e) => {
+                const link = e.target.closest('.mobile-overlay__main-link');
+                if (link && link.dataset.idx) {
+                    const idx = link.dataset.idx;
+                    const group = document.getElementById(`group-${idx}`);
+                    const sub = document.getElementById(`sub-${idx}`);
+                    if (sub) { group.classList.toggle('is-expanded'); sub.classList.toggle('is-open'); }
+                }
+            });
+
+            document.getElementById('leftTrack').innerHTML = GLOBAL_CONFIG.content.leftGallery.map(item => `
+                <div class="gallery-system__slide">${MediaEngine.render(item.url, 'media-engine--gallery')}</div>
+            `).join('');
+
+            const rightRoot = document.getElementById('rightPipeline');
+            rightRoot.innerHTML = GLOBAL_CONFIG.content.rightPipeline.map(item => {
+                if (item.type === 'text') return `<div class="ui-text-block"><h1 style="font-size: ${item.titleSize}">${item.title}</h1><p style="font-size: ${item.descSize}">${item.body}</p></div>`;
+                if (item.type === 'media') return `<div class="ui-media-block">${MediaEngine.render(item.url)}</div>`;
                 return '';
             }).join('');
-
-            renderDots(CONFIG.gallery.leftMedia.length);
-            bindEvents();
         }
 
-        function toggleSubMenu(index) {
-            const group = document.getElementById(`m-group-${index}`);
-            const sub = document.getElementById(`m-sub-${index}`);
-            group.classList.toggle('expanded');
-            sub.classList.toggle('active');
-        }
-
-        function renderDots(n) {
-            const container = document.getElementById('ui-dots');
-            if (container) container.innerHTML = Array.from({length:n}).map((_,i)=>`<div class="dot ${i===0?'active':''}"></div>`).join('');
-        }
-
-        function bindEvents() {
-            const track = document.getElementById('ui-left-track');
-            track.addEventListener('scroll', () => {
-                const idx = Math.round(track.scrollLeft / track.offsetWidth);
-                document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
-            }, { passive: true });
-        }
-
-        function toggleMenu() {
-            const bg = document.getElementById('mobileMenuBg');
-            const content = document.getElementById('mobileMenuContent');
-            const btn = document.getElementById('menuBtn');
-            bg.classList.toggle('active');
-            content.classList.toggle('active');
-            btn.classList.toggle('active');
-            const isActive = bg.classList.contains('active');
-            document.body.style.overflow = isActive ? 'hidden' : '';
-            if (isActive) document.addEventListener('touchmove', preventDefaultScroll, { passive: false });
-            else document.removeEventListener('touchmove', preventDefaultScroll);
-        }
-
-        function preventDefaultScroll(e) {
-            if (!e.target.closest('.overlay-content')) e.preventDefault();
-        }
-
-        window.onload = init;
+        window.addEventListener('DOMContentLoaded', () => {
+            renderUI();
+            MediaEngine.init();
+            AppHeader.init();
+        });
     </script>
 </body>
 </html>
